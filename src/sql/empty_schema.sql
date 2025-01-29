@@ -41,7 +41,7 @@ CREATE INDEX idx_campus ON inventory(campus);
 CREATE TABLE checkout (
   timestamp TIMESTAMP PRIMARY KEY,
   qr VARCHAR(15) NOT NULL,
-  first_checkin DATETIME,
+  first_checkin BOOLEAN,
   checkin DATETIME,
   checkout DATETIME,
   FOREIGN KEY (qr) REFERENCES inventory(qr)
