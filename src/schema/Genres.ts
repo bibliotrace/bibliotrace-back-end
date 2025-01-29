@@ -1,50 +1,8 @@
 interface Genres {
   book_id: number;
-  genre_1:
-    | "Advanced"
-    | "Action/Adventure"
-    | "Dystopian"
-    | "Fantasy"
-    | "Fiction"
-    | "Graphic Novel"
-    | "Historical Fiction"
-    | "Mystery/Thriller"
-    | "Non-Fiction"
-    | "Paranormal"
-    | "Poetry"
-    | "Romance"
-    | "Science Fiction"
-    | "Spanish";
-  genre_2:
-    | "Advanced"
-    | "Action/Adventure"
-    | "Dystopian"
-    | "Fantasy"
-    | "Fiction"
-    | "Graphic Novel"
-    | "Historical Fiction"
-    | "Mystery/Thriller"
-    | "Non-Fiction"
-    | "Paranormal"
-    | "Poetry"
-    | "Romance"
-    | "Science Fiction"
-    | "Spanish";
-  genre_3:
-    | "Advanced"
-    | "Action/Adventure"
-    | "Dystopian"
-    | "Fantasy"
-    | "Fiction"
-    | "Graphic Novel"
-    | "Historical Fiction"
-    | "Mystery/Thriller"
-    | "Non-Fiction"
-    | "Paranormal"
-    | "Poetry"
-    | "Romance"
-    | "Science Fiction"
-    | "Spanish";
+  genre_id_1: number;
+  genre_id_2: number | null;
+  genre_id_3: number | null;
 }
 
 export type { Genres };

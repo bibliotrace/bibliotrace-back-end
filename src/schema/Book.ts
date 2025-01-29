@@ -3,32 +3,11 @@ interface Book {
   name: string;
   isbn_list: string | null;
   author: string | null;
-  primary_genre:
-    | "Advanced"
-    | "Action/Adventure"
-    | "Dystopian"
-    | "Fantasy"
-    | "Fiction"
-    | "Graphic Novel"
-    | "Historical Fiction"
-    | "Mystery/Thriller"
-    | "Non-Fiction"
-    | "Paranormal"
-    | "Poetry"
-    | "Romance"
-    | "Science Fiction"
-    | "Spanish";
-  audience:
-    | "Board"
-    | "Picture"
-    | "Early Chapter"
-    | "Middle Grade"
-    | "Young Adult"
-    | "Advanced";
+  primary_genre_id: number;
+  audience_id: number;
   pages: number | null;
-  series: string | null;
   series_number: number | null;
-  publish_date: number | null; // Year
+  publish_date: number | null; // YYYY
   short_description: string | null;
   language: string | null;
   img_callback: string | null;

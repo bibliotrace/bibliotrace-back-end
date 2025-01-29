@@ -189,28 +189,21 @@ class MySQLDao {
     return this.db.insertInto("series").values(series).execute();
   }
 
-  async getSeriesById(series_id: number): Promise<Series> {
+  async getSeriesById(id: number): Promise<Series> {
     const series = await this.db
       .selectFrom("series")
       .selectAll()
-      .where("series_id", "=", series_id)
+      .where("id", "=", id)
       .execute();
     return series[0];
   }
 
-  async updateSeries(
-    series_id: number,
-    series: Partial<Series>
-  ): Promise<UpdateResult[]> {
-    return this.db
-      .updateTable("series")
-      .set(series)
-      .where("series_id", "=", series_id)
-      .execute();
+  async updateSeries(id: number, series: Partial<Series>): Promise<UpdateResult[]> {
+    return this.db.updateTable("series").set(series).where("id", "=", id).execute();
   }
 
-  async deleteSeries(series_id: number): Promise<DeleteResult[]> {
-    return this.db.deleteFrom("series").where("series_id", "=", series_id).execute();
+  async deleteSeries(id: number): Promise<DeleteResult[]> {
+    return this.db.deleteFrom("series").where("id", "=", id).execute();
   }
 
   async createTag(tag: Tag): Promise<InsertResult[]> {
