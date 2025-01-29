@@ -2,42 +2,49 @@ interface Genres {
   book_id: number;
   genre_1:
     | "Advanced"
-    | "Animal"
+    | "Action/Adventure"
+    | "Dystopian"
     | "Fantasy"
+    | "Fiction"
     | "Graphic Novel"
     | "Historical Fiction"
-    | "Humor"
     | "Mystery/Thriller"
-    | "Nonfiction"
+    | "Non-Fiction"
+    | "Paranormal"
+    | "Poetry"
     | "Romance"
-    | "Scary Stories"
-    | "Sports";
+    | "Science Fiction"
+    | "Spanish";
   genre_2:
     | "Advanced"
-    | "Animal"
+    | "Action/Adventure"
+    | "Dystopian"
     | "Fantasy"
+    | "Fiction"
     | "Graphic Novel"
     | "Historical Fiction"
-    | "Humor"
     | "Mystery/Thriller"
-    | "Nonfiction"
+    | "Non-Fiction"
+    | "Paranormal"
+    | "Poetry"
     | "Romance"
-    | "Scary Stories"
-    | "Sports"
-    | null;
+    | "Science Fiction"
+    | "Spanish";
   genre_3:
     | "Advanced"
-    | "Animal"
+    | "Action/Adventure"
+    | "Dystopian"
     | "Fantasy"
+    | "Fiction"
     | "Graphic Novel"
     | "Historical Fiction"
-    | "Humor"
     | "Mystery/Thriller"
-    | "Nonfiction"
+    | "Non-Fiction"
+    | "Paranormal"
+    | "Poetry"
     | "Romance"
-    | "Scary Stories"
-    | "Sports"
-    | null;
+    | "Science Fiction"
+    | "Spanish";
 }
 
 export type { Genres };

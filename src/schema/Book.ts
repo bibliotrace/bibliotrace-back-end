@@ -5,16 +5,19 @@ interface Book {
   author: string | null;
   primary_genre:
     | "Advanced"
-    | "Animal"
+    | "Action/Adventure"
+    | "Dystopian"
     | "Fantasy"
+    | "Fiction"
     | "Graphic Novel"
     | "Historical Fiction"
-    | "Humor"
     | "Mystery/Thriller"
-    | "Nonfiction"
+    | "Non-Fiction"
+    | "Paranormal"
+    | "Poetry"
     | "Romance"
-    | "Scary Stories"
-    | "Sports";
+    | "Science Fiction"
+    | "Spanish";
   audience:
     | "Board"
     | "Picture"
