@@ -17,21 +17,30 @@ CREATE TABLE genre_types (
   name VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE series (
+  id INT UNSIGNED PRIMARY KEY,
+  series_name VARCHAR(255),
+  max_count TINYINT UNSIGNED
+);
+CREATE INDEX idx_series_name ON series(series_name);
+
 CREATE TABLE books (
   id INT UNSIGNED PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   isbn_list VARCHAR(255),
-  author VARCHAR(255),
+  author VARCHAR(255) NOT NULL,
   primary_genre_id TINYINT UNSIGNED NOT NULL,
   audience_id TINYINT UNSIGNED NOT NULL,
   pages SMALLINT,
+  series_id TINYINT,
   series_number TINYINT,
   publish_date YEAR,
   short_description TEXT,
   language VARCHAR(31),
   img_callback VARCHAR(255),
   FOREIGN KEY (primary_genre_id) REFERENCES genre_types(id),
-  FOREIGN KEY (audience_id) REFERENCES audiences(id)
+  FOREIGN KEY (audience_id) REFERENCES audiences(id),
+  FOREIGN KEY (series_id) REFERENCES series(id)
 );
 CREATE UNIQUE INDEX idx_name ON books(name);
 
@@ -73,13 +82,6 @@ CREATE TABLE genres (
   genre_id_3 TINYINT UNSIGNED,
   FOREIGN KEY (book_id) REFERENCES books(id)
 );
-
-CREATE TABLE series (
-  series_id INT UNSIGNED PRIMARY KEY,
-  series_name VARCHAR(255),
-  max_count TINYINT UNSIGNED
-);
-CREATE INDEX idx_series_name ON series(series_name);
 
 CREATE TABLE tags (
   id SMALLINT UNSIGNED PRIMARY KEY,
