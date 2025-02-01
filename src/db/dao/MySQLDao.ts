@@ -17,10 +17,10 @@ class MySQLDao {
 
   constructor() {
     this.pool = mysql.createPool({
-      host: "localhost", //"localhost:" + MYSQL_PORT,
-      user: "admin",
-      password: "Bibl!otrace_2025",
-      database: "bibliotrace_v3",
+      host: process.env.DB_HOST ?? "localhost", //"localhost:" + MYSQL_PORT,
+      user: process.env.DB_USER ?? "admin",
+      password: process.env.DB_PASSWORD ?? "Bibl!otrace_2025",
+      database: process.env.DB_TARGET_NAME ?? "bibliotrace_v3",
     });
 
     this.db = new Kysely<Database>({
@@ -28,6 +28,20 @@ class MySQLDao {
         pool: this.pool,
       }),
     });
+  }
+
+  async searchBooksByISBNs(isbnList) {
+    const patternList = isbnList.map(isbn => `%${isbn}%`);
+  
+    const results = await this.db
+      .selectFrom('books')
+      .selectAll()
+      .where((eb) => eb.or(patternList.map((pattern) => {
+        eb('isbn_list', 'like', pattern)
+      })))
+      .execute();
+  
+    return results;
   }
 
   async connect(): Promise<void> {
