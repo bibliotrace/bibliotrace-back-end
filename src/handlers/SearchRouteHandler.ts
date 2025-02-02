@@ -1,39 +1,33 @@
-import MySQLDao from "../db/dao/MySQLDao"
+import MySQL from "../db/interactors/MySQL"
 import IsbnService from "../services/IsbnService"
+import { DynamoDb } from "../db/interactors/DynamoDb"
 
 
-export default class SearchRouteHandler { // TODO/Feature Request: Cache calls to the ISBNdb API to save requests for new queries
-    db: MySQLDao
+export default class SearchRouteHandler {
+    db: MySQL
     isbn: IsbnService
+    dynamoDb: DynamoDb
 
-    constructor(db: MySQLDao, isbn: IsbnService) {
+    constructor(db: MySQL, isbn: IsbnService, dynamoDb) {
         this.db = db
         this.isbn = isbn
+        this.dynamoDb = dynamoDb
     }
 
     async conductSearch (inputQuery: string): Promise<SearchResults> {
         const extractedObject = this.extractFilters(inputQuery)
-        const extractedFilters = extractedObject.queryList
+        const extractedFilters = extractedObject.queryList // TODO: Do something with this...
         const extractedQuery = extractedObject.inputQuery
-        
-        let isbnResult
 
-        // TODO: Right here, check the cache for the extractedQuery to see if it's new
-        if (false) {
-            // if true, use what came back from the cached result from ISBN
-        } else {
+        let isbnResult: any = await this.dynamoDb.checkISBNQueryCache(extractedQuery)
+        if (isbnResult == null) {
+            console.log(`Submitting Query to ISBN: ${extractedQuery}`)
             isbnResult = await this.isbn.conductSearch(extractedQuery)
-            
+            await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString())
         }
         
-        
-
-        
-
-
-
-
-        return { results: [] }
+        console.log(`Completed Search Query: ${inputQuery}`)
+        return { results: isbnResult }
     }
 
 

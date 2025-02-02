@@ -6,12 +6,12 @@ import {
   UpdateResult,
 } from "kysely";
 import mysql from "mysql2/promise";
-import Database from "../sql/DatabaseSchema";
+import Database from "../setup/DatabaseSchema";
 
 const MYSQL_PORT = 3306;
 
 // This class assumes that user input has already been sanitized and validated
-class MySQLDao {
+class MySQL {
   private db: Kysely<Database>;
   private pool: mysql.Pool;
 
@@ -253,4 +253,4 @@ class MySQLDao {
   }
 }
 
-export default MySQLDao;
+export default MySQL;
