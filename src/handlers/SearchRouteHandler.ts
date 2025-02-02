@@ -19,7 +19,7 @@ export default class SearchRouteHandler {
         const extractedFilters = extractedObject.queryList // TODO: Do something with this...
         const extractedQuery = extractedObject.inputQuery
 
-        let isbnResult: any = await this.dynamoDb.checkISBNQueryCache(extractedQuery)
+        let isbnResult: undefined | string[] = await this.dynamoDb.checkISBNQueryCache(extractedQuery)
         if (isbnResult == null) {
             console.log(`Submitting Query to ISBN: ${extractedQuery}`)
             isbnResult = await this.isbn.conductSearch(extractedQuery)
@@ -27,10 +27,44 @@ export default class SearchRouteHandler {
         }
         
         console.log(`Completed Search Query: ${inputQuery}`)
-        return { results: isbnResult }
+        console.log(`ISBN result list: ${await JSON.stringify(isbnResult)}`)
+
+        const result = []
+        const bookSet = new Set<string>()
+        for (let i = 0; i < isbnResult.length; i++) {
+            if (!bookSet.has(isbnResult[i])) {
+                // Perhaps do this asynchronously to speed things up?
+                const metadata = await this.retreiveMetadata(isbnResult[i])
+                if (metadata.id != null) {
+                    result.push(metadata)
+                    bookSet.add(isbnResult[i])
+                }
+            }
+        }
+
+        return { results: result }
     }
 
+    private async retreiveMetadata (isbn: string) {
+        // TODO: Use MySQL for this. The Google Books API is dog slow for each of these queries
+        const lookupURL = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
+        const response = await fetch(lookupURL)
+        const result = await response.json()
 
+        if (result.items != null && result.items[0] != null) {
+            const bookObj = result.items[0]
+            return {
+                id: bookObj.selfLink,
+                isbn,
+                title: bookObj.volumeInfo.title ?? 'Unknown',
+                author: (bookObj.volumeInfo.authors != null && bookObj.volumeInfo.authors.length > 0) ? bookObj.volumeInfo.authors[0] : 'Unknown',
+                genre: bookObj.volumeInfo.categories ?? ['unkonwn'],
+                series: 'N/A'
+            }
+        } else {
+            return {}
+        }
+    }
 
     private findIndexes (inputString: string): any {
         let firstDelimiterIndex = -1
@@ -79,10 +113,6 @@ export default class SearchRouteHandler {
 
         return { queryList, inputQuery }
     }
-
-
-
-
 }
 
 export interface SearchResults {
@@ -90,9 +120,10 @@ export interface SearchResults {
 }
 
 export interface ResultRow {
+    id: string | undefined,
     title: string | undefined,
     author: string | undefined, 
     genre: string | undefined, 
     series: string | undefined,
-    coverImageCallback: string | undefined
+    isbn: string | undefined
 }

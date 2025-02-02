@@ -15,7 +15,7 @@ export class DynamoDb {
         const params = {
             TableName: this.isbnTableName,
             Key: {
-                query: { S: query }
+                query: { S: query.toLowerCase() }
             }
         }
 
@@ -31,7 +31,7 @@ export class DynamoDb {
         const params = {
             TableName: this.isbnTableName,
             Item: {
-                query: { S: query },
+                query: { S: query.toLowerCase() },
                 result: { S: result }
             }
         }

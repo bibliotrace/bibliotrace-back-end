@@ -16,6 +16,30 @@ export class CoverImageRouteHandler {
             return Buffer.from(buffer)    
         }
 
+        imageURL = `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`
+        response = await fetch(imageURL)
+
+        if (!response.ok) {
+            console.log(`Cover URL: ${imageURL}; Status Code: ${response.status}; Body: ${response.body}`)
+        }
+
+        buffer = await response.arrayBuffer()
+        if (buffer.byteLength >= 100) {
+            return Buffer.from(buffer)    
+        }
+
+        imageURL = `https://covers.openlibrary.org/b/isbn/${isbn}-S.jpg`
+        response = await fetch(imageURL)
+
+        if (!response.ok) {
+            console.log(`Cover URL: ${imageURL}; Status Code: ${response.status}; Body: ${response.body}`)
+        }
+
+        buffer = await response.arrayBuffer()
+        if (buffer.byteLength >= 100) {
+            return Buffer.from(buffer)    
+        }
+
         const lookupURL = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
         response = await fetch(lookupURL)
 
