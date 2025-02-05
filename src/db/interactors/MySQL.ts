@@ -8,8 +8,6 @@ import {
 import mysql from "mysql2/promise";
 import Database from "../setup/DatabaseSchema";
 
-const MYSQL_PORT = 3306;
-
 // This class assumes that user input has already been sanitized and validated
 class MySQL {
   private db: Kysely<Database>;

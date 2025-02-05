@@ -14,31 +14,38 @@ deps.setup()
   })
 
 if (process.env.FRONT_END_ORIGIN) {
-  server.use(cors({ origin: 'http://localhost:5173' }))
+  server.use(cors({ origin: process.env.FRONT_END_ORIGIN })) //TODO: set this as our production front-end url when we do deployment
 } else {
   server.use(cors())
 }
 
 server.get("/search/:searchQuery", async (req, res) => { 
   try {
+    console.log('Handling call to /search with query ' + req.params.searchQuery )
     const results = await deps.dependencies.searchRouteHandler.conductSearch(req.params.searchQuery)
-    res.send(results);
+    res.send(results)
+    console.log('Call to /search complete')
   } catch (e) {
     console.log(e)
     res.status(500).send(e)
-  }
-  
-  
+  }  
 });
 
 server.get('/cover/:isbn', async (req, res) => {
   try {
     const { isbn } = req.params
-    const results = await deps.dependencies.coverImageRouteHandler.relayImage(isbn)
-    res.send(results)
+    console.log('Handling call to /cover/' + isbn)
+    if (isbn === 'none') {
+      res.status(200).send()
+    } else {
+      const results = await deps.dependencies.coverImageRouteHandler.relayImage(isbn)
+      res.send(results)
+      console.log(`Call to /cover/${isbn} completed successfully.`)
+    }
   } catch (error) {
     res.status(500).send(error)
-  }
+    console.log('FAILURE: Call to /cover/:isbn failed for some reason')
+  }  
 })
 
 server.get("/dummy", (req, res) => {

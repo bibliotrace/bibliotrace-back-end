@@ -1,66 +1,53 @@
-
-
 export class CoverImageRouteHandler {
-    constructor () {}
+    constructor() {}
 
-    async relayImage (isbn: string) {
-        let imageURL = `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg`
-        let response = await fetch(imageURL)
+    async relayImage(isbn) {
+        const imageSizes = ['L', 'M', 'S'];
+        const controller = new AbortController();
+        const signal = controller.signal;
 
-        if (!response.ok) {
-            console.log(`Cover URL: ${imageURL}; Status Code: ${response.status}; Body: ${response.body}`)
-        }
+        const fetchImage = async (url) => {
+            try {
+                const response = await fetch(url, { signal });
+                if (response.ok) {
+                    const buffer = await response.arrayBuffer();
+                    if (buffer.byteLength >= 100) {
+                        controller.abort(); // Cancel other fetches
+                        return Buffer.from(buffer);
+                    }
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.log(`Error fetching ${url}:`, error);
+                }
+            }
+            return null;
+        };
 
-        let buffer = await response.arrayBuffer()
-        if (buffer.byteLength >= 100) {
-            return Buffer.from(buffer)    
-        }
+        const fetchPromises = imageSizes.map(size =>
+            fetchImage(`https://covers.openlibrary.org/b/isbn/${isbn}-${size}.jpg`)
+        );
 
-        imageURL = `https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg`
-        response = await fetch(imageURL)
+        // Add Google Books API fetch
+        fetchPromises.push(
+            (async () => {
+                try {
+                    const lookupURL = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
+                    const response = await fetch(lookupURL, { signal });
+                    if (!response.ok) return null;
+                    const data = await response.json();
+                    const imageURL = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
+                    if (imageURL) return fetchImage(imageURL);
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.log(`Error fetching Google Books API:`, error);
+                    }
+                }
+                return null;
+            })()
+        );
 
-        if (!response.ok) {
-            console.log(`Cover URL: ${imageURL}; Status Code: ${response.status}; Body: ${response.body}`)
-        }
-
-        buffer = await response.arrayBuffer()
-        if (buffer.byteLength >= 100) {
-            return Buffer.from(buffer)    
-        }
-
-        imageURL = `https://covers.openlibrary.org/b/isbn/${isbn}-S.jpg`
-        response = await fetch(imageURL)
-
-        if (!response.ok) {
-            console.log(`Cover URL: ${imageURL}; Status Code: ${response.status}; Body: ${response.body}`)
-        }
-
-        buffer = await response.arrayBuffer()
-        if (buffer.byteLength >= 100) {
-            return Buffer.from(buffer)    
-        }
-
-        const lookupURL = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
-        response = await fetch(lookupURL)
-
-        if (!response.ok) {
-            console.log(`Lookup URL: ${lookupURL}; Status Code: ${response.status}; Body: ${response.body}`)
-        }
-
-        const responseJSON = await response.json()
-        imageURL = responseJSON.items[0].volumeInfo.imageLinks.thumbnail
-
-        response = await fetch(imageURL)
-
-        if (!response.ok) {
-            console.log(`Cover URL: ${imageURL}; Status Code: ${response.status}; Body: ${response.body}`)
-        }
-
-        buffer = await response.arrayBuffer()
-        if (buffer.byteLength >= 100) {
-            return Buffer.from(buffer)
-        } 
-
-        return {}
+        const firstSuccessfulResponse = (await Promise.any(fetchPromises)) || {};
+        return firstSuccessfulResponse;
     }
 }
