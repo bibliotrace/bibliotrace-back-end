@@ -47,7 +47,7 @@ export default class SearchRouteHandler {
             if (!bookSet.has(isbnResult[i])) {
                 // Perhaps do this asynchronously to speed things up?
                 const metadata = await this.retreiveMetadata(isbnResult[i])
-                if (metadata.id != null) {
+                if (metadata != null && metadata.id != null) {
                     result.push(metadata)
                     bookSet.add(isbnResult[i])
                 }
@@ -83,6 +83,23 @@ export default class SearchRouteHandler {
         return ['123456789X', '987654321X']
     }
 
+    // Extraction schema is ||Key:Value||||Key:Value||{...}||Key:Value||Search%20Query
+    private extractFilters (inputQuery: string) {
+        let queryIndexes = this.findIndexes(inputQuery)
+        const queryList = []
+
+        while (queryIndexes != null) {
+            let queryKey = inputQuery.slice(queryIndexes.firstDelimiterIndex + 1, queryIndexes.seperatorIndex)
+            let queryValue = inputQuery.slice(queryIndexes.seperatorIndex + 1, queryIndexes.secondDelimiterIndex)
+            queryList.push({queryKey, queryValue})
+
+            inputQuery = inputQuery.slice(queryIndexes.secondDelimiterIndex + 2, inputQuery.length)
+            queryIndexes = this.findIndexes(inputQuery)
+        }
+
+        return { queryList, inputQuery }
+    }
+
     private findIndexes (inputString: string): any {
         let firstDelimiterIndex = -1
         let secondDelimiterIndex = -1
@@ -113,22 +130,6 @@ export default class SearchRouteHandler {
         if (firstDelimiterIndex !== -1 && secondDelimiterIndex !== -1 && seperatorIndex !== -1) {
             return {firstDelimiterIndex, seperatorIndex, secondDelimiterIndex}
         }
-    }
-
-    private extractFilters (inputQuery: string) {
-        let queryIndexes = this.findIndexes(inputQuery)
-        const queryList = []
-
-        while (queryIndexes != null) {
-            let queryKey = inputQuery.slice(queryIndexes.firstDelimiterIndex + 1, queryIndexes.seperatorIndex)
-            let queryValue = inputQuery.slice(queryIndexes.seperatorIndex + 1, queryIndexes.secondDelimiterIndex)
-            queryList.push({queryKey, queryValue})
-
-            inputQuery = inputQuery.slice(queryIndexes.secondDelimiterIndex + 2, inputQuery.length)
-            queryIndexes = this.findIndexes(inputQuery)
-        }
-
-        return { queryList, inputQuery }
     }
 }
 
