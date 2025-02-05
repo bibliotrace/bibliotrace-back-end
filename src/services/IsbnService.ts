@@ -1,9 +1,8 @@
-import MySQL from "../db/interactors/MySQL"
 import { sanitizeUrl } from '@braintree/sanitize-url'
 
 class IsbnService {
     async conductSearch(inputQuery: string): Promise<string[]> {
-        const result = await fetch(`${process.env.ISBN_HOST}/books/${sanitizeUrl(inputQuery)}?pageSize=40`, {
+        const result = await fetch(`${process.env.ISBN_HOST}/books/${sanitizeUrl(inputQuery)}?pageSize=1000`, {
             method: 'GET',
             headers: {
                 'Authorization': process.env.ISBN_KEY

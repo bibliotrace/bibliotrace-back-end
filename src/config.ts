@@ -7,6 +7,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb"
 import { createIsbnQueryCacheTable } from "./db/setup/DynamoDbTableCreate"
 import { DynamoDb } from "./db/interactors/DynamoDb"
 import { CoverImageRouteHandler } from "./handlers/CoverImageRouteHandler"
+import { UserAuthService } from "./services/UserAuthService"
 
 class Config {
     dependencies: ConfigTypes
@@ -43,17 +44,21 @@ class Config {
 
         this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler()
 
+        this.dependencies.userAuthService = new UserAuthService()
+
         console.log('Dependencies Instantiated')
         return {
             searchRouteHandler: this.dependencies.searchRouteHandler,
             coverImageRouteHandler: this.dependencies.coverImageRouteHandler,
+            userAuthService: this.dependencies.userAuthService,
         }
     }
 }
 
 export interface ConfigTypes {
     searchRouteHandler?: SearchRouteHandler,
-    coverImageRouteHandler? : CoverImageRouteHandler
+    coverImageRouteHandler? : CoverImageRouteHandler,
+    userAuthService? : UserAuthService
 }
 
 export default Config
