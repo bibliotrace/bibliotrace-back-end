@@ -15,22 +15,34 @@ export default class SearchRouteHandler {
     }
 
     async conductSearch (inputQuery: string): Promise<SearchResults> {
+        // Extract from the inputQuery string the filters and the actual search query
         const extractedObject = this.extractFilters(inputQuery)
         const extractedFilters = extractedObject.queryList // TODO: Do something with this...
+        console.log(extractedFilters)
         const extractedQuery = extractedObject.inputQuery
 
-        let isbnResult: undefined | string[] = await this.dynamoDb.checkISBNQueryCache(extractedQuery)
-        if (isbnResult == null) {
-            console.log(`Submitting Query to ISBN: ${extractedQuery}`)
-            isbnResult = await this.isbn.conductSearch(extractedQuery)
-            await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString())
-        }
+        let isbnResult: undefined | string[]
+        if (extractedQuery != null && extractedQuery !== '') {
+            // First, get the target list of isbn numbers from the querystring.
+            isbnResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery)
+            if (isbnResult == null) {
+                console.log(`Submitting Query to ISBN: ${extractedQuery}`)
+                isbnResult = await this.isbn.conductSearch(extractedQuery)
+                await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString())
+            }
+        }        
         
         console.log(`Completed Search Query: ${inputQuery}`)
         console.log(`ISBN result list: ${await JSON.stringify(isbnResult)}`)
 
+        // If isbnResult is null, pull all books from the db
         const result = []
         const bookSet = new Set<string>()
+        if (isbnResult == null) {
+            isbnResult = await this.retrieveAllISBNs()
+        }
+
+        // Retrieve book set from metadata function for each matching isbn result.
         for (let i = 0; i < isbnResult.length; i++) {
             if (!bookSet.has(isbnResult[i])) {
                 // Perhaps do this asynchronously to speed things up?
@@ -64,6 +76,11 @@ export default class SearchRouteHandler {
         } else {
             return {}
         }
+    }
+
+    private async retrieveAllISBNs (): Promise<string[]> {
+        // TODO: Use MySQL for this to do a select * on all books available. 
+        return ['123456789X', '987654321X']
     }
 
     private findIndexes (inputString: string): any {
