@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import MySQL from "./db/interactors/MySQL";
 import IsbnService from "./services/IsbnService";
 import SearchRouteHandler from "./handlers/SearchRouteHandler";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -8,6 +7,7 @@ import { createIsbnQueryCacheTable } from "./db/setup/DynamoDbTableCreate";
 import { DynamoDb } from "./db/interactors/DynamoDb";
 import { CoverImageRouteHandler } from "./handlers/CoverImageRouteHandler";
 import { UserAuthService } from "./services/UserAuthService";
+import DBConnectionManager from "./mysql/DBConnectionManager";
 
 class Config {
   dependencies: ConfigTypes;
@@ -19,8 +19,8 @@ class Config {
   async setup(): Promise<ConfigTypes> {
     dotenv.config();
 
-    const db = new MySQL();
-    await db.connect();
+    DBConnectionManager.connect();
+
 
     const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
     const ddbClientConfig = hasDynamoEndpoint
@@ -41,11 +41,7 @@ class Config {
 
     const isbnService = new IsbnService();
 
-    this.dependencies.searchRouteHandler = new SearchRouteHandler(
-      db,
-      isbnService,
-      dynamoDb
-    );
+    this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
 
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
 
@@ -67,3 +63,4 @@ export interface ConfigTypes {
 }
 
 export default new Config();
+
