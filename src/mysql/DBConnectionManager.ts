@@ -15,6 +15,16 @@ class DBConnectionManager {
     });
   }
 
+  async connect(): Promise<void> {
+    try {
+      await this.pool.query("SELECT 1");
+      console.log("Connected to MySQL!");
+    } catch (error) {
+      console.error("Error connecting to MySQL:", error);
+      throw error; // Rethrow the error to be handled by the caller
+    }
+  }
+
   public async getConnection(): Promise<mysql2.Connection> {
     return await this.pool.getConnection();
   }

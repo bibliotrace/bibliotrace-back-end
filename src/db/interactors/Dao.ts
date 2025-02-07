@@ -1,9 +1,9 @@
 import { Kysely, sql, Transaction } from "kysely";
-import TransactionManager from "../mysql/TransactionManager";
+import TransactionManager from "../../mysql/TransactionManager";
 import Database from "../schema/Database";
-import Message from "../message/Message";
-import FailMessage from "../message/FailMessage";
-import SuccessMessage from "../message/SuccessMessage";
+import Message from "../../message/Message";
+import FailMessage from "../../message/FailMessage";
+import SuccessMessage from "../../message/SuccessMessage";
 
 // E is the entity, K is the key
 abstract class Dao<E, K extends number | string> {
