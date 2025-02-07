@@ -74,7 +74,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  protected async getByKey(key: K, transaction?: Transaction<Database>): Promise<E | Message> {
+  protected async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<E | Message> {
     if (transaction) {
       return new FailMessage("Transactions not supported yet", 500);
     } else {
@@ -87,6 +87,40 @@ abstract class Dao<E, K extends number | string> {
         return result[0] as E;
       } catch (error) {
         return new FailMessage(`Failed to retrieve ${this.entityName} with error ${error}`, 500);
+      }
+    }
+  }
+
+  protected async getAllOnIndex(index: string, transaction?: Transaction<Database>): Promise<E[] | Message> {
+    if (transaction) {
+      return new FailMessage("Transactions not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .where(sql`${index}`, "=", true)
+          .execute();
+        return result as E[];
+      } catch (error) {
+        return new FailMessage(`Failed to retrieve all ${this.entityName}s on ${index} with error ${error}`, 500);
+      }
+    }
+  }
+
+  protected async getAllMatchingOnIndex(index: string, match: string, transaction?: Transaction<Database>): Promise<E[] | Message> {
+    if (transaction) {
+      return new FailMessage("Transactions not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .where(sql`${index}`, "like", `%${match}%`)
+          .execute();
+        return result as E[];
+      } catch (error) {
+        return new FailMessage(`Failed to get all ${this.entityName}s matching ${match} on ${index} with error ${error}`, 500);
       }
     }
   }
