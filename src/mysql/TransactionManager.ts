@@ -1,5 +1,5 @@
 import { Kysely, MysqlDialect, Transaction, TransactionBuilder } from "kysely";
-import Database from "../schema/Database";
+import Database from "../db/schema/Database";
 import DBConnectionManager from "./DBConnectionManager";
 
 class TransactionManager {
