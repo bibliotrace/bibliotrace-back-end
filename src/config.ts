@@ -21,6 +21,7 @@ class Config {
 
     DBConnectionManager.connect();
 
+
     const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
     const ddbClientConfig = hasDynamoEndpoint
       ? {
@@ -61,4 +62,5 @@ export interface ConfigTypes {
   userAuthService?: UserAuthService;
 }
 
-export default Config;
+export default new Config();
+
