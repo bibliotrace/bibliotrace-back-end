@@ -1,6 +1,6 @@
 USE bibliotrace_v3;
 
-DROP TABLE IF EXISTS audiences, audit, audit_states, auth, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;
+DROP TABLE IF EXISTS audiences, audit, audit_states, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY,
@@ -120,11 +120,4 @@ CREATE TABLE users (
   campus_id TINYINT UNSIGNED NOT NULL,
   FOREIGN KEY (role_id) REFERENCES user_roles(id),
   FOREIGN KEY (campus_id) REFERENCES campus(id)
-);
-
-CREATE TABLE auth (
-  token VARCHAR(255) PRIMARY KEY,
-  username VARCHAR(255) NOT NULL,
-  timestamp TIMESTAMP NOT NULL,
-  FOREIGN KEY (username) REFERENCES users(username)
 );
