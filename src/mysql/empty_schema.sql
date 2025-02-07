@@ -109,7 +109,9 @@ CREATE INDEX idx_tag ON tags(tag);
 
 CREATE TABLE suggestions (
   timestamp TIMESTAMP PRIMARY KEY,
-  content TEXT NOT NULL
+  content TEXT NOT NULL,
+  campus_id TINYINT UNSIGNED NOT NULL,
+  FOREIGN KEY (campus_id) REFERENCES campus(id)
 );
 
 CREATE TABLE users (
