@@ -23,8 +23,6 @@ export class UserAuthService {
         return { campus: 'Lehi', roleType: 'Admin' }
     }
 
-
-
 }
 
 export interface UserRole {
