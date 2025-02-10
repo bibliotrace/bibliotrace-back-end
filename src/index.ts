@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import Config from "./config";
@@ -28,14 +31,13 @@ server.use(express.json());
 
 server.use(
   expressjwt({
-    secret: "hello",
-    // secret: process.env.AUTH_KEY,
+    secret: process.env.AUTH_KEY ?? 'hello world!',
     algorithms: ["HS256"],
     onExpired: async (req, err) => {
       console.log("EXPIREDDDD");
       throw err;
     },
-  }).unless({ path: ["/login"] })
+  }).unless({ path: ["/api/auth/login"] })
 );
 
 const apiRouter = express.Router();

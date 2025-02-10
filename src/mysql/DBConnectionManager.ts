@@ -17,7 +17,7 @@ class DBConnectionManager {
 
   async connect(): Promise<void> {
     try {
-      await this.pool.query("SELECT 1");
+      await this._pool.query("SELECT 1");
       console.log("Connected to MySQL!");
     } catch (error) {
       console.error("Error connecting to MySQL:", error);
@@ -26,7 +26,7 @@ class DBConnectionManager {
   }
 
   public async getConnection(): Promise<mysql2.Connection> {
-    return await this.pool.getConnection();
+    return await this._pool.getConnection();
   }
 
   public async closeConnection(connection: mysql2.Connection): Promise<void> {
@@ -34,11 +34,11 @@ class DBConnectionManager {
   }
 
   public get pool(): mysql2.Pool {
-    return this.pool;
+    return this._pool;
   }
 
   public async closePool(): Promise<void> {
-    await this.pool.end();
+    await this._pool.end();
   }
 }
 

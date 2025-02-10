@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import IsbnService from "./services/IsbnService";
 import SearchRouteHandler from "./handlers/SearchRouteHandler";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -17,8 +16,6 @@ class Config {
   }
 
   async setup(): Promise<ConfigTypes> {
-    dotenv.config();
-
     DBConnectionManager.connect();
 
 

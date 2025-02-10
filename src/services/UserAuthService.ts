@@ -12,7 +12,7 @@ export class UserAuthService {
     }
 
     async buildJWT (userRole: UserRole) {
-        const token = jwt.sign({ userRole }, process.env.AUTH_KEY, { expiresIn: '1h' })
+        const token = jwt.sign({ userRole }, process.env.AUTH_KEY ?? 'hello world!', { expiresIn: '1h' })
         console.log(`Token Generated: ${token}`)
         return token
     }
