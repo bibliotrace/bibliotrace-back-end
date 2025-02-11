@@ -58,7 +58,7 @@ abstract class Dao<E, K extends number | string> {
         }
     }*/
 
-  protected async create(entity: E, transaction?: Transaction<Database>): Promise<Message> {
+  async create(entity: E, transaction?: Transaction<Database>): Promise<Message> {
     if (transaction) {
       return new FailMessage("Transactions not supported yet", 500);
     } else {
@@ -74,7 +74,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  protected async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<E | Message> {
+  async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<E | Message> {
     if (transaction) {
       return new FailMessage("Transactions not supported yet", 500);
     } else {
@@ -82,8 +82,10 @@ abstract class Dao<E, K extends number | string> {
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
-          .where(sql`${this.keyName}`, "=", key)
+          .where(this.keyName as any, "=", key)
           .execute();
+
+        console.log(result)
         return result[0] as E;
       } catch (error) {
         return new FailMessage(`Failed to retrieve ${this.entityName} with error ${error}`, 500);
@@ -91,7 +93,24 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  protected async getAllOnIndex(index: string, transaction?: Transaction<Database>): Promise<E[] | Message> {
+  async getByKeyAndValue(key: string, value: string, transaction?: Transaction<Database>): Promise<E | Message> {
+    if (transaction) {
+      return new FailMessage("Transactions are not supported yet", 500)
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .where(sql`${key}`, "=", value)
+          .execute();
+        return result[0] as E
+      } catch (error) {
+        return new FailMessage(`Failed to retrieve value from db table ${this.tableName} using ${key} = ${value} with error ${error}`, 500);
+      }
+    }
+  }
+
+  async getAllOnIndex(index: string, transaction?: Transaction<Database>): Promise<E[] | Message> {
     if (transaction) {
       return new FailMessage("Transactions not supported yet", 500);
     } else {
@@ -108,7 +127,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  protected async getAllMatchingOnIndex(index: string, match: string, transaction?: Transaction<Database>): Promise<E[] | Message> {
+  async getAllMatchingOnIndex(index: string, match: string, transaction?: Transaction<Database>): Promise<E[] | Message> {
     if (transaction) {
       return new FailMessage("Transactions not supported yet", 500);
     } else {
@@ -125,7 +144,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  protected async update(key: K, entity: Partial<E>, transaction?: Transaction<Database>): Promise<Message> {
+  async update(key: K, entity: Partial<E>, transaction?: Transaction<Database>): Promise<Message> {
     if (transaction) {
       return new FailMessage("Transactions not supported yet", 500);
     } else {
@@ -142,7 +161,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  protected async delete(key: K, transaction?: Transaction<Database>): Promise<Message> {
+  async delete(key: K, transaction?: Transaction<Database>): Promise<Message> {
     if (transaction) {
       return new FailMessage("Transactions not supported yet", 500);
     } else {

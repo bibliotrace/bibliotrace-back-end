@@ -8,16 +8,13 @@ import { CoverImageRouteHandler } from "./handlers/CoverImageRouteHandler";
 import { UserAuthService } from "./services/UserAuthService";
 import DBConnectionManager from "./mysql/DBConnectionManager";
 
-class Config {
-  dependencies: ConfigTypes;
+export class Config {
+  static dependencies: ConfigTypes = {}
 
-  constructor() {
-    this.dependencies = {};
-  }
-
-  async setup(): Promise<ConfigTypes> {
-    DBConnectionManager.connect();
-
+  static async setup(): Promise<void> {
+    if (this.dependencies.searchRouteHandler != null) {
+      return; // Prevent re-initialization
+    }
 
     const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
     const ddbClientConfig = hasDynamoEndpoint
@@ -45,11 +42,7 @@ class Config {
     this.dependencies.userAuthService = new UserAuthService();
 
     console.log("Dependencies Instantiated");
-    return {
-      searchRouteHandler: this.dependencies.searchRouteHandler,
-      coverImageRouteHandler: this.dependencies.coverImageRouteHandler,
-      userAuthService: this.dependencies.userAuthService,
-    };
+    
   }
 }
 
@@ -59,5 +52,4 @@ export interface ConfigTypes {
   userAuthService?: UserAuthService;
 }
 
-export default new Config();
 

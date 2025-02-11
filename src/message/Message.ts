@@ -5,3 +5,7 @@ interface Message {
 }
 
 export default Message;
+
+export function isMessage(obj: any): obj is Message {
+  return obj && typeof obj.message() === "string";
+}

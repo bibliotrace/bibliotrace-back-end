@@ -2,23 +2,17 @@ import { Kysely, MysqlDialect, Transaction, TransactionBuilder } from "kysely";
 import Database from "../db/schema/Database";
 import DBConnectionManager from "./DBConnectionManager";
 
-class TransactionManager {
-  private _db: Kysely<Database>;
-  private connectionManager: typeof DBConnectionManager;
-  private dialect: MysqlDialect;
+export default class TransactionManager {
+  private static connectionManager = DBConnectionManager
+  private static dialect =  new MysqlDialect({
+    pool: this.connectionManager.pool,
+  });
+  private static _db = new Kysely<Database>({
+    dialect: this.dialect,
+  });
 
-  constructor() {
-    this.connectionManager = DBConnectionManager;
-    this.dialect = new MysqlDialect({
-      pool: this.connectionManager.pool,
-    });
 
-    this._db = new Kysely<Database>({
-      dialect: this.dialect,
-    });
-  }
-
-  public get db(): Kysely<Database> {
+  static get db(): Kysely<Database> {
     return this._db;
   }
 
@@ -43,4 +37,3 @@ class TransactionManager {
   }*/
 }
 
-export default new TransactionManager();
