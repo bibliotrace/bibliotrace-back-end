@@ -10,4 +10,4 @@ class InventoryDao extends Dao<Inventory, string> {
   }
 }
 
-export default new InventoryDao();
+export default new InventoryDao() as InventoryDao;

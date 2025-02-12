@@ -10,4 +10,4 @@ class SeriesDao extends Dao<Series, number> {
   }
 }
 
-export default new SeriesDao();
+export default new SeriesDao() as SeriesDao;

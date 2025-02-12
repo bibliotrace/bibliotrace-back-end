@@ -10,4 +10,4 @@ class CampusDao extends Dao<Campus, number> {
   }
 }
 
-export default new CampusDao();
+export default new CampusDao() as CampusDao;

@@ -10,4 +10,4 @@ class AudienceDao extends Dao<Audience, number> {
   }
 }
 
-export default new AudienceDao();
+export default new AudienceDao() as AudienceDao;

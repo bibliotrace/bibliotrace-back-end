@@ -10,4 +10,4 @@ class SuggestionDao extends Dao<Suggestion, string> {
   }
 }
 
-export default new SuggestionDao();
+export default new SuggestionDao() as SuggestionDao;

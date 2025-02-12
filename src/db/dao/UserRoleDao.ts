@@ -10,4 +10,4 @@ class UserRoleDao extends Dao<UserRole, number> {
   }
 }
 
-export default new UserRoleDao();
+export default new UserRoleDao() as UserRoleDao;

@@ -10,4 +10,4 @@ class AuditStateDao extends Dao<AuditState, number> {
   }
 }
 
-export default new AuditStateDao();
+export default new AuditStateDao() as AuditStateDao;

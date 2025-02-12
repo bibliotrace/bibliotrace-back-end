@@ -10,4 +10,4 @@ class GenresDao extends Dao<Genres, number> {
   }
 }
 
-export default new GenresDao();
+export default new GenresDao() as GenresDao;

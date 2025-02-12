@@ -10,4 +10,4 @@ class UserDao extends Dao<User, string> {
   }
 }
 
-export default new UserDao();
+export default new UserDao() as UserDao;

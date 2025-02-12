@@ -10,4 +10,4 @@ class CheckoutDao extends Dao<Checkout, string> {
   }
 }
 
-export default new CheckoutDao();
+export default new CheckoutDao() as CheckoutDao;

@@ -10,4 +10,4 @@ class TagDao extends Dao<Tag, number> {
   }
 }
 
-export default new TagDao();
+export default new TagDao() as TagDao;
