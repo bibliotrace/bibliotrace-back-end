@@ -1,26 +1,27 @@
-import IsbnService from "./services/IsbnService";
-import SearchRouteHandler from "./handlers/SearchRouteHandler";
+import IsbnService from "./service/IsbnService";
+import SearchRouteHandler from "./handler/SearchRouteHandler";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { createIsbnQueryCacheTable } from "./db/setup/DynamoDbTableCreate";
-import { DynamoDb } from "./db/interactors/DynamoDb";
-import { CoverImageRouteHandler } from "./handlers/CoverImageRouteHandler";
-import { UserAuthService } from "./services/UserAuthService";
+import { createIsbnQueryCacheTable } from "./db/schema/templates/DynamoDbTableCreate";
+import { DynamoDb } from "./db/dao/DynamoDb";
+import { CoverImageRouteHandler } from "./handler/CoverImageRouteHandler";
+import { UserAuthService } from "./service/UserAuthService";
 import DBConnectionManager from "./db/dbConnection/DBConnectionManager";
-import AudienceDao from "./db/interactors/AudienceDao";
-import AuditDao from "./db/interactors/AuditDao";
-import AuditStateDao from "./db/interactors/AuditStateDao";
-import BookDao from "./db/interactors/BookDao";
-import CampusDao from "./db/interactors/CampusDao";
-import CheckoutDao from "./db/interactors/CheckoutDao";
-import GenresDao from "./db/interactors/GenresDao";
-import GenreTypeDao from "./db/interactors/GenreTypeDao";
-import InventoryDao from "./db/interactors/InventoryDao";
-import SeriesDao from "./db/interactors/SeriesDao";
-import SuggestionDao from "./db/interactors/SuggestionDao";
-import TagDao from "./db/interactors/TagDao";
-import UserDao from "./db/interactors/UserDao";
-import UserRoleDao from "./db/interactors/UserRoleDao";
+import AudienceDao from "./db/dao/AudienceDao";
+import AuditDao from "./db/dao/AuditDao";
+import AuditStateDao from "./db/dao/AuditStateDao";
+import BookDao from "./db/dao/BookDao";
+import CampusDao from "./db/dao/CampusDao";
+import CheckoutDao from "./db/dao/CheckoutDao";
+import GenresDao from "./db/dao/GenresDao";
+import GenreTypeDao from "./db/dao/GenreTypeDao";
+import InventoryDao from "./db/dao/InventoryDao";
+import SeriesDao from "./db/dao/SeriesDao";
+import SuggestionDao from "./db/dao/SuggestionDao";
+import TagDao from "./db/dao/TagDao";
+import UserDao from "./db/dao/UserDao";
+import UserRoleDao from "./db/dao/UserRoleDao";
+import BookManagementService from "./service/BookManagementService";
 
 export class Config {
   static dependencies: ConfigTypes = {}
@@ -77,6 +78,7 @@ export class Config {
     this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.userAuthService = new UserAuthService(campusDao, userDao, userRoleDao);
+    this.dependencies.bookManagementService = new BookManagementService(audienceDao, bookDao, campusDao, checkoutDao, genreTypeDao, inventoryDao, seriesDao,)
 
     console.log("Dependencies Instantiated");
   }
@@ -86,6 +88,8 @@ export interface ConfigTypes {
   searchRouteHandler?: SearchRouteHandler
   coverImageRouteHandler?: CoverImageRouteHandler
   userAuthService?: UserAuthService
+  bookManagementService?: BookManagementService
 }
 
+export default new Config();
 

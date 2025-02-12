@@ -1,18 +1,18 @@
-import IsbnService from "../services/IsbnService";
-import { DynamoDb } from "../db/interactors/DynamoDb";
+import IsbnService from "../service/IsbnService";
+import { DynamoDb } from "../db/dao/DynamoDb";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
   dynamoDb: DynamoDb;
 
-  constructor(isbn: IsbnService, dynamoDb) {
+  constructor(isbn: IsbnService, dynamoDb: DynamoDb) {
     this.isbn = isbn;
     this.dynamoDb = dynamoDb;
   }
 
   async conductSearch(inputQuery: string): Promise<SearchResults> {
     // Extract from the inputQuery string the filters and the actual search query
-    const extractedObject = this.extractFilters(inputQuery);
+    const extractedObject: Filters = this.extractFilters(inputQuery);
     const extractedFilters = extractedObject.queryList; // TODO: Do something with this...
     console.log(extractedFilters);
     const extractedQuery = extractedObject.inputQuery;
@@ -42,8 +42,10 @@ export default class SearchRouteHandler {
     for (let i = 0; i < isbnResult.length; i++) {
       if (!bookSet.has(isbnResult[i])) {
         // Perhaps do this asynchronously to speed things up?
-        const metadata = await this.retreiveMetadata(isbnResult[i]);
-        if (metadata != null && metadata.id != null) {
+        const metadata = await this.retrieveMetadata(isbnResult[i]);
+        // this just checks if there is any metadata first as {} is a possible return type
+        // the cast is to make typescript happy
+        if (Object.keys(metadata).length !== 0 && (metadata as ResultRow).id != null) {
           result.push(metadata);
           bookSet.add(isbnResult[i]);
         }
@@ -53,7 +55,7 @@ export default class SearchRouteHandler {
     return { results: result };
   }
 
-  private async retreiveMetadata(isbn: string) {
+  private async retrieveMetadata(isbn: string): Promise<ResultRow | {}> {
     // TODO: Use MySQL for this. The Google Books API is dog slow for each of these queries
     const lookupURL = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
     const response = await fetch(lookupURL);
@@ -80,13 +82,19 @@ export default class SearchRouteHandler {
   }
 
   // Extraction schema is ||Key:Value||||Key:Value||{...}||Key:Value||Search%20Query
-  private extractFilters(inputQuery: string) {
+  private extractFilters(inputQuery: string): Filters {
     let queryIndexes = this.findIndexes(inputQuery);
     const queryList = [];
 
     while (queryIndexes != null) {
-      let queryKey = inputQuery.slice(queryIndexes.firstDelimiterIndex + 1, queryIndexes.seperatorIndex);
-      let queryValue = inputQuery.slice(queryIndexes.seperatorIndex + 1, queryIndexes.secondDelimiterIndex);
+      let queryKey = inputQuery.slice(
+        queryIndexes.firstDelimiterIndex + 1,
+        queryIndexes.separatorIndex
+      );
+      let queryValue = inputQuery.slice(
+        queryIndexes.separatorIndex + 1,
+        queryIndexes.secondDelimiterIndex
+      );
       queryList.push({ queryKey, queryValue });
 
       inputQuery = inputQuery.slice(queryIndexes.secondDelimiterIndex + 2, inputQuery.length);
@@ -99,7 +107,7 @@ export default class SearchRouteHandler {
   private findIndexes(inputString: string): any {
     let firstDelimiterIndex = -1;
     let secondDelimiterIndex = -1;
-    let seperatorIndex = -1;
+    let separatorIndex = -1;
 
     if (inputString.length < 5) {
       return undefined;
@@ -116,15 +124,15 @@ export default class SearchRouteHandler {
 
           i += 1;
         } else if (inputString[i] === ":") {
-          if (seperatorIndex === -1) {
-            seperatorIndex = i;
+          if (separatorIndex === -1) {
+            separatorIndex = i;
           }
         }
       }
     }
 
-    if (firstDelimiterIndex !== -1 && secondDelimiterIndex !== -1 && seperatorIndex !== -1) {
-      return { firstDelimiterIndex, seperatorIndex, secondDelimiterIndex };
+    if (firstDelimiterIndex !== -1 && secondDelimiterIndex !== -1 && separatorIndex !== -1) {
+      return { firstDelimiterIndex, separatorIndex: separatorIndex, secondDelimiterIndex };
     }
   }
 }
@@ -140,4 +148,9 @@ export interface ResultRow {
   genre: string | undefined;
   series: string | undefined;
   isbn: string | undefined;
+}
+
+export interface Filters {
+  queryList: { queryKey: string; queryValue: string }[];
+  inputQuery: string;
 }

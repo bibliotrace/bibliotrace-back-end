@@ -5,10 +5,8 @@ const searchRouter = express.Router();
 
 searchRouter.get("/:searchQuery", async (req, res) => {
   try {
-    console.log(
-      "Handling call to /search with query " + req.params.searchQuery
-    );
-    console.log(`Query Auth: ${await JSON.stringify(req.auth)}`);
+    console.log("Handling call to /search with query " + req.params.searchQuery);
+    console.log(`Query Auth: ${JSON.stringify(req.auth)}`);
     const results = await Config.dependencies.searchRouteHandler.conductSearch(
       req.params.searchQuery
     );
@@ -22,14 +20,13 @@ searchRouter.get("/:searchQuery", async (req, res) => {
 
 searchRouter.get("/cover/:isbn", async (req, res) => {
   try {
-    const { isbn } = req.params;
+    const { isbn } = req.params as { isbn: string };
     console.log("Handling call to /cover/" + isbn);
     console.log(`Query Auth: ${req.auth}`);
     if (isbn === "none") {
       res.status(200).send();
     } else {
-      const results =
-        await Config.dependencies.coverImageRouteHandler.relayImage(isbn);
+      const results = await Config.dependencies.coverImageRouteHandler.relayImage(isbn);
       res.send(results);
       console.log(`Call to /cover/${isbn} completed successfully.`);
     }
