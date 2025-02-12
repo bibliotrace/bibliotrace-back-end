@@ -10,7 +10,7 @@ export default class SearchRouteHandler {
     this.dynamoDb = dynamoDb;
   }
 
-  async conductSearch(inputQuery: string): Promise<SearchResults> {
+  async conductSearch(inputQuery: string): Promise<ResultRow[]> {
     // Extract from the inputQuery string the filters and the actual search query
     const extractedObject: Filters = this.extractFilters(inputQuery);
     const extractedFilters = extractedObject.queryList; // TODO: Do something with this...
@@ -52,7 +52,7 @@ export default class SearchRouteHandler {
       }
     }
 
-    return { results: result };
+    return result;
   }
 
   private async retrieveMetadata(isbn: string): Promise<ResultRow | {}> {
@@ -135,10 +135,6 @@ export default class SearchRouteHandler {
       return { firstDelimiterIndex, separatorIndex: separatorIndex, secondDelimiterIndex };
     }
   }
-}
-
-export interface SearchResults {
-  results: ResultRow[];
 }
 
 export interface ResultRow {

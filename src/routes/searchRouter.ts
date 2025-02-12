@@ -3,18 +3,18 @@ import { Config } from "../config";
 
 const searchRouter = express.Router();
 
-searchRouter.get("/:searchQuery", async (req, res) => {
+searchRouter.get("/query/:searchQuery", async (req, res) => {
   try {
     console.log("Handling call to /search with query " + req.params.searchQuery);
     console.log(`Query Auth: ${JSON.stringify(req.auth)}`);
     const results = await Config.dependencies.searchRouteHandler.conductSearch(
       req.params.searchQuery
     );
-    res.send(results);
+    res.send({ results });
     console.log("Call to /search complete");
-  } catch (e) {
-    console.log(e);
-    res.status(500).send(e);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error: error.message})
   }
 });
 
@@ -31,9 +31,21 @@ searchRouter.get("/cover/:isbn", async (req, res) => {
       console.log(`Call to /cover/${isbn} completed successfully.`);
     }
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send({ error: error.message})
     console.log("FAILURE: Call to /cover/:isbn failed for some reason");
   }
 });
+
+searchRouter.get("/genres", async (req, res) => {
+  try {
+    const genres = await Config.dependencies.genreRouteHandler.getGenres()
+
+    if (genres != null && genres.length > 0) {
+      res.send({ results: genres })
+    }
+  } catch (error) {
+    res.status(500).send({ error: error.message})
+  }
+})
 
 module.exports = { searchRouter };
