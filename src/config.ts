@@ -1,13 +1,13 @@
 import dotenv from "dotenv";
-import IsbnService from "./services/IsbnService";
-import SearchRouteHandler from "./handlers/SearchRouteHandler";
+import IsbnService from "./service/IsbnService";
+import SearchRouteHandler from "./handler/SearchRouteHandler";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { createIsbnQueryCacheTable } from "./db/setup/DynamoDbTableCreate";
-import { DynamoDb } from "./db/interactors/DynamoDb";
-import { CoverImageRouteHandler } from "./handlers/CoverImageRouteHandler";
-import { UserAuthService } from "./services/UserAuthService";
-import DBConnectionManager from "./mysql/DBConnectionManager";
+import { createIsbnQueryCacheTable } from "./db/dynamo/DynamoDbTableCreate";
+import { DynamoDb } from "./db/dao/DynamoDb";
+import { CoverImageRouteHandler } from "./handler/CoverImageRouteHandler";
+import { UserAuthService } from "./service/UserAuthService";
+import DBConnectionManager from "./db/mysql/DBConnectionManager";
 
 class Config {
   dependencies: ConfigTypes;
@@ -20,7 +20,6 @@ class Config {
     dotenv.config();
 
     DBConnectionManager.connect();
-
 
     const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
     const ddbClientConfig = hasDynamoEndpoint
@@ -63,4 +62,3 @@ export interface ConfigTypes {
 }
 
 export default new Config();
-

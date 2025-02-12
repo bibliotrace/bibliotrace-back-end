@@ -1,10 +1,11 @@
 import { Kysely, sql, Transaction } from "kysely";
-import TransactionManager from "../../mysql/TransactionManager";
+import TransactionManager from "../mysql/TransactionManager";
 import Database from "../schema/Database";
-import Message from "../../message/Message";
-import FailMessage from "../../message/FailMessage";
-import SuccessMessage from "../../message/SuccessMessage";
+import Response from "../../response/Response";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
+import SuccessResponse from "../../response/SuccessResponse";
 
+// TODO: more robust error messaging when database throws an error
 // E is the entity, K is the key
 abstract class Dao<E, K extends number | string> {
   protected transactionManager: typeof TransactionManager;
@@ -58,25 +59,25 @@ abstract class Dao<E, K extends number | string> {
         }
     }*/
 
-  protected async create(entity: E, transaction?: Transaction<Database>): Promise<Message> {
+  protected async create(entity: E, transaction?: Transaction<Database>): Promise<Response<undefined>> {
     if (transaction) {
-      return new FailMessage("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
       try {
         await this.db
           .insertInto(this.tableName as keyof Database)
           .values(entity)
           .execute();
-        return new SuccessMessage(`${this.capitalizeFirstLetter(this.entityName)} created successfully`);
+        return new SuccessResponse(`${this.capitalizeFirstLetter(this.entityName)} created successfully`);
       } catch (error) {
-        return new FailMessage(`Failed to create ${this.entityName} with error ${error}`, 500);
+        return new ServerErrorResponse(`Failed to create ${this.entityName} with error ${error}`, 500);
       }
     }
   }
 
-  protected async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<E | Message> {
+  protected async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
     if (transaction) {
-      return new FailMessage("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -84,16 +85,16 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(sql`${this.keyName}`, "=", key)
           .execute();
-        return result[0] as E;
+        return new SuccessResponse<E>(`${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`, result[0] as E);
       } catch (error) {
-        return new FailMessage(`Failed to retrieve ${this.entityName} with error ${error}`, 500);
+        return new ServerErrorResponse(`Failed to retrieve ${this.entityName} with error ${error}`, 500);
       }
     }
   }
 
-  protected async getAllOnIndex(index: string, transaction?: Transaction<Database>): Promise<E[] | Message> {
+  protected async getAllOnIndex(index: string, transaction?: Transaction<Database>): Promise<Response<E[]>> {
     if (transaction) {
-      return new FailMessage("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -101,16 +102,16 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(sql`${index}`, "=", true)
           .execute();
-        return result as E[];
+        return new SuccessResponse<E[]>(`${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`, result as E[]);
       } catch (error) {
-        return new FailMessage(`Failed to retrieve all ${this.entityName}s on ${index} with error ${error}`, 500);
+        return new ServerErrorResponse(`Failed to retrieve all ${this.entityName}s on ${index} with error ${error}`, 500);
       }
     }
   }
 
-  protected async getAllMatchingOnIndex(index: string, match: string, transaction?: Transaction<Database>): Promise<E[] | Message> {
+  protected async getAllMatchingOnIndex(index: string, match: string, transaction?: Transaction<Database>): Promise<Response<E[]>> {
     if (transaction) {
-      return new FailMessage("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -118,16 +119,16 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(sql`${index}`, "like", `%${match}%`)
           .execute();
-        return result as E[];
+        return new SuccessResponse<E[]>(`${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`, result as E[]);
       } catch (error) {
-        return new FailMessage(`Failed to get all ${this.entityName}s matching ${match} on ${index} with error ${error}`, 500);
+        return new ServerErrorResponse(`Failed to retrieve all ${this.entityName}s matching ${match} on ${index} with error ${error}`, 500);
       }
     }
   }
 
-  protected async update(key: K, entity: Partial<E>, transaction?: Transaction<Database>): Promise<Message> {
+  protected async update(key: K, entity: Partial<E>, transaction?: Transaction<Database>): Promise<Response<undefined>> {
     if (transaction) {
-      return new FailMessage("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
       try {
         await this.db
@@ -135,25 +136,25 @@ abstract class Dao<E, K extends number | string> {
           .set(entity)
           .where(sql`${this.keyName}`, "=", key)
           .execute();
-        return new SuccessMessage(`${this.capitalizeFirstLetter(this.entityName)} updated successfully`);
+        return new SuccessResponse(`${this.capitalizeFirstLetter(this.entityName)} updated successfully`);
       } catch (error) {
-        return new FailMessage(`Failed to update ${this.entityName} with error ${error}`, 500);
+        return new ServerErrorResponse(`Failed to update ${this.entityName} with error ${error}`, 500);
       }
     }
   }
 
-  protected async delete(key: K, transaction?: Transaction<Database>): Promise<Message> {
+  protected async delete(key: K, transaction?: Transaction<Database>): Promise<Response<undefined>> {
     if (transaction) {
-      return new FailMessage("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
       try {
         await this.db
           .deleteFrom(this.tableName as keyof Database)
           .where(sql`${this.keyName}`, "=", key)
           .execute();
-        return new SuccessMessage(`${this.capitalizeFirstLetter(this.entityName)} deleted successfully`);
+        return new SuccessResponse(`${this.capitalizeFirstLetter(this.entityName)} deleted successfully`);
       } catch (error) {
-        return new FailMessage(`Failed to delete ${this.entityName} with error ${error}`, 500);
+        return new ServerErrorResponse(`Failed to delete ${this.entityName} with error ${error}`, 500);
       }
     }
   }

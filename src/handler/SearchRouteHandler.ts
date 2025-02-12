@@ -1,5 +1,5 @@
-import IsbnService from "../services/IsbnService";
-import { DynamoDb } from "../db/interactors/DynamoDb";
+import IsbnService from "../service/IsbnService";
+import { DynamoDb } from "../db/dao/DynamoDb";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
