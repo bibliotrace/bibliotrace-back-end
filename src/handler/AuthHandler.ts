@@ -6,7 +6,7 @@ import argon2 from 'argon2'
 import CampusDao from '../db/dao/CampusDao';
 
 
-export class UserAuthService {
+export class AuthHandler {
   private readonly campusDao: CampusDao
   private readonly userDao: UserDao
   private readonly userRoleDao: UserRoleDao
@@ -20,7 +20,7 @@ export class UserAuthService {
   async login(username: string, password: string): Promise<string> {
     const userResult = await this.userDao.getByPrimaryKey(username)
 
-    if (userResult == null) {
+    if (userResult.object == null) {
       console.log('User Doesn\'t Exist!')
       return null
     }
@@ -116,22 +116,16 @@ export class UserAuthService {
 
   private async getCampusAndRoleIDs(campus: string, roleType: string) {
     // First match user role data to db schema
-    // const campusObject = await this.campusDao.getByKeyAndValue('name', campus)
-    // const userRole = await this.userRoleDao.getByKeyAndValue('name', roleType)
+    const campusObject = await this.campusDao.getByKeyAndValue('name', campus)
+    const userRole = await this.userRoleDao.getByKeyAndValue('name', roleType)
 
-    // if (campusObject == null || userRole == null || isMessage(campusObject) || isMessage(userRole)) {
-    //     throw new Error(`Problem Getting User Role or Campus ID: campusObject = ${JSON.stringify(campusObject)}, userRole = ${JSON.stringify(userRole)}`)
-    // } else {
-    //     return {
-    //         campusId: campusObject.id,
-    //         roleId: userRole.id
-    //     }
-    // }
-
-    // TODO: Fix me
-    return {
-      campusId: 1, 
-      roleId: 1
+    if (campusObject == null || userRole == null) {
+        throw new Error(`Problem Getting User Role or Campus ID: campusObject = ${JSON.stringify(campusObject)}, userRole = ${JSON.stringify(userRole)}`)
+    } else {
+        return {
+            campusId: campusObject.object.id,
+            roleId: userRole.object.id
+        }
     }
   }
 }

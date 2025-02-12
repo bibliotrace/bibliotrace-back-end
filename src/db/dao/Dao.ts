@@ -49,7 +49,8 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(this.keyName as any, "=", key)
           .execute();
-        return new SuccessResponse<E>(
+
+          return new SuccessResponse<E>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result[0] as E
         );
@@ -162,7 +163,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  private capitalizeFirstLetter(str: string): string {
+  capitalizeFirstLetter(str: string): string {
     if (str.length === 0) return str;
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
