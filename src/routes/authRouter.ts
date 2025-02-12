@@ -5,7 +5,7 @@ const authRouter = express.Router();
 
 authRouter.post("/login", async (req, res) => {
   if (req.body.username != null && req.body.password != null) {
-    const token = await Config.dependencies.userAuthService.login(
+    const token = await Config.dependencies.authHandler.login(
       req.body.username,
       req.body.password
     );
@@ -30,7 +30,7 @@ authRouter.put('/user', async (req, res) => {
     const campus = req.body.campus
 
     try {
-      await Config.dependencies.userAuthService.updateUser(username, password, { email, roleType, campus })
+      await Config.dependencies.authHandler.updateUser(username, password, { email, roleType, campus })
       res.send({ message: 'success' })
     } catch (error) {
       console.log(JSON.stringify(error))
@@ -38,7 +38,7 @@ authRouter.put('/user', async (req, res) => {
     }
 
   } else {
-    res.status(400).send({ message: 'Improper Caller RoleType'})
+    res.status(401).send({ message: 'Improper Caller RoleType'})
   }
 })
 
@@ -58,7 +58,7 @@ authRouter.post('/user', async (req, res) => {
       }
   
       try {
-        await Config.dependencies.userAuthService.createUser(userData.username, userData.password, userData.userRole)
+        await Config.dependencies.authHandler.createUser(userData.username, userData.password, userData.userRole)
         res.send({ message: 'success' })
       } catch (error) {
         console.log(JSON.stringify(error))
@@ -67,21 +67,21 @@ authRouter.post('/user', async (req, res) => {
   
     }
   } else {
-    res.status(400).send({ message: 'Improper Caller RoleType'})
+    res.status(401).send({ message: 'Improper Caller RoleType'})
   }
 })
 
 authRouter.delete('/user/:username', async (req, res) => {
   if (req.auth.userRole.roleType === 'Admin') { // I'm requiring the user token be an Admin  
     try {
-      await Config.dependencies.userAuthService.deleteUser(req.params?.username)
+      await Config.dependencies.authHandler.deleteUser(req.params?.username)
       res.send({ message: 'success' })
     } catch (error) {
       console.log(error)
       res.status(500).send({ message: 'Error occurred during user deletion', error: error.message })
     }  
   } else {
-    res.status(404).send({ message: 'Missing Username or Improper Caller RoleType'})
+    res.status(400).send({ message: 'Missing Username or Improper Caller RoleType'})
   }
 })
 

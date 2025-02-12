@@ -5,7 +5,7 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { createIsbnQueryCacheTable } from "./db/schema/templates/DynamoDbTableCreate";
 import { DynamoDb } from "./db/dao/DynamoDb";
 import { CoverImageRouteHandler } from "./handler/CoverImageRouteHandler";
-import { UserAuthService } from "./service/UserAuthService";
+import { AuthHandler } from "./handler/AuthHandler";
 import DBConnectionManager from "./db/dbConnection/DBConnectionManager";
 import AudienceDao from "./db/dao/AudienceDao";
 import AuditDao from "./db/dao/AuditDao";
@@ -77,7 +77,7 @@ export class Config {
     // Route Handlers
     this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
-    this.dependencies.userAuthService = new UserAuthService(campusDao, userDao, userRoleDao);
+    this.dependencies.authHandler = new AuthHandler(campusDao, userDao, userRoleDao);
     this.dependencies.bookManagementService = new BookManagementService(audienceDao, bookDao, campusDao, checkoutDao, genreTypeDao, inventoryDao, seriesDao,)
 
     console.log("Dependencies Instantiated");
@@ -87,7 +87,7 @@ export class Config {
 export interface ConfigTypes {
   searchRouteHandler?: SearchRouteHandler
   coverImageRouteHandler?: CoverImageRouteHandler
-  userAuthService?: UserAuthService
+  authHandler?: AuthHandler
   bookManagementService?: BookManagementService
 }
 

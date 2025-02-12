@@ -1,7 +1,6 @@
-import { createPool } from "mysql2";
+import { createPool, Pool } from "mysql2";
 import { Kysely, MysqlDialect } from "kysely";
 import Database from "../schema/Database";
-import { Pool } from "mysql2";
 
 export default class DBConnectionManager {
   private readonly pool: Pool
