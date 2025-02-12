@@ -1,13 +1,15 @@
+import { Kysely } from "kysely";
+import Database from "../schema/Database";
 import { Campus } from "../schema/Campus";
 import Dao from "./Dao";
 
 class CampusDao extends Dao<Campus, number> {
-  constructor() {
-    super();
-    this.tableName = "campuses";
+  constructor(db: Kysely<Database>) {
+    super(db);
+    this.tableName = "campus";
     this.keyName = "id";
     this.entityName = "campus";
   }
 }
 
-export default new CampusDao() as CampusDao;
+export default CampusDao;

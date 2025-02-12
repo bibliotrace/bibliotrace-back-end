@@ -8,21 +8,31 @@ import SeriesDao from "../db/dao/SeriesDao";
 import { Book } from "../db/schema/Book";
 import { Checkout } from "../db/schema/Checkout";
 import { Inventory } from "../db/schema/Inventory";
-import Response from "../response/Response";
-import RequestErrorResponse from "../response/RequestErrorResponse";
-import ServerErrorResponse from "../response/ServerErrorResponse";
-import SuccessResponse from "../response/SuccessResponse";
+import Response from "../db/response/Response";
+import RequestErrorResponse from "../db/response/RequestErrorResponse";
+import ServerErrorResponse from "../db/response/ServerErrorResponse";
+import SuccessResponse from "../db/response/SuccessResponse";
 
 const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
 export default class BookManagementService {
-  private bookDao = BookDao;
-  private inventoryDao = InventoryDao;
-  private genreTypeDao = GenreTypeDao;
-  private audienceDao = AudienceDao;
-  private seriesDao = SeriesDao;
-  private campusDao = CampusDao;
-  private checkoutDao = CheckoutDao;
+  private audienceDao: AudienceDao;
+  private bookDao: BookDao
+  private campusDao: CampusDao;
+  private checkoutDao: CheckoutDao;
+  private genreTypeDao: GenreTypeDao;
+  private inventoryDao: InventoryDao;
+  private seriesDao: SeriesDao;
+
+  constructor(audienceDao: AudienceDao, bookDao: BookDao, campusDao: CampusDao, checkoutDao: CheckoutDao, genreTypeDao: GenreTypeDao, inventoryDao: InventoryDao, seriesDao: SeriesDao) {
+    this.audienceDao = audienceDao;
+    this.bookDao = bookDao;
+    this.campusDao = campusDao;
+    this.checkoutDao = checkoutDao;
+    this.genreTypeDao = genreTypeDao;
+    this.inventoryDao = inventoryDao;
+    this.seriesDao = seriesDao;
+  } 
 
   public async getByIsbn(isbn: string): Promise<Response<Book>> {
     return this.bookDao.getBookByIsbn(isbn);

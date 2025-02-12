@@ -1,6 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
-import Config from "./config";
+import { Config } from "./config";
 import { expressjwt, ExpressJwtRequest } from "express-jwt";
 
 const { authRouter } = require("./routes/authRouter.js");
@@ -11,12 +14,8 @@ const { reportsRouter } = require("./routes/reportsRouter");
 
 const server = express();
 const localPort = 8080;
-// const deps = new Config();
-let depsObject;
 
-Config.setup().then((result) => {
-  depsObject = result;
-});
+Config.setup()
 
 if (process.env.FRONT_END_ORIGIN) {
   server.use(cors({ origin: process.env.FRONT_END_ORIGIN })); //TODO: set this as our production front-end url when we do deployment
@@ -28,14 +27,13 @@ server.use(express.json());
 
 server.use(
   expressjwt({
-    secret: "hello",
-    // secret: process.env.AUTH_KEY,
+    secret: process.env.AUTH_KEY ?? 'hello world!',
     algorithms: ["HS256"],
     onExpired: async (req, err) => {
       console.log("EXPIREDDDD");
       throw err;
     },
-  }).unless({ path: ["/login"] })
+  }).unless({ path: ["/api/auth/login"] })
 );
 
 const apiRouter = express.Router();

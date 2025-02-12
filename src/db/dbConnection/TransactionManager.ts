@@ -9,13 +9,7 @@ class TransactionManager {
 
   constructor() {
     this.connectionManager = DBConnectionManager;
-    this.dialect = new MysqlDialect({
-      pool: this.connectionManager.pool,
-    });
-
-    this._db = new Kysely<Database>({
-      dialect: this.dialect,
-    });
+    
   }
 
   public get db(): Kysely<Database> {

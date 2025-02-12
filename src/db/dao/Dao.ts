@@ -1,63 +1,19 @@
 import { Kysely, sql, Transaction } from "kysely";
-import TransactionManager from "../mysql/TransactionManager";
 import Database from "../schema/Database";
-import Response from "../../response/Response";
-import ServerErrorResponse from "../../response/ServerErrorResponse";
-import SuccessResponse from "../../response/SuccessResponse";
+import Response from '../response/Response';
+import ServerErrorResponse from "../response/ServerErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
 
-// TODO: more robust error messaging when database throws an error
 // E is the entity, K is the key
 abstract class Dao<E, K extends number | string> {
-  protected transactionManager: typeof TransactionManager;
-  private _db: Kysely<Database>;
-  private _tableName: string;
-  private _keyName: string;
-  private _entityName: string;
+  tableName: string;
+  keyName: string;
+  entityName: string;
+  db: Kysely<Database>;
 
-  constructor() {
-    this.transactionManager = TransactionManager;
-    this._db = this.transactionManager.db;
+  constructor(db: Kysely<Database>) {
+    this.db = db;
   }
-
-  protected set tableName(tableName: string) {
-    this._tableName = tableName;
-  }
-
-  protected get tableName(): string {
-    return this._tableName;
-  }
-
-  protected get db(): Kysely<Database> {
-    return this._db;
-  }
-
-  protected set keyName(keyName: string) {
-    this._keyName = keyName;
-  }
-
-  protected get keyName(): string {
-    return this._keyName;
-  }
-
-  protected set entityName(entityName: string) {
-    this._entityName = entityName;
-  }
-
-  protected get entityName(): string {
-    return this._entityName;
-  }
-
-  // TODO: make this function work
-  /* protected async runQueryInTransaction<V>(
-        transaction: Transaction<Database> | null,
-        query: (trx: Transaction<Database> | Kysely<Database> ) => Promise<T>
-    ): Promise<V> {
-        if (transaction) {
-            return query(transaction);
-        } else {
-            return this.transactionManager.runTransaction(query);
-        }
-    }*/
 
   public async create(
     entity: E,
@@ -91,7 +47,7 @@ abstract class Dao<E, K extends number | string> {
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
-          .where(sql`${this.keyName}`, "=", key)
+          .where(this.keyName as any, "=", key)
           .execute();
         return new SuccessResponse<E>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
@@ -117,7 +73,7 @@ abstract class Dao<E, K extends number | string> {
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
-          .where(sql`${index}`, "=", true)
+          .where(index as any, "=", true)
           .execute();
         return new SuccessResponse<E[]>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
@@ -144,7 +100,7 @@ abstract class Dao<E, K extends number | string> {
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
-          .where(sql`${index}`, "like", `%${match}%`)
+          .where(index as any, "like", `%${match}%`)
           .execute();
         return new SuccessResponse<E[]>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
@@ -171,7 +127,7 @@ abstract class Dao<E, K extends number | string> {
         await this.db
           .updateTable(this.tableName as keyof Database)
           .set(entity)
-          .where(sql`${this.keyName}`, "=", key)
+          .where(this.keyName as any, "=", key)
           .execute();
         return new SuccessResponse(
           `${this.capitalizeFirstLetter(this.entityName)} updated successfully`
@@ -192,7 +148,7 @@ abstract class Dao<E, K extends number | string> {
       try {
         await this.db
           .deleteFrom(this.tableName as keyof Database)
-          .where(sql`${this.keyName}`, "=", key)
+          .where(this.keyName as any, "=", key)
           .execute();
         return new SuccessResponse(
           `${this.capitalizeFirstLetter(this.entityName)} deleted successfully`

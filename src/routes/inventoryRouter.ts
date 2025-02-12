@@ -1,14 +1,13 @@
 import express from "express";
 import { Book } from "../db/schema/Book";
-import Response from "../response/Response";
-import BookManagementService from "../service/BookManagementService";
+import Response from "../db/response/Response";
+import { Config } from '../config'
 import { Inventory } from "../db/schema/Inventory";
 
 const inventoryRouter = express.Router();
-let bookManagementService: BookManagementService = new BookManagementService();
 
 inventoryRouter.put("/insert", async (req, res) => {
-  const response: Response<Book | Inventory> = await bookManagementService.insertBook(
+  const response: Response<Book | Inventory> = await Config.dependencies.bookManagementService.insertBook(
     req
   );
   sendResponse(res, response);
@@ -17,7 +16,7 @@ inventoryRouter.put("/insert", async (req, res) => {
 inventoryRouter.get("/get/:isbn", async (req, res) => {
   const isbn = req.params.isbn;
   console.log(`ISBN: ${isbn}`);
-  const response: Response<Book> = await bookManagementService.getByIsbn(isbn);
+  const response: Response<Book> = await Config.dependencies.bookManagementService.getByIsbn(isbn);
   sendResponse(res, response);
 });
 

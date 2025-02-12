@@ -67,10 +67,7 @@ export default class SearchRouteHandler {
         id: bookObj.selfLink,
         isbn,
         title: bookObj.volumeInfo.title ?? "Unknown",
-        author:
-          bookObj.volumeInfo.authors != null && bookObj.volumeInfo.authors.length > 0
-            ? bookObj.volumeInfo.authors[0]
-            : "Unknown",
+        author: bookObj.volumeInfo.authors != null && bookObj.volumeInfo.authors.length > 0 ? bookObj.volumeInfo.authors[0] : "Unknown",
         genre: bookObj.volumeInfo.categories ?? ["Unknown"],
         series: "N/A",
       };
