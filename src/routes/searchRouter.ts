@@ -38,7 +38,19 @@ searchRouter.get("/cover/:isbn", async (req, res) => {
 
 searchRouter.get("/genres", async (req, res) => {
   try {
-    const genres = await Config.dependencies.genreRouteHandler.getGenres()
+    const genres = await Config.dependencies.filterTypeRoutesHandler.getGenres()
+
+    if (genres != null && genres.length > 0) {
+      res.send({ results: genres })
+    }
+  } catch (error) {
+    res.status(500).send({ error: error.message})
+  }
+})
+
+searchRouter.get("/audiences", async (req, res) => {
+  try {
+    const genres = await Config.dependencies.filterTypeRoutesHandler.getAudiences()
 
     if (genres != null && genres.length > 0) {
       res.send({ results: genres })

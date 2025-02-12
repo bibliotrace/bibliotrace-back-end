@@ -22,7 +22,7 @@ import TagDao from "./db/dao/TagDao";
 import UserDao from "./db/dao/UserDao";
 import UserRoleDao from "./db/dao/UserRoleDao";
 import BookManagementService from "./service/BookManagementService";
-import GenreRouteHandler from "./handler/GenreRouteHandler";
+import FilterTypeRoutesHandler from "./handler/FilterTypeRoutesHandler";
 
 export class Config {
   static dependencies: ConfigTypes = {}
@@ -79,7 +79,7 @@ export class Config {
     this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.authHandler = new AuthHandler(campusDao, userDao, userRoleDao);
-    this.dependencies.genreRouteHandler = new GenreRouteHandler(genreTypeDao)
+    this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(audienceDao, genreTypeDao)
     this.dependencies.bookManagementService = new BookManagementService(audienceDao, bookDao, campusDao, checkoutDao, genreTypeDao, inventoryDao, seriesDao,)
 
     console.log("Dependencies Instantiated");
@@ -90,7 +90,7 @@ export interface ConfigTypes {
   searchRouteHandler?: SearchRouteHandler
   coverImageRouteHandler?: CoverImageRouteHandler
   authHandler?: AuthHandler
-  genreRouteHandler?: GenreRouteHandler
+  filterTypeRoutesHandler?: FilterTypeRoutesHandler
   bookManagementService?: BookManagementService
 }
 
