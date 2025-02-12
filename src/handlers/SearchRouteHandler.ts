@@ -66,7 +66,7 @@ export default class SearchRouteHandler {
         isbn,
         title: bookObj.volumeInfo.title ?? "Unknown",
         author: bookObj.volumeInfo.authors != null && bookObj.volumeInfo.authors.length > 0 ? bookObj.volumeInfo.authors[0] : "Unknown",
-        genre: bookObj.volumeInfo.categories ?? ["unkonwn"],
+        genre: bookObj.volumeInfo.categories ?? ["Unknown"],
         series: "N/A",
       };
     } else {
