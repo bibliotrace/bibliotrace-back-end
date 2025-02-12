@@ -38,7 +38,7 @@ authRouter.put('/user', async (req, res) => {
     }
 
   } else {
-    res.status(400).send({ message: 'Improper Caller RoleType'})
+    res.status(401).send({ message: 'Improper Caller RoleType'})
   }
 })
 
@@ -67,7 +67,7 @@ authRouter.post('/user', async (req, res) => {
   
     }
   } else {
-    res.status(400).send({ message: 'Improper Caller RoleType'})
+    res.status(401).send({ message: 'Improper Caller RoleType'})
   }
 })
 
@@ -81,7 +81,7 @@ authRouter.delete('/user/:username', async (req, res) => {
       res.status(500).send({ message: 'Error occurred during user deletion', error: error.message })
     }  
   } else {
-    res.status(404).send({ message: 'Missing Username or Improper Caller RoleType'})
+    res.status(400).send({ message: 'Missing Username or Improper Caller RoleType'})
   }
 })
 

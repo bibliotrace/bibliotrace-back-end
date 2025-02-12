@@ -5,7 +5,6 @@ import { User } from '../db/schema/User'
 import argon2 from 'argon2'
 import CampusDao from '../db/dao/CampusDao';
 
-
 export class AuthHandler {
   private readonly campusDao: CampusDao
   private readonly userDao: UserDao
@@ -27,7 +26,7 @@ export class AuthHandler {
 
     const realHash = await argon2.verify(userResult.object.password_hash, password)
     if (realHash) {
-      const role = await this.getUserRole(username, userResult.object)
+      const role = await this.getUserRole(userResult.object)
       return await this.buildJWT(role)
     } else {
       console.log('Password Is Wrong')
@@ -37,7 +36,14 @@ export class AuthHandler {
 
   async createUser(username: string, password: string, role: UserJWTData) {
     // First grab id's
-    const { campusId, roleId } = await this.getCampusAndRoleIDs(role.campus, role.roleType)
+    const campusId = await this.getIdFromName(role.campus, this.campusDao)
+    const roleId = await this.getIdFromName(role.roleType, this.userRoleDao)
+
+    // Next grab whether there's another user with the username provided
+    const userResponse = await this.userDao.getByPrimaryKey(username)
+    if (userResponse.object != null) {
+        throw new Error(`User with the username ${username} already exists!`)
+    }
 
     // Then make and send off the new user object
     const newUserObject = {
@@ -55,16 +61,26 @@ export class AuthHandler {
     // First look up the user, make sure they exist
     const userObject = await this.userDao.getByPrimaryKey(username)
 
+    if (userObject.object == null) {
+        throw new Error(`User with the Username ${username} doesn't exist! Use the PUT call to create a new user`)
+    }
+
     // Next grab id's
-    const { campusId, roleId } = await this.getCampusAndRoleIDs(role.campus, role.roleType)
+    let campusId, roleId
+    if (role.campus != null) {
+        campusId = await this.getIdFromName(role.campus, this.campusDao)
+    }
+    if (role.roleType != null) {
+        roleId = await this.getIdFromName(role.roleType, this.userRoleDao)
+    }
 
     // Next populate everything with the latest information
     const newUserObject = {
       username,
       password_hash: (password == null) ? userObject.object.password_hash : await this.hashPassword(password),
-      role_id: roleId,
-      email: role.email,
-      campus_id: campusId
+      role_id: roleId ?? userObject.object.role_id,
+      email: role.email ?? userObject.object.email,
+      campus_id: campusId ?? userObject.object.campus_id
     }
 
     await this.userDao.update(username, newUserObject)
@@ -74,7 +90,7 @@ export class AuthHandler {
     // First look up the user, make sure they exist
     const userObject = await this.userDao.getByPrimaryKey(username)
 
-    if (userObject == null) {
+    if (userObject.object == null) {
       throw new Error('User Not Found')
     }
 
@@ -92,7 +108,7 @@ export class AuthHandler {
     return token
   }
 
-  private async getUserRole(username: string, userData: User): Promise<UserJWTData> {
+  private async getUserRole(userData: User): Promise<UserJWTData> {
     const campus = await this.campusDao.getByPrimaryKey(userData.campus_id)
     const roleType = await this.userRoleDao.getByPrimaryKey(userData.role_id)
     const email = userData.email
@@ -114,18 +130,13 @@ export class AuthHandler {
     }
   }
 
-  private async getCampusAndRoleIDs(campus: string, roleType: string) {
-    // First match user role data to db schema
-    const campusObject = await this.campusDao.getByKeyAndValue('name', campus)
-    const userRole = await this.userRoleDao.getByKeyAndValue('name', roleType)
+  private async getIdFromName(name: string, dao: any) {
+    const resultObject = await dao.getByKeyAndValue('name', name)
 
-    if (campusObject == null || userRole == null) {
-        throw new Error(`Problem Getting User Role or Campus ID: campusObject = ${JSON.stringify(campusObject)}, userRole = ${JSON.stringify(userRole)}`)
+    if (resultObject.object == null) {
+        throw new Error(`Problem Getting ID For the attribute ${name}`)
     } else {
-        return {
-            campusId: campusObject.object.id,
-            roleId: userRole.object.id
-        }
+        return resultObject.object.id
     }
   }
 }
