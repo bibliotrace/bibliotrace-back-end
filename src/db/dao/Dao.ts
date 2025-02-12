@@ -32,7 +32,7 @@ abstract class Dao<E, K extends number | string> {
         );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to create ${this.entityName} with error ${error}`,
+          `Failed to create ${this.entityName} with error ${error.message}`,
           500
         );
       }
@@ -56,7 +56,7 @@ abstract class Dao<E, K extends number | string> {
         );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to retrieve ${this.entityName} with error ${error}`,
+          `Failed to retrieve ${this.entityName} with error ${error.message}`,
           500
         );
       }
@@ -82,7 +82,7 @@ abstract class Dao<E, K extends number | string> {
         );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to retrieve all ${this.entityName}s on ${index} with error ${error}`,
+          `Failed to retrieve all ${this.entityName}s on ${index} with error ${error.message}`,
           500
         );
       }
@@ -109,9 +109,31 @@ abstract class Dao<E, K extends number | string> {
         );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to retrieve all ${this.entityName}s matching ${match} on ${index} with error ${error}`,
+          `Failed to retrieve all ${this.entityName}s matching ${match} on ${index} with error ${error.message}`,
           500
         );
+      }
+    }
+  }
+
+  public async getAll(transaction?: Transaction<Database>) {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500)
+    } else {
+      try {
+        const result = await this.db 
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .execute()
+        
+        return new SuccessResponse<E[]>(
+          `All rows from the ${this.capitalizeFirstLetter(this.tableName)} table retrieved successfully`,
+          result as E[]
+        )
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve all data from the ${this.capitalizeFirstLetter(this.tableName)} table with error ${error.message}`
+        )
       }
     }
   }
@@ -135,7 +157,7 @@ abstract class Dao<E, K extends number | string> {
         );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to update ${this.entityName} with error ${error}`,
+          `Failed to update ${this.entityName} with error ${error.message}`,
           500
         );
       }
@@ -156,7 +178,7 @@ abstract class Dao<E, K extends number | string> {
         );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to delete ${this.entityName} with error ${error}`,
+          `Failed to delete ${this.entityName} with error ${error.message}`,
           500
         );
       }
