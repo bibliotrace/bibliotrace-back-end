@@ -2,7 +2,7 @@ import IsbnService from "./service/IsbnService";
 import SearchRouteHandler from "./handler/SearchRouteHandler";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { createIsbnQueryCacheTable } from "./db/dbConnection/DynamoDbTableCreate";
+import { createIsbnQueryCacheTable } from "./db/schema/templates/DynamoDbTableCreate";
 import { DynamoDb } from "./db/dao/DynamoDb";
 import { CoverImageRouteHandler } from "./handler/CoverImageRouteHandler";
 import { UserAuthService } from "./service/UserAuthService";
