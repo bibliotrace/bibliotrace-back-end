@@ -17,12 +17,12 @@ abstract class Response<T> {
     this._message = message;
   }
 
-  get errorCode(): number {
+  get statusCode(): number {
     return this._statusCode;
   }
 
-  set errorCode(errorCode: number) {
-    this._statusCode = errorCode;
+  set statusCode(statusCode: number) {
+    this._statusCode = statusCode;
   }
 
   get object(): T {

@@ -59,7 +59,10 @@ abstract class Dao<E, K extends number | string> {
         }
     }*/
 
-  protected async create(entity: E, transaction?: Transaction<Database>): Promise<Response<undefined>> {
+  public async create(
+    entity: E,
+    transaction?: Transaction<Database>
+  ): Promise<Response<undefined>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -68,14 +71,19 @@ abstract class Dao<E, K extends number | string> {
           .insertInto(this.tableName as keyof Database)
           .values(entity)
           .execute();
-        return new SuccessResponse(`${this.capitalizeFirstLetter(this.entityName)} created successfully`);
+        return new SuccessResponse(
+          `${this.capitalizeFirstLetter(this.entityName)} created successfully`
+        );
       } catch (error) {
-        return new ServerErrorResponse(`Failed to create ${this.entityName} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to create ${this.entityName} with error ${error}`,
+          500
+        );
       }
     }
   }
 
-  protected async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
+  public async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -85,14 +93,23 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(sql`${this.keyName}`, "=", key)
           .execute();
-        return new SuccessResponse<E>(`${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`, result[0] as E);
+        return new SuccessResponse<E>(
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          result[0] as E
+        );
       } catch (error) {
-        return new ServerErrorResponse(`Failed to retrieve ${this.entityName} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to retrieve ${this.entityName} with error ${error}`,
+          500
+        );
       }
     }
   }
 
-  protected async getAllOnIndex(index: string, transaction?: Transaction<Database>): Promise<Response<E[]>> {
+  public async getAllOnIndex(
+    index: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<E[]>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -102,14 +119,24 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(sql`${index}`, "=", true)
           .execute();
-        return new SuccessResponse<E[]>(`${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`, result as E[]);
+        return new SuccessResponse<E[]>(
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          result as E[]
+        );
       } catch (error) {
-        return new ServerErrorResponse(`Failed to retrieve all ${this.entityName}s on ${index} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to retrieve all ${this.entityName}s on ${index} with error ${error}`,
+          500
+        );
       }
     }
   }
 
-  protected async getAllMatchingOnIndex(index: string, match: string, transaction?: Transaction<Database>): Promise<Response<E[]>> {
+  public async getAllMatchingOnIndex(
+    index: string,
+    match: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<E[]>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -119,14 +146,24 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(sql`${index}`, "like", `%${match}%`)
           .execute();
-        return new SuccessResponse<E[]>(`${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`, result as E[]);
+        return new SuccessResponse<E[]>(
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          result as E[]
+        );
       } catch (error) {
-        return new ServerErrorResponse(`Failed to retrieve all ${this.entityName}s matching ${match} on ${index} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to retrieve all ${this.entityName}s matching ${match} on ${index} with error ${error}`,
+          500
+        );
       }
     }
   }
 
-  protected async update(key: K, entity: Partial<E>, transaction?: Transaction<Database>): Promise<Response<undefined>> {
+  public async update(
+    key: K,
+    entity: Partial<E>,
+    transaction?: Transaction<Database>
+  ): Promise<Response<undefined>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -136,14 +173,19 @@ abstract class Dao<E, K extends number | string> {
           .set(entity)
           .where(sql`${this.keyName}`, "=", key)
           .execute();
-        return new SuccessResponse(`${this.capitalizeFirstLetter(this.entityName)} updated successfully`);
+        return new SuccessResponse(
+          `${this.capitalizeFirstLetter(this.entityName)} updated successfully`
+        );
       } catch (error) {
-        return new ServerErrorResponse(`Failed to update ${this.entityName} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to update ${this.entityName} with error ${error}`,
+          500
+        );
       }
     }
   }
 
-  protected async delete(key: K, transaction?: Transaction<Database>): Promise<Response<undefined>> {
+  public async delete(key: K, transaction?: Transaction<Database>): Promise<Response<undefined>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -152,9 +194,14 @@ abstract class Dao<E, K extends number | string> {
           .deleteFrom(this.tableName as keyof Database)
           .where(sql`${this.keyName}`, "=", key)
           .execute();
-        return new SuccessResponse(`${this.capitalizeFirstLetter(this.entityName)} deleted successfully`);
+        return new SuccessResponse(
+          `${this.capitalizeFirstLetter(this.entityName)} deleted successfully`
+        );
       } catch (error) {
-        return new ServerErrorResponse(`Failed to delete ${this.entityName} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to delete ${this.entityName} with error ${error}`,
+          500
+        );
       }
     }
   }

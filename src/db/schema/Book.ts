@@ -1,5 +1,5 @@
 interface Book {
-  id: number;
+  id?: number;
   name: string;
   isbn_list?: string | null;
   author: string;
