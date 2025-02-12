@@ -10,7 +10,7 @@ class FailMessage implements Message {
   }
 
   get message(): string {
-    return this.message;
+    return this._message;
   }
 
   set message(message: string) {

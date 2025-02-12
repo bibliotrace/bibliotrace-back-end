@@ -3,32 +3,36 @@ import UserDao from '../db/interactors/UserDao'
 import UserRoleDao from '../db/interactors/UserRoleDao'
 import { User } from '../db/schema/User'
 import argon2 from 'argon2'
-import Message, { isMessage } from '../message/Message';
+import { isMessage } from '../message/Message';
 import CampusDao from '../db/interactors/CampusDao';
 
 
 export class UserAuthService {
+    private readonly campusDao: CampusDao
+    private readonly userDao: UserDao
+    private readonly userRoleDao: UserRoleDao
 
-    constructor() {
+    constructor(campusDao, userDao, userRoleDao) {
+        this.campusDao = campusDao
+        this.userDao = userDao
+        this.userRoleDao = userRoleDao
     }
 
     async login (username: string, password: string): Promise<string> {
-        console.log('made it here!')
-
-        const userResult = await UserDao.getByPrimaryKey(username)
-
-        console.log(userResult)
+        const userResult = await this.userDao.getByPrimaryKey(username)
 
         if (userResult == null || isMessage(userResult)) {
-            throw new Error('User Doesn\'t Exist!')
+            console.log('User Doesn\'t Exist!')
+            return null
         }
 
-        const realHash = await this.verifyPassword(password, userResult.password_hash)
+        const realHash = await argon2.verify(userResult.password_hash, password)
         if (realHash) {
             const role = await this.getUserRole(username, userResult)
             return await this.buildJWT(role)
         } else {
-            throw new Error('Password Is Wrong')
+            console.log('Password Is Wrong')
+            return null
         }
     }
 
@@ -45,12 +49,12 @@ export class UserAuthService {
             campus_id: campusId
         }
         
-        await UserDao.create(newUserObject)
+        await this.userDao.create(newUserObject)
     }
 
     async updateUser (username: string, password: string, role: UserJWTData) {
         // First look up the user, make sure they exist
-        const userObject = await UserDao.getByPrimaryKey(username)
+        const userObject = await this.userDao.getByPrimaryKey(username)
 
         if (isMessage(userObject)) {
             console.log(JSON.stringify(userObject))
@@ -69,19 +73,23 @@ export class UserAuthService {
             campus_id: campusId
         }
 
-        await UserDao.update(username, newUserObject)
+        await this.userDao.update(username, newUserObject)
     }
 
     async deleteUser (username: string) {
         // First look up the user, make sure they exist
-        const userObject = await UserDao.getByPrimaryKey(username)
+        const userObject = await this.userDao.getByPrimaryKey(username)
 
         if (isMessage(userObject)) {
             console.log(JSON.stringify(userObject))
             throw new Error('In DeleteUser: Received a message instead of a user object')
         }
 
-        await UserDao.delete(username)
+        if (userObject == null) {
+            throw new Error('User Not Found')
+        }
+
+        await this.userDao.delete(username)
     }
 
     private async buildJWT (userRole: UserJWTData) {
@@ -96,15 +104,15 @@ export class UserAuthService {
     }
 
     private async getUserRole (username: string, userData: User): Promise<UserJWTData> {
-        const campus = await CampusDao.getByPrimaryKey(userData.campus_id)
-        const roleType = await UserRoleDao.getByPrimaryKey(userData.role_id)
+        const campus = await this.campusDao.getByPrimaryKey(userData.campus_id)
+        const roleType = await this.userRoleDao.getByPrimaryKey(userData.role_id)
         const email = userData.email
 
         if (isMessage(roleType) || isMessage(campus)) {
             throw new Error('Role Type or Campus Mismatch, Message was returned')
         }
 
-        return { campus: campus.name, roleType: roleType.role, email }
+        return { campus: campus.name, roleType: roleType.name, email }
     }
 
     private async hashPassword(password: string): Promise<string> {
@@ -121,19 +129,13 @@ export class UserAuthService {
         }
     }
 
-    private async verifyPassword(password: string, dbHash: string): Promise<boolean> {
-        return await argon2.verify(dbHash, password)
-    }
-
     private async getCampusAndRoleIDs (campus: string, roleType: string) {
         // First match user role data to db schema
-        const campusObject = await CampusDao.getByKeyAndValue('name', campus)
-        const userRole = await UserRoleDao.getByKeyAndValue('role', roleType)
+        const campusObject = await this.campusDao.getByKeyAndValue('name', campus)
+        const userRole = await this.userRoleDao.getByKeyAndValue('name', roleType)
 
-        if (isMessage(campusObject) || isMessage(userRole)) {
-            console.log(JSON.stringify(campus))
-            console.log(JSON.stringify(userRole))
-            throw new Error('Problem Getting User Role or Campus ID')
+        if (campusObject == null || userRole == null || isMessage(campusObject) || isMessage(userRole)) {
+            throw new Error(`Problem Getting User Role or Campus ID: campusObject = ${JSON.stringify(campusObject)}, userRole = ${JSON.stringify(userRole)}`)
         } else {
             return {
                 campusId: campusObject.id,
