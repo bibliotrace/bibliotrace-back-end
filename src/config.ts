@@ -45,20 +45,23 @@ export class Config {
         }
       : {};
     const dynamoClient = new DynamoDBClient(ddbClientConfig);
-    const documentClient = DynamoDBDocumentClient.from(dynamoClient);
-    await createIsbnQueryCacheTable(documentClient);
+    const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+    if (process.env.NODE_ENV === 'local') {
+      await createIsbnQueryCacheTable(documentClient);
+    }
     const dynamoDb = new DynamoDb(documentClient);
 
     // Service Class Dependencies
     const isbnService = new IsbnService();
     
     // Database Access Class Dependencies
-    const host = process.env.DB_HOST ?? "localhost"
-    const user = process.env.DB_USER ?? "admin"
-    const password = process.env.DB_PASSWORD ?? "Bibl!otrace_2025"
-    const database = process.env.DB_TARGET_NAME ?? "bibliotrace_v3"
-    const dbConnectionManager = new DBConnectionManager(host, user, password, database)
+    const dbConnectionManager = new DBConnectionManager()
     dbConnectionManager.testConnection()
+
+    if (process.env.NODE_ENV === 'local') {
+      await dbConnectionManager.runCreateSQL()
+      await dbConnectionManager.runAddDummyData()
+    }
     
     const audienceDao = new AudienceDao(dbConnectionManager.kyselyDB)
     const auditDao = new AuditDao(dbConnectionManager.kyselyDB)
@@ -73,7 +76,7 @@ export class Config {
     const suggestionDao = new SuggestionDao(dbConnectionManager.kyselyDB)
     const tagDao = new TagDao(dbConnectionManager.kyselyDB)
     const userDao = new UserDao(dbConnectionManager.kyselyDB)
-    const userRoleDao = new UserRoleDao(dbConnectionManager.kyselyDB)    
+    const userRoleDao = new UserRoleDao(dbConnectionManager.kyselyDB)   
 
     // Route Handlers
     this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
