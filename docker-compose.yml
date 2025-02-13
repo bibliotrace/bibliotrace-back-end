@@ -1,0 +1,47 @@
+services:
+  mysql:
+    image: mysql:9
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: bibliotrace_v3
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: Bibl!otrace_2025
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: dynamodb_container
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - dynamodb_data:/home/dynamodblocal/data
+
+  bibliotrace:
+    platform: linux/amd64
+    build: .
+    container_name: bibliotrace
+    restart: always
+    depends_on:
+      - mysql
+      - dynamodb
+    ports:
+      - "8080:8080"
+    env_file: ./.env
+    environment:
+      NODE_ENV: local
+      DYNAMO_ENDPOINT: http://dynamodb:8000
+      DB_HOST: mysql
+      DB_USER: admin
+      DB_PASSWORD: Bibl!otrace_2025
+    volumes:
+      - .:/app
+
+volumes:
+  mysql_data:
+  dynamodb_data:
