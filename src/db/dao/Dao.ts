@@ -39,6 +39,35 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
+  public async getByKeyAndValue(
+    key: string,
+    value: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<E>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .where(key as any, "=", value)
+          .executeTakeFirst();
+        return new SuccessResponse<E>(
+          `${this.capitalizeFirstLetter(
+            this.entityName
+          )} retrieved successfully`,
+          result as E
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve ${this.entityName} with error ${error}`,
+          500
+        );
+      }
+    }
+  }
+
   public async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
