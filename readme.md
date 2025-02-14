@@ -48,3 +48,5 @@ $ mysql -u admin -p bibliotrace_v3 < /path/to/empty_schema.sql
 Password:
 ```
 This should automatically create and populate the necessary tables in the database, which is necessary for endpoint testing.
+### Exporting the Database
+[This article](https://www.thegeekstuff.com/2008/09/backup-and-restore-mysql-database-using-mysqldump/#more-184) from thegeekstuff explains how to export all contents of the database into a file and also reimport the contents into a new database. Note that the `mysqldump` also includes the database table creation statements, which means that on reimport that only a database matching the provided name needs to exist.
