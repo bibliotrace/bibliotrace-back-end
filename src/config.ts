@@ -23,9 +23,10 @@ import UserDao from "./db/dao/UserDao";
 import UserRoleDao from "./db/dao/UserRoleDao";
 import BookManagementService from "./service/BookManagementService";
 import FilterTypeRoutesHandler from "./handler/FilterTypeRoutesHandler";
+import SuggestionService from "./service/SuggestionService";
 
 export class Config {
-  static dependencies: ConfigTypes = {}
+  static dependencies: ConfigTypes = {};
 
   static async setup(): Promise<void> {
     if (this.dependencies.searchRouteHandler != null) {
@@ -45,57 +46,79 @@ export class Config {
         }
       : {};
     const dynamoClient = new DynamoDBClient(ddbClientConfig);
-    const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-    if (process.env.NODE_ENV === 'local') {
+    const documentClient = DynamoDBDocumentClient.from(dynamoClient);
+    if (process.env.NODE_ENV === "local") {
       await createIsbnQueryCacheTable(documentClient);
     }
     const dynamoDb = new DynamoDb(documentClient);
 
     // Service Class Dependencies
     const isbnService = new IsbnService();
-    
-    // Database Access Class Dependencies
-    const dbConnectionManager = new DBConnectionManager()
-    dbConnectionManager.testConnection()
 
-    if (process.env.NODE_ENV === 'local') {
-      await dbConnectionManager.runCreateSQL()
-      await dbConnectionManager.runAddDummyData()
+    // Database Access Class Dependencies
+    const dbConnectionManager = new DBConnectionManager();
+    dbConnectionManager.testConnection();
+
+    if (process.env.NODE_ENV === "local") {
+      await dbConnectionManager.runCreateSQL();
+      await dbConnectionManager.runAddDummyData();
     }
-    
-    const audienceDao = new AudienceDao(dbConnectionManager.kyselyDB)
-    const auditDao = new AuditDao(dbConnectionManager.kyselyDB)
-    const auditStateDao = new AuditStateDao(dbConnectionManager.kyselyDB)
-    const bookDao = new BookDao(dbConnectionManager.kyselyDB)
-    const campusDao = new CampusDao(dbConnectionManager.kyselyDB)
-    const checkoutDao = new CheckoutDao(dbConnectionManager.kyselyDB)
-    const genresDao = new GenresDao(dbConnectionManager.kyselyDB)
-    const genreTypeDao = new GenreTypeDao(dbConnectionManager.kyselyDB)
-    const inventoryDao = new InventoryDao(dbConnectionManager.kyselyDB)
-    const seriesDao = new SeriesDao(dbConnectionManager.kyselyDB)
-    const suggestionDao = new SuggestionDao(dbConnectionManager.kyselyDB)
-    const tagDao = new TagDao(dbConnectionManager.kyselyDB)
-    const userDao = new UserDao(dbConnectionManager.kyselyDB)
-    const userRoleDao = new UserRoleDao(dbConnectionManager.kyselyDB)   
+
+    const audienceDao = new AudienceDao(dbConnectionManager.kyselyDB);
+    const auditDao = new AuditDao(dbConnectionManager.kyselyDB);
+    const auditStateDao = new AuditStateDao(dbConnectionManager.kyselyDB);
+    const bookDao = new BookDao(dbConnectionManager.kyselyDB);
+    const campusDao = new CampusDao(dbConnectionManager.kyselyDB);
+    const checkoutDao = new CheckoutDao(dbConnectionManager.kyselyDB);
+    const genresDao = new GenresDao(dbConnectionManager.kyselyDB);
+    const genreTypeDao = new GenreTypeDao(dbConnectionManager.kyselyDB);
+    const inventoryDao = new InventoryDao(dbConnectionManager.kyselyDB);
+    const seriesDao = new SeriesDao(dbConnectionManager.kyselyDB);
+    const suggestionDao = new SuggestionDao(dbConnectionManager.kyselyDB);
+    const tagDao = new TagDao(dbConnectionManager.kyselyDB);
+    const userDao = new UserDao(dbConnectionManager.kyselyDB);
+    const userRoleDao = new UserRoleDao(dbConnectionManager.kyselyDB);
 
     // Route Handlers
-    this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
+    this.dependencies.searchRouteHandler = new SearchRouteHandler(
+      isbnService,
+      dynamoDb
+    );
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
-    this.dependencies.authHandler = new AuthHandler(campusDao, userDao, userRoleDao);
-    this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(audienceDao, genreTypeDao)
-    this.dependencies.bookManagementService = new BookManagementService(audienceDao, bookDao, campusDao, checkoutDao, genreTypeDao, inventoryDao, seriesDao,)
+    this.dependencies.authHandler = new AuthHandler(
+      campusDao,
+      userDao,
+      userRoleDao
+    );
+    this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(
+      audienceDao,
+      genreTypeDao
+    );
+    this.dependencies.bookManagementService = new BookManagementService(
+      audienceDao,
+      bookDao,
+      campusDao,
+      checkoutDao,
+      genreTypeDao,
+      inventoryDao,
+      seriesDao
+    );
+    this.dependencies.suggestionService = new SuggestionService(
+      campusDao,
+      suggestionDao
+    );
 
     console.log("Dependencies Instantiated");
   }
 }
 
 export interface ConfigTypes {
-  searchRouteHandler?: SearchRouteHandler
-  coverImageRouteHandler?: CoverImageRouteHandler
-  authHandler?: AuthHandler
-  filterTypeRoutesHandler?: FilterTypeRoutesHandler
-  bookManagementService?: BookManagementService
+  searchRouteHandler?: SearchRouteHandler;
+  coverImageRouteHandler?: CoverImageRouteHandler;
+  authHandler?: AuthHandler;
+  filterTypeRoutesHandler?: FilterTypeRoutesHandler;
+  bookManagementService?: BookManagementService;
+  suggestionService?: SuggestionService;
 }
 
 export default new Config();
-
