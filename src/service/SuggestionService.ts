@@ -13,7 +13,10 @@ class SuggestionService {
   }
 
   public async addSuggestion(campus_name: string, suggestion_string: string) {
-    const campus_response = await this.campusDao.getByCampusName(campus_name);
+    const campus_response = await this.campusDao.getByKeyAndValue(
+      "name",
+      campus_name
+    );
     if (campus_response.statusCode !== 200) {
       throw Error(campus_response.message);
     }
