@@ -1,23 +1,15 @@
-import CampusDao from "../db/dao/CampusDao";
-import SuggestionDao from "../db/dao/SuggestionDao";
-import UserDao from "../db/dao/UserDao";
-import Response from "../db/response/Response";
+import DaoFactory from "../db/dao/DaoFactory";
 import ServerErrorResponse from "../db/response/ServerErrorResponse";
 import SuccessResponse from "../db/response/SuccessResponse";
 import { Campus } from "../db/schema/Campus";
-
 import { Suggestion } from "../db/schema/Suggestion";
 import { User } from "../db/schema/User";
+import Service from "./Service";
+import Response from "../db/response/Response";
 
-class SuggestionService {
-  private campusDao: CampusDao;
-  private suggestionDao: SuggestionDao;
-  private userDao: UserDao;
-
-  constructor(campusDao: CampusDao, suggestionDao: SuggestionDao, userDao: UserDao) {
-    this.campusDao = campusDao;
-    this.suggestionDao = suggestionDao;
-    this.userDao = userDao;
+class SuggestionService extends Service {
+  constructor(daoFactory: DaoFactory) {
+    super(daoFactory);
   }
 
   public async addSuggestion(
