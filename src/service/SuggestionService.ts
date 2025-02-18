@@ -14,11 +14,7 @@ class SuggestionService {
   private suggestionDao: SuggestionDao;
   private userDao: UserDao;
 
-  constructor(
-    campusDao: CampusDao,
-    suggestionDao: SuggestionDao,
-    userDao: UserDao
-  ) {
+  constructor(campusDao: CampusDao, suggestionDao: SuggestionDao, userDao: UserDao) {
     this.campusDao = campusDao;
     this.suggestionDao = suggestionDao;
     this.userDao = userDao;
@@ -28,10 +24,7 @@ class SuggestionService {
     campus_name: string,
     suggestion_string: string
   ): Promise<Response<any>> {
-    const campus_response = await this.campusDao.getByKeyAndValue(
-      "name",
-      campus_name
-    );
+    const campus_response = await this.campusDao.getByKeyAndValue("name", campus_name);
     if (campus_response.statusCode !== 200) {
       return new ServerErrorResponse(
         `Failed to get campus with name ${campus_name}`,
@@ -47,13 +40,7 @@ class SuggestionService {
       campus_id: campus_id,
     };
 
-    const suggestion_response: Response<any> = await this.suggestionDao.create(
-      suggestion
-    );
-    if (suggestion_response.statusCode !== 200) {
-      return suggestion_response;
-    }
-    return suggestion_response;
+    return await this.suggestionDao.create(suggestion);
   }
 
   public async emailSuggestionList(transporter) {
@@ -82,11 +69,10 @@ class SuggestionService {
         ""
       );
 
-      const userResponse: Response<User[]> =
-        await this.userDao.getAllByKeyAndValue(
-          "campus_id",
-          campus.id.toString()
-        );
+      const userResponse: Response<User[]> = await this.userDao.getAllByKeyAndValue(
+        "campus_id",
+        campus.id.toString()
+      );
 
       if (userResponse.statusCode !== 200) {
         return userResponse;
