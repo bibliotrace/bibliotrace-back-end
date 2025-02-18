@@ -1,35 +1,35 @@
-import IsbnService from "./service/IsbnService";
-import SearchRouteHandler from "./handler/SearchRouteHandler";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { createIsbnQueryCacheTable } from "./db/schema/templates/DynamoDbTableCreate";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import DaoFactory from "./db/dao/DaoFactory";
 import { DynamoDb } from "./db/dao/DynamoDb";
-import { CoverImageRouteHandler } from "./handler/CoverImageRouteHandler";
-import { AuthHandler } from "./handler/AuthHandler";
 import DBConnectionManager from "./db/dbConnection/DBConnectionManager";
-import AudienceDao from "./db/dao/AudienceDao";
-import AuditDao from "./db/dao/AuditDao";
-import AuditStateDao from "./db/dao/AuditStateDao";
-import BookDao from "./db/dao/BookDao";
-import CampusDao from "./db/dao/CampusDao";
-import CheckoutDao from "./db/dao/CheckoutDao";
-import GenresDao from "./db/dao/GenresDao";
-import GenreTypeDao from "./db/dao/GenreTypeDao";
-import InventoryDao from "./db/dao/InventoryDao";
-import SeriesDao from "./db/dao/SeriesDao";
-import SuggestionDao from "./db/dao/SuggestionDao";
-import TagDao from "./db/dao/TagDao";
-import UserDao from "./db/dao/UserDao";
-import UserRoleDao from "./db/dao/UserRoleDao";
-import BookManagementService from "./service/BookManagementService";
+import { createIsbnQueryCacheTable } from "./db/schema/templates/DynamoDbTableCreate";
+import { AuthHandler } from "./handler/AuthHandler";
+import { CoverImageRouteHandler } from "./handler/CoverImageRouteHandler";
 import FilterTypeRoutesHandler from "./handler/FilterTypeRoutesHandler";
+import SearchRouteHandler from "./handler/SearchRouteHandler";
+import AuditService from "./service/AuditService";
+import BookManagementService from "./service/BookManagementService";
+import CheckoutService from "./service/CheckoutService";
+import IsbnService from "./service/IsbnService";
+import SearchService from "./service/SearchService";
 import SuggestionService from "./service/SuggestionService";
 
 export class Config {
   static dependencies: ConfigTypes = {};
 
   static async setup(): Promise<void> {
-    if (this.dependencies.searchRouteHandler != null) {
+    if (
+      this.dependencies.searchRouteHandler != null ||
+      this.dependencies.coverImageRouteHandler != null ||
+      this.dependencies.authHandler != null ||
+      this.dependencies.filterTypeRoutesHandler != null ||
+      this.dependencies.bookManagementService != null ||
+      this.dependencies.suggestionService != null ||
+      this.dependencies.auditService != null ||
+      this.dependencies.checkoutService != null ||
+      this.dependencies.searchService != null
+    ) {
       return; // Prevent re-initialization
     }
 
@@ -64,50 +64,21 @@ export class Config {
       await dbConnectionManager.runAddDummyData();
     }
 
-    const audienceDao = new AudienceDao(dbConnectionManager.kyselyDB);
-    const auditDao = new AuditDao(dbConnectionManager.kyselyDB);
-    const auditStateDao = new AuditStateDao(dbConnectionManager.kyselyDB);
-    const bookDao = new BookDao(dbConnectionManager.kyselyDB);
-    const campusDao = new CampusDao(dbConnectionManager.kyselyDB);
-    const checkoutDao = new CheckoutDao(dbConnectionManager.kyselyDB);
-    const genresDao = new GenresDao(dbConnectionManager.kyselyDB);
-    const genreTypeDao = new GenreTypeDao(dbConnectionManager.kyselyDB);
-    const inventoryDao = new InventoryDao(dbConnectionManager.kyselyDB);
-    const seriesDao = new SeriesDao(dbConnectionManager.kyselyDB);
-    const suggestionDao = new SuggestionDao(dbConnectionManager.kyselyDB);
-    const tagDao = new TagDao(dbConnectionManager.kyselyDB);
-    const userDao = new UserDao(dbConnectionManager.kyselyDB);
-    const userRoleDao = new UserRoleDao(dbConnectionManager.kyselyDB);
+    const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
 
     // Route Handlers
-    this.dependencies.searchRouteHandler = new SearchRouteHandler(
-      isbnService,
-      dynamoDb
-    );
+    this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
-    this.dependencies.authHandler = new AuthHandler(
-      campusDao,
-      userDao,
-      userRoleDao
-    );
-    this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(
-      audienceDao,
-      genreTypeDao
-    );
-    this.dependencies.bookManagementService = new BookManagementService(
-      audienceDao,
-      bookDao,
-      campusDao,
-      checkoutDao,
-      genreTypeDao,
-      inventoryDao,
-      seriesDao
-    );
-    this.dependencies.suggestionService = new SuggestionService(
-      campusDao,
-      suggestionDao,
-      userDao
-    );
+    this.dependencies.authHandler = new AuthHandler(daoFactory);
+    this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);
+    this.dependencies.bookManagementService = new BookManagementService(daoFactory);
+
+    // Services
+    this.dependencies.suggestionService = new SuggestionService(daoFactory);
+    this.dependencies.auditService = new AuditService(daoFactory);
+    this.dependencies.bookManagementService = new BookManagementService(daoFactory);
+    this.dependencies.checkoutService = new CheckoutService(daoFactory);
+    this.dependencies.searchService = new SearchService(daoFactory);
 
     console.log("Dependencies Instantiated");
   }
@@ -120,6 +91,9 @@ export interface ConfigTypes {
   filterTypeRoutesHandler?: FilterTypeRoutesHandler;
   bookManagementService?: BookManagementService;
   suggestionService?: SuggestionService;
+  auditService?: AuditService;
+  checkoutService?: CheckoutService;
+  searchService?: SearchService;
 }
 
 export default new Config();
