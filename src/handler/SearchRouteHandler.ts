@@ -67,7 +67,10 @@ export default class SearchRouteHandler {
         id: bookObj.selfLink,
         isbn,
         title: bookObj.volumeInfo.title ?? "Unknown",
-        author: bookObj.volumeInfo.authors != null && bookObj.volumeInfo.authors.length > 0 ? bookObj.volumeInfo.authors[0] : "Unknown",
+        author:
+          bookObj.volumeInfo.authors != null && bookObj.volumeInfo.authors.length > 0
+            ? bookObj.volumeInfo.authors[0]
+            : "Unknown",
         genre: bookObj.volumeInfo.categories ?? ["Unknown"],
         series: "N/A",
       };
@@ -97,7 +100,10 @@ export default class SearchRouteHandler {
       );
       queryList.push({ queryKey, queryValue });
 
-      inputQuery = inputQuery.slice(queryIndexes.secondDelimiterIndex + 2, inputQuery.length);
+      inputQuery = inputQuery.slice(
+        queryIndexes.secondDelimiterIndex + 2,
+        inputQuery.length
+      );
       queryIndexes = this.findIndexes(inputQuery);
     }
 
@@ -131,8 +137,16 @@ export default class SearchRouteHandler {
       }
     }
 
-    if (firstDelimiterIndex !== -1 && secondDelimiterIndex !== -1 && separatorIndex !== -1) {
-      return { firstDelimiterIndex, separatorIndex: separatorIndex, secondDelimiterIndex };
+    if (
+      firstDelimiterIndex !== -1 &&
+      secondDelimiterIndex !== -1 &&
+      separatorIndex !== -1
+    ) {
+      return {
+        firstDelimiterIndex,
+        separatorIndex: separatorIndex,
+        secondDelimiterIndex,
+      };
     }
   }
 }

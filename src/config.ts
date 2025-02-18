@@ -105,7 +105,8 @@ export class Config {
     );
     this.dependencies.suggestionService = new SuggestionService(
       campusDao,
-      suggestionDao
+      suggestionDao,
+      userDao
     );
 
     console.log("Dependencies Instantiated");
