@@ -8,7 +8,8 @@ searchRouter.get("/query/:searchQuery", async (req, res) => {
     console.log("Handling call to /search with query " + req.params.searchQuery);
     console.log(`Query Auth: ${JSON.stringify(req.auth)}`);
     const results = await Config.dependencies.searchRouteHandler.conductSearch(
-      req.params.searchQuery
+      req.params.searchQuery,
+      req.auth.userRole.campus
     );
     res.send({ results });
     console.log("Call to /search complete");

@@ -18,10 +18,12 @@ class IsbnService {
     }
     const resultJson = await result.json();
 
+    console.log('CALLED THE ISBNDB!!!!! Parsing the result...')
+
     const isbnList = [];
     resultJson.books.map((result) => {
       if (result.isbn10 != null) isbnList.push(result.isbn10);
-      // if (result.isbn13 != null) isbnList.push(result.isbn13)
+      if (result.isbn13 != null) isbnList.push(result.isbn13);
     });
 
     return isbnList;

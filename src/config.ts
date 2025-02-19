@@ -1,4 +1,4 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import SearchDataService from './service/SearchDataService'
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import DaoFactory from "./db/dao/DaoFactory";
 import { DynamoDb } from "./db/dao/DynamoDb";
@@ -12,8 +12,8 @@ import AuditService from "./service/AuditService";
 import BookManagementService from "./service/BookManagementService";
 import CheckoutService from "./service/CheckoutService";
 import IsbnService from "./service/IsbnService";
-import SearchService from "./service/SearchService";
 import SuggestionService from "./service/SuggestionService";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 export class Config {
   static dependencies: ConfigTypes = {};
@@ -27,8 +27,7 @@ export class Config {
       this.dependencies.bookManagementService != null ||
       this.dependencies.suggestionService != null ||
       this.dependencies.auditService != null ||
-      this.dependencies.checkoutService != null ||
-      this.dependencies.searchService != null
+      this.dependencies.checkoutService != null
     ) {
       return; // Prevent re-initialization
     }
@@ -37,13 +36,13 @@ export class Config {
     const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
     const ddbClientConfig = hasDynamoEndpoint
       ? {
-          region: "us-west-2",
-          endpoint: process.env.DYNAMO_ENDPOINT,
-          credentials: {
-            accessKeyId: "test",
-            secretAccessKey: "test",
-          },
-        }
+        region: "us-west-2",
+        endpoint: process.env.DYNAMO_ENDPOINT,
+        credentials: {
+          accessKeyId: "test",
+          secretAccessKey: "test",
+        },
+      }
       : {};
     const dynamoClient = new DynamoDBClient(ddbClientConfig);
     const documentClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -51,9 +50,6 @@ export class Config {
       await createIsbnQueryCacheTable(documentClient);
     }
     const dynamoDb = new DynamoDb(documentClient);
-
-    // Service Class Dependencies
-    const isbnService = new IsbnService();
 
     // Database Access Class Dependencies
     const dbConnectionManager = new DBConnectionManager();
@@ -66,8 +62,16 @@ export class Config {
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
 
+    // Service Class Dependencies
+    const isbnService = new IsbnService();
+    const searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, daoFactory);
+
     // Route Handlers
-    this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
+    this.dependencies.searchRouteHandler = new SearchRouteHandler(
+      isbnService,
+      dynamoDb,
+      searchDataService
+    );
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.authHandler = new AuthHandler(daoFactory);
     this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);
@@ -78,7 +82,6 @@ export class Config {
     this.dependencies.auditService = new AuditService(daoFactory);
     this.dependencies.bookManagementService = new BookManagementService(daoFactory);
     this.dependencies.checkoutService = new CheckoutService(daoFactory);
-    this.dependencies.searchService = new SearchService(daoFactory);
 
     console.log("Dependencies Instantiated");
   }
@@ -93,7 +96,6 @@ export interface ConfigTypes {
   suggestionService?: SuggestionService;
   auditService?: AuditService;
   checkoutService?: CheckoutService;
-  searchService?: SearchService;
 }
 
 export default new Config();

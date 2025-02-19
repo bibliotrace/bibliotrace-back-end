@@ -1,6 +1,6 @@
 interface Book {
   id?: number;
-  name: string;
+  book_title: string;
   isbn_list?: string | null;
   author: string;
   primary_genre_id: number;

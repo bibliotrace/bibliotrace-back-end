@@ -1,6 +1,6 @@
 interface UserRole {
   id: number;
-  name: string;
+  role_name: string;
 }
 
 export type { UserRole };
