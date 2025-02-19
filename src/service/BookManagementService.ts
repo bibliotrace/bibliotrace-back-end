@@ -1,15 +1,7 @@
-import AudienceDao from "../db/dao/AudienceDao";
-import BookDao from "../db/dao/BookDao";
-import CampusDao from "../db/dao/CampusDao";
-import CheckoutDao from "../db/dao/CheckoutDao";
-import GenreTypeDao from "../db/dao/GenreTypeDao";
-import InventoryDao from "../db/dao/InventoryDao";
-import SeriesDao from "../db/dao/SeriesDao";
 import { Book } from "../db/schema/Book";
 import { Checkout } from "../db/schema/Checkout";
 import { Inventory } from "../db/schema/Inventory";
 import Response from "../db/response/Response";
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import ServerErrorResponse from "../db/response/ServerErrorResponse";
 import SuccessResponse from "../db/response/SuccessResponse";
 import Service from "./Service";
@@ -26,15 +18,23 @@ export default class BookManagementService extends Service {
     return this.bookDao.getBookByIsbn(isbn);
   }
 
-  public async insertBook(req: any): Promise<Response<Book | Inventory>> {
-    let bookResponse = await this.bookDao.getBookByIsbn(req.body.isbn);
-    if (bookResponse.statusCode === 500) {
-      bookResponse = await this.bookDao.getBookByName(req.body.name);
+  public async insertBook(
+    request: BookInsertRequest
+  ): Promise<Response<Book | Inventory>> {
+    // check ISBN first because it's faster to match on than book name string
+    let bookResponse: Response<Book>;
+    if (request.isbn) {
+      bookResponse = await this.bookDao.getBookByIsbn(request.isbn);
+      if (bookResponse.statusCode !== 200) {
+        bookResponse = await this.bookDao.getBookByName(request.name);
+      }
+    } else {
+      bookResponse = await this.bookDao.getBookByName(request.name);
     }
 
     if (bookResponse.statusCode === 500) {
       // book does not already exist in book table
-      bookResponse = await this.parseBook(req);
+      bookResponse = await this.parseBook(request);
       if (bookResponse.statusCode != 200) {
         return bookResponse;
       }
@@ -45,60 +45,42 @@ export default class BookManagementService extends Service {
       }
     }
 
-    let inventoryResponse = await this.parseInventory(req, bookResponse.object.id);
+    let inventoryResponse = await this.parseInventory(request, bookResponse.object.id);
     if (inventoryResponse.statusCode != 200) {
       return inventoryResponse;
     }
 
-    try {
-      await this.inventoryDao.create(inventoryResponse.object);
-    } catch (error) {
-      return new ServerErrorResponse(
-        `Failed to create inventory item with error ${error}`,
-        500
-      );
+    inventoryResponse = await this.inventoryDao.create(inventoryResponse.object);
+    if (inventoryResponse.statusCode != 200) {
+      return inventoryResponse;
     }
 
     const checkout: Checkout = {
-      timestamp: new Date().toISOString(), // TODO: make sure this matches what MySQL expects
+      timestamp: new Date().toISOString().slice(0, 19).replace("T", " "), // TODO: make sure this matches what MySQL expects
       qr: inventoryResponse.object.qr,
       book_id: bookResponse.object.id,
       state: "First",
     };
 
-    try {
-      await this.checkoutDao.create(checkout);
-    } catch (error) {
-      return new ServerErrorResponse(
-        `Failed to create first checkout item with error ${error}`,
-        500
-      );
+    const checkoutResponse = await this.checkoutDao.create(checkout);
+    if (checkoutResponse.statusCode != 200) {
+      return checkoutResponse;
     }
 
-    return new SuccessResponse<Book | Inventory>("Book successfully created");
+    return new SuccessResponse(`Book ${bookResponse.object.name} successfully created`);
   }
 
-  private async parseBook(req: any): Promise<Response<Book>> {
-    const requiredFields = ["isbn", "name", "author", "primary_genre", "audience"];
-    for (const field of requiredFields) {
-      if (req.body[field] == null) {
-        return new RequestErrorResponse(
-          `Missing required field ${field} for book in request body`,
-          400
-        );
-      }
-    }
-
+  private async parseBook(bookRequest: BookInsertRequest): Promise<Response<Book>> {
     // TODO: there has GOT to be some way to store the id mappings for the audiences and genres somewhere cause querying every time is dumb
     // if the front end can store the raw id mappings, then we can just send the id mappings to the back end and save some pain
     let primary_genre_id: number;
     try {
       primary_genre_id = (
-        await this.genreTypeDao.getAllMatchingOnIndex("name", req.body.primary_genre)
+        await this.genreTypeDao.getAllMatchingOnIndex("name", bookRequest.primary_genre)
       ).object[0].id;
     } catch (error) {
       return new ServerErrorResponse(
-        `Failed to retrieve primary genre id with error ${error}`,
+        `Failed to retrieve primary genre id with error ${error.message}`,
         500
       );
     }
@@ -106,31 +88,31 @@ export default class BookManagementService extends Service {
     let audience_id: number;
     try {
       audience_id = (
-        await this.audienceDao.getAllMatchingOnIndex("name", req.body.audience)
+        await this.audienceDao.getAllMatchingOnIndex("name", bookRequest.audience)
       ).object[0].id;
     } catch (error) {
       return new ServerErrorResponse(
-        `Failed to retrieve audience id with error ${error}`,
+        `Failed to retrieve audience id with error ${error.message}`,
         500
       );
     }
 
     const book: Book = {
-      name: req.body.name,
-      isbn_list: req.body.isbn,
-      author: req.body.author,
+      name: bookRequest.name,
+      isbn_list: bookRequest.isbn,
+      author: bookRequest.author,
       primary_genre_id: primary_genre_id,
       audience_id: audience_id,
     };
 
-    if (req.body.pages) {
-      book.pages = req.body.pages;
+    if (bookRequest.pages) {
+      book.pages = bookRequest.pages;
     }
-    if (req.body.series_name) {
+    if (bookRequest.series_name) {
       try {
         const series_id = (
-          await this.seriesDao.getAllMatchingOnIndex("series_name", req.body.series_name)
-        ).object[0].id;
+          await this.seriesDao.getByKeyAndValue("series_name", bookRequest.series_name)
+        ).object.id;
         book.series_id = series_id;
       } catch (error) {
         return new ServerErrorResponse(
@@ -139,56 +121,63 @@ export default class BookManagementService extends Service {
         );
       }
     }
-    if (req.body.series_number) {
-      book.series_number = req.body.series_number;
+    if (bookRequest.series_number) {
+      book.series_number = bookRequest.series_number;
     }
-    if (req.body.publish_date) {
-      book.publish_date = req.body.publish_date;
+    if (bookRequest.publish_date) {
+      book.publish_date = bookRequest.publish_date;
     }
-    if (req.body.short_description) {
-      book.short_description = req.body.short_description;
+    if (bookRequest.short_description) {
+      book.short_description = bookRequest.short_description;
     }
-    if (req.body.language) {
-      book.language = req.body.language;
+    if (bookRequest.language) {
+      book.language = bookRequest.language;
     }
-    if (req.body.img_callback) {
-      book.img_callback = req.body.img_callback;
+    if (bookRequest.img_callback) {
+      book.img_callback = bookRequest.img_callback;
     }
 
     return new SuccessResponse<Book>("Successfully parsed book", book);
   }
 
-  private async parseInventory(req: any, book_id: number): Promise<Response<Inventory>> {
-    const requiredFields = ["qr", "location", "campus"];
-    for (const field of requiredFields) {
-      if (req.body[field] == null) {
-        return new RequestErrorResponse(
-          `Missing required field ${field} for inventory in request body`,
-          400
-        );
-      }
-    }
-
+  private async parseInventory(
+    request: BookInsertRequest,
+    book_id: number
+  ): Promise<Response<any>> {
     // again, find some way to store the campus ID mapping to avoid needing this query
-    try {
-      req.body.campus_id = (
-        await this.campusDao.getAllMatchingOnIndex("name", req.body.campus)
-      ).object[0].id;
-    } catch (error) {
-      return new ServerErrorResponse(
-        `Failed to retrieve campus id with error ${error}`,
-        500
-      );
+    let campus_id: number;
+    const campusResponse = await this.campusDao.getByKeyAndValue("name", request.campus);
+    if (campusResponse.statusCode !== 200) {
+      return campusResponse;
     }
 
     const inventory: Inventory = {
-      qr: req.body.qr,
+      qr: request.qr,
       book_id: book_id,
-      location: req.body.location,
-      campus_id: req.body.campus_id,
+      location: request.location,
+      campus_id: campus_id,
       ttl: MAX_TTL,
     };
 
     return new SuccessResponse<Inventory>("Successfully parsed inventory", inventory);
   }
+}
+
+export interface BookInsertRequest {
+  id?: number;
+  name: string;
+  isbn?: string; // this unfortunately needs to be optional because some ISBNs have been obscured or are illegible
+  author: string;
+  primary_genre: string;
+  audience: string;
+  pages?: number;
+  series_name?: string;
+  series_number?: number;
+  publish_date?: number;
+  short_description?: string;
+  language?: string;
+  img_callback?: string;
+  qr: string;
+  location: string;
+  campus: string;
 }

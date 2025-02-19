@@ -1,7 +1,7 @@
 import express from "express";
 import { Config } from "../config";
 
-const searchRouter = express.Router();
+export const searchRouter = express.Router();
 
 searchRouter.get("/query/:searchQuery", async (req, res) => {
   try {
@@ -14,7 +14,7 @@ searchRouter.get("/query/:searchQuery", async (req, res) => {
     console.log("Call to /search complete");
   } catch (error) {
     console.log(error);
-    res.status(500).send({ error: error.message})
+    res.status(500).send({ error: error.message });
   }
 });
 
@@ -31,33 +31,33 @@ searchRouter.get("/cover/:isbn", async (req, res) => {
       console.log(`Call to /cover/${isbn} completed successfully.`);
     }
   } catch (error) {
-    res.status(500).send({ error: error.message})
+    res.status(500).send({ error: error.message });
     console.log("FAILURE: Call to /cover/:isbn failed for some reason");
   }
 });
 
 searchRouter.get("/genres", async (req, res) => {
   try {
-    const genres = await Config.dependencies.filterTypeRoutesHandler.getGenres()
+    const genres = await Config.dependencies.filterTypeRoutesHandler.getGenres();
 
     if (genres != null && genres.length > 0) {
-      res.send({ results: genres })
+      res.send({ results: genres });
     }
   } catch (error) {
-    res.status(500).send({ error: error.message})
+    res.status(500).send({ error: error.message });
   }
-})
+});
 
 searchRouter.get("/audiences", async (req, res) => {
   try {
-    const genres = await Config.dependencies.filterTypeRoutesHandler.getAudiences()
+    const genres = await Config.dependencies.filterTypeRoutesHandler.getAudiences();
 
     if (genres != null && genres.length > 0) {
-      res.send({ results: genres })
+      res.send({ results: genres });
     }
   } catch (error) {
-    res.status(500).send({ error: error.message})
+    res.status(500).send({ error: error.message });
   }
-})
+});
 
 module.exports = { searchRouter };

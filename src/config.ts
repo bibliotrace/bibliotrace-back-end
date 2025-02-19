@@ -14,9 +14,21 @@ import CheckoutService from "./service/CheckoutService";
 import IsbnService from "./service/IsbnService";
 import SearchService from "./service/SearchService";
 import SuggestionService from "./service/SuggestionService";
+import { AuthService } from "./service/AuthService";
+import Response from "./db/response/Response";
+import { Inventory } from "./db/schema/Inventory";
+import { InventoryHandler } from "./handler/InventoryHandler";
+import { SuggestionHandler } from "./handler/SuggestionHandler";
 
 export class Config {
   static dependencies: ConfigTypes = {};
+  static suggestionService: SuggestionService;
+  static auditService: AuditService;
+  static bookManagementService: BookManagementService;
+  static checkoutService: CheckoutService;
+  static searchService: SearchService;
+  static authService: AuthService;
+  static isbnService: IsbnService;
 
   static async setup(): Promise<void> {
     if (
@@ -24,11 +36,11 @@ export class Config {
       this.dependencies.coverImageRouteHandler != null ||
       this.dependencies.authHandler != null ||
       this.dependencies.filterTypeRoutesHandler != null ||
-      this.dependencies.bookManagementService != null ||
-      this.dependencies.suggestionService != null ||
-      this.dependencies.auditService != null ||
-      this.dependencies.checkoutService != null ||
-      this.dependencies.searchService != null
+      this.bookManagementService != null ||
+      this.suggestionService != null ||
+      this.auditService != null ||
+      this.checkoutService != null ||
+      this.searchService != null
     ) {
       return; // Prevent re-initialization
     }
@@ -52,9 +64,6 @@ export class Config {
     }
     const dynamoDb = new DynamoDb(documentClient);
 
-    // Service Class Dependencies
-    const isbnService = new IsbnService();
-
     // Database Access Class Dependencies
     const dbConnectionManager = new DBConnectionManager();
     dbConnectionManager.testConnection();
@@ -66,19 +75,25 @@ export class Config {
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
 
-    // Route Handlers
-    this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
-    this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
-    this.dependencies.authHandler = new AuthHandler(daoFactory);
-    this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);
-    this.dependencies.bookManagementService = new BookManagementService(daoFactory);
-
     // Services
-    this.dependencies.suggestionService = new SuggestionService(daoFactory);
-    this.dependencies.auditService = new AuditService(daoFactory);
-    this.dependencies.bookManagementService = new BookManagementService(daoFactory);
-    this.dependencies.checkoutService = new CheckoutService(daoFactory);
-    this.dependencies.searchService = new SearchService(daoFactory);
+    this.isbnService = new IsbnService();
+    this.suggestionService = new SuggestionService(daoFactory);
+    this.auditService = new AuditService(daoFactory);
+    this.bookManagementService = new BookManagementService(daoFactory);
+    this.checkoutService = new CheckoutService(daoFactory);
+    this.searchService = new SearchService(daoFactory);
+    this.authService = new AuthService(daoFactory);
+
+    // Route Handlers
+    this.dependencies.authHandler = new AuthHandler(this.authService);
+    this.dependencies.inventoryHandler = new InventoryHandler(this.bookManagementService);
+    this.dependencies.suggestionHandler = new SuggestionHandler(this.suggestionService);
+    this.dependencies.searchRouteHandler = new SearchRouteHandler(
+      Config.isbnService,
+      dynamoDb
+    );
+    this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
+    this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);
 
     console.log("Dependencies Instantiated");
   }
@@ -89,11 +104,27 @@ export interface ConfigTypes {
   coverImageRouteHandler?: CoverImageRouteHandler;
   authHandler?: AuthHandler;
   filterTypeRoutesHandler?: FilterTypeRoutesHandler;
-  bookManagementService?: BookManagementService;
-  suggestionService?: SuggestionService;
-  auditService?: AuditService;
-  checkoutService?: CheckoutService;
-  searchService?: SearchService;
+  inventoryHandler?: InventoryHandler;
+  suggestionHandler?: SuggestionHandler;
 }
 
 export default new Config();
+
+// this logic is duplicated across multiple routes
+export function validateUserType(req: any, res: any, type: string): boolean {
+  if (req.auth.userRole.roleType !== type) {
+    res
+      .status(401)
+      .send({ message: `Improper Caller RoleType, required type is ${type}` });
+    return false;
+  }
+  return true;
+}
+
+export function sendResponse(res: any, response: Response<any>): void {
+  const responseBody: any = { message: response.message };
+  if (response.object) {
+    responseBody.object = response.object;
+  }
+  res.status(response.statusCode).send(responseBody);
+}

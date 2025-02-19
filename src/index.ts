@@ -1,21 +1,21 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
 import cors from "cors";
 import { Config } from "./config";
-import { expressjwt, ExpressJwtRequest } from "express-jwt";
+import { expressjwt } from "express-jwt";
 
-const { authRouter } = require("./routes/authRouter.js");
-const { searchRouter } = require("./routes/searchRouter");
-const { inventoryRouter } = require("./routes/inventoryRouter");
-const { suggestRouter } = require("./routes/suggestRouter");
-const { reportsRouter } = require("./routes/reportsRouter");
+import { authRouter } from "./routes/authRouter.js";
+import { searchRouter } from "./routes/searchRouter";
+import { inventoryRouter } from "./routes/inventoryRouter";
+import { suggestRouter } from "./routes/suggestRouter";
+import { reportsRouter } from "./routes/reportsRouter";
 
 const server = express();
 const localPort = 8080;
 
-Config.setup()
+Config.setup();
 
 if (process.env.FRONT_END_ORIGIN) {
   server.use(cors({ origin: process.env.FRONT_END_ORIGIN })); //TODO: set this as our production front-end url when we do deployment
@@ -27,7 +27,7 @@ server.use(express.json());
 
 server.use(
   expressjwt({
-    secret: process.env.AUTH_KEY ?? 'hello world!',
+    secret: process.env.AUTH_KEY ?? "hello world!",
     algorithms: ["HS256"],
     onExpired: async (req, err) => {
       console.log("EXPIREDDDD");
