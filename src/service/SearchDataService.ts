@@ -1,4 +1,5 @@
 import CampusDao from '../db/dao/CampusDao';
+import GenreTypeDao from '../db/dao/GenreTypeDao'
 import { Kysely, sql, Transaction } from "kysely";
 import Database from "../db/schema/Database";
 import { ResultRow, Filters } from '../handler/SearchRouteHandler'
@@ -7,14 +8,16 @@ import { ResultRow, Filters } from '../handler/SearchRouteHandler'
 export default class SearchDataService {
     db: Kysely<Database>
     campusDao: CampusDao
+    genreTypeDao: GenreTypeDao
 
-    constructor(db: Kysely<Database>, campusDao: CampusDao) {
+    constructor(db: Kysely<Database>, campusDao: CampusDao, genreTypeDao: GenreTypeDao) {
         this.db = db
         this.campusDao = campusDao
+        this.genreTypeDao = genreTypeDao
     }
 
-    async retrieveMetadata(isbn: string, campus: string): Promise<ResultRow> {
-        const campusId = await this.convertCampusStringToId(campus)
+    async retrieveMetadata(filters: any[], isbn: string, campus: string): Promise<ResultRow> {
+        const campusId = await this.campusDao.convertCampusStringToId(campus)
 
         try {
             const dbResult = await this.db.selectFrom('books')
@@ -45,14 +48,25 @@ export default class SearchDataService {
     }
 
     async retrieveAllISBNs(filters: any[], campus: string): Promise<string[]> {
-        const campusId = await this.convertCampusStringToId(campus)
+        const campusId = await this.campusDao.convertCampusStringToId(campus)
+        console.log(filters)
 
         try {
-            const dbResult = await this.db.selectFrom("books").distinct()
+            const calculatedFilters = await this.addFiltersToQuery(filters)
+
+            let dbQuery = this.db.selectFrom("books").distinct()
                 .select('isbn_list')
                 .innerJoin('inventory', 'inventory.book_id', 'books.id')
                 .where('inventory.campus_id', '=', campusId)
-                .execute()
+
+            if (calculatedFilters.length > 0) {
+                for (const filter of calculatedFilters) {
+                    console.log('FILTER Returned:', filter)
+                    dbQuery = dbQuery.where(filter.key, 'in', filter.value)
+                }
+            }
+
+            const dbResult = await dbQuery.execute()
             
             console.log('DB RESULT FOR all ISBNs: ', dbResult)
 
@@ -66,14 +80,36 @@ export default class SearchDataService {
         }
     }
 
-    private async convertCampusStringToId(campus: string): Promise<number> {
-        try {
-            const campusResult = await this.campusDao.getByKeyAndValue('campus_name', campus)
-            if (campusResult != null && campusResult.object != null && campusResult.statusCode === 200) {
-                return campusResult.object.id
+    private async addFiltersToQuery(filters: any[]): Promise<any[]> {
+        let output = []
+        
+        if (filters != null) {
+
+
+            for (let i = 0; i < filters.length; i++) {
+                const targetKey = filters[i].queryKey
+                const targetVal = filters[i].queryValue
+
+                if (targetKey == 'Genre') {
+                    const genreStrings = targetVal.split(",")
+                    console.log('Genre Strings: ', genreStrings)
+
+                    const genreIds = await Promise.all(
+                        genreStrings.map(async (input) => {
+                            return this.genreTypeDao.convertGenreStringToId(input);
+                        })
+                    );
+                    
+                    console.log('GenreIds: ', genreIds);
+                    output.push({key: 'books.primary_genre_id', value: genreIds})
+                }
+                if (targetKey == 'Audience') {
+                    // TODO
+                }
             }
-        } catch (error) {
-            throw new Error(`Error trying to get campus ID from campus string: ${error.message}`)
         }
+
+        console.log('Output: ', output)
+        return output
     }
 }

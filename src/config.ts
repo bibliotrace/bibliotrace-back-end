@@ -79,7 +79,7 @@ export class Config {
 
     // Service Class Dependencies
     const isbnService = new IsbnService();
-    const searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, campusDao);
+    const searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, campusDao, genreTypeDao);
 
     // Route Handlers
     this.dependencies.searchRouteHandler = new SearchRouteHandler(

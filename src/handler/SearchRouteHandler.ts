@@ -44,7 +44,7 @@ export default class SearchRouteHandler {
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
       // Perhaps do this asynchronously to speed things up?
-      const metadata = await this.searchService.retrieveMetadata(isbnResult[i], campus);
+      const metadata = await this.searchService.retrieveMetadata(extractedFilters, isbnResult[i], campus);
     if (metadata != null && !bookSet.has(metadata.id)) {
         // If metadata comes back non-null, add it to the result list and the bookSet
         result.push(metadata);
