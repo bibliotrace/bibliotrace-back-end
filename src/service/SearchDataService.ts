@@ -3,6 +3,7 @@ import GenreTypeDao from '../db/dao/GenreTypeDao'
 import { Kysely, sql, Transaction } from "kysely";
 import Database from "../db/schema/Database";
 import { ResultRow, Filters } from '../handler/SearchRouteHandler'
+import DaoFactory from '../db/dao/DaoFactory';
 
 
 export default class SearchDataService {
@@ -10,15 +11,14 @@ export default class SearchDataService {
     campusDao: CampusDao
     genreTypeDao: GenreTypeDao
 
-    constructor(db: Kysely<Database>, campusDao: CampusDao, genreTypeDao: GenreTypeDao) {
+    constructor(db: Kysely<Database>, daoFactory: DaoFactory) {
         this.db = db
-        this.campusDao = campusDao
-        this.genreTypeDao = genreTypeDao
+        this.campusDao = daoFactory.getCampusDao()
+        this.genreTypeDao = daoFactory.getGenreTypeDao()
     }
 
     async retrieveMetadata(filterQueryList: any[], isbn: string, campus: string): Promise<ResultRow> {
         const campusId = await this.campusDao.convertCampusStringToId(campus)
-        console.log('FilterQueryList:', filterQueryList)
 
         try {
             let dbQuery = this.db.selectFrom('books')
@@ -31,7 +31,6 @@ export default class SearchDataService {
 
             if (filterQueryList.length > 0) {
                 for (const filter of filterQueryList) {
-                    console.log('FILTER Returned:', filter)
                     dbQuery = dbQuery.where(filter.key, 'in', filter.value)
                 }
             }
@@ -58,7 +57,6 @@ export default class SearchDataService {
 
     async retrieveAllISBNs(filterQueryList: any[], campus: string): Promise<string[]> {
         const campusId = await this.campusDao.convertCampusStringToId(campus)
-        console.log(filterQueryList)
 
         try {
             let dbQuery = this.db.selectFrom("books").distinct()
@@ -69,14 +67,11 @@ export default class SearchDataService {
 
             if (filterQueryList.length > 0) {
                 for (const filter of filterQueryList) {
-                    console.log('FILTER Returned:', filter)
                     dbQuery = dbQuery.where(filter.key, 'in', filter.value)
                 }
             }
 
             const dbResult = await dbQuery.execute()
-
-            console.log('DB RESULT FOR all ISBNs: ', dbResult)
 
             if (dbResult != null) {
                 return dbResult.flatMap((input) => { return input.isbn_list })
@@ -86,7 +81,5 @@ export default class SearchDataService {
         } catch (error) {
             throw new Error(`Error trying to retreive all ISBN's: ${error.message}`)
         }
-    }
-
-    
+    }   
 }
