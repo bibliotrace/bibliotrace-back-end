@@ -31,20 +31,22 @@ export default class SearchRouteHandler {
       }
     }
 
-    console.log(`Completed Search Query: ${inputQuery}`);
-    console.log(`ISBN result list: ${await JSON.stringify(isbnResult)}`);
+    // Turn the query list into actionable db query data
+    const filterQueryList = await this.addFiltersToQuery(extractedFilters)
+
+    // console.log(`ISBN result list: ${await JSON.stringify(isbnResult)}`);
 
     // If isbnResult is null, pull all books from the db matching our filters
     const result = [];
     const bookSet = new Set<string>();
     if (isbnResult == null) {
-      isbnResult = await this.searchService.retrieveAllISBNs(extractedFilters, campus);
+      isbnResult = await this.searchService.retrieveAllISBNs(filterQueryList, campus);
     }
 
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
       // Perhaps do this asynchronously to speed things up?
-      const metadata = await this.searchService.retrieveMetadata(extractedFilters, isbnResult[i], campus);
+      const metadata = await this.searchService.retrieveMetadata(filterQueryList, isbnResult[i], campus);
     if (metadata != null && !bookSet.has(metadata.id)) {
         // If metadata comes back non-null, add it to the result list and the bookSet
         result.push(metadata);
@@ -122,6 +124,30 @@ export default class SearchRouteHandler {
       };
     }
   }
+
+  private async addFiltersToQuery(filters: any[]): Promise<any[]> {
+    let output = []
+
+    if (filters != null) {
+
+
+        for (let i = 0; i < filters.length; i++) {
+            const targetKey = filters[i].queryKey
+            const targetVal = filters[i].queryValue
+
+            if (targetKey == 'Genre') {
+                const genreStrings = targetVal.split(",")
+                console.log('Genre Strings: ', genreStrings)
+
+                output.push({ key: 'genre_types.genre_name', value: genreStrings })
+            }
+            if (targetKey == 'Audience') {
+                // TODO
+            }
+        }
+    }
+    return output
+}
 }
 
 export interface ResultRow {
