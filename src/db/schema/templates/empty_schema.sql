@@ -4,17 +4,17 @@ DROP TABLE IF EXISTS audiences, audit, audit_states, books, campus, checkout, ge
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL
+  audience_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE audit_states (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL
+  audit_state_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE genre_types (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL
+  genre_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE series (
@@ -26,17 +26,17 @@ CREATE INDEX idx_series_name ON series(series_name);
 
 CREATE TABLE user_roles (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL
+  role_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE campus (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL
+  campus_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE books (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
+  book_title VARCHAR(255) NOT NULL,
   isbn_list VARCHAR(255) NOT NULL,
   author VARCHAR(255) NOT NULL,
   primary_genre_id TINYINT UNSIGNED NOT NULL,
@@ -52,7 +52,7 @@ CREATE TABLE books (
   FOREIGN KEY (audience_id) REFERENCES audiences(id),
   FOREIGN KEY (series_id) REFERENCES series(id)
 );
-CREATE UNIQUE INDEX idx_name ON books(name);
+CREATE UNIQUE INDEX idx_name ON books(book_title);
 
 CREATE TABLE audit (
   book_id INT UNSIGNED PRIMARY KEY,
@@ -69,7 +69,7 @@ CREATE TABLE inventory (
   book_id INT UNSIGNED NOT NULL,
   location VARCHAR(255) NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
-  ttl TINYINT UNSIGNED NOT NULL,
+  ttl INT UNSIGNED NOT NULL,
   FOREIGN KEY (book_id) REFERENCES books(id),
   FOREIGN KEY (campus_id) REFERENCES campus(id)
 );

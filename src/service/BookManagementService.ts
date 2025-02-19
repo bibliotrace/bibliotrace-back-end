@@ -128,7 +128,7 @@ export default class BookManagementService {
     }
 
     const book: Book = {
-      name: req.body.name,
+      book_title: req.body.name,
       isbn_list: req.body.isbn,
       author: req.body.author,
       primary_genre_id: primary_genre_id,

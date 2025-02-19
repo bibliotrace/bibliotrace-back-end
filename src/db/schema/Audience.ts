@@ -1,6 +1,6 @@
 interface Audience {
   id: number;
-  name: string;
+  audience_name: string;
 }
 
 export type { Audience };

@@ -1,22 +1,25 @@
 import IsbnService from "../service/IsbnService";
 import { DynamoDb } from "../db/dao/DynamoDb";
+import SearchService from "../service/SearchDataService";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
   dynamoDb: DynamoDb;
+  searchService: SearchService;
 
-  constructor(isbn: IsbnService, dynamoDb: DynamoDb) {
+  constructor(isbn: IsbnService, dynamoDb: DynamoDb, searchService) {
     this.isbn = isbn;
     this.dynamoDb = dynamoDb;
+    this.searchService = searchService;
   }
 
-  async conductSearch(inputQuery: string): Promise<ResultRow[]> {
+  async conductSearch(inputQuery: string, campus: string): Promise<ResultRow[]> {
     // Extract from the inputQuery string the filters and the actual search query
     const extractedObject: Filters = this.extractFilters(inputQuery);
-    const extractedFilters = extractedObject.queryList; // TODO: Do something with this...
-    console.log(extractedFilters);
+    const extractedFilters = extractedObject.queryList;
     const extractedQuery = extractedObject.inputQuery;
 
+    // Get search results from the given query, either from ISBNdb or our query cache
     let isbnResult: undefined | string[];
     if (extractedQuery != null && extractedQuery !== "") {
       // First, get the target list of isbn numbers from the querystring.
@@ -31,58 +34,28 @@ export default class SearchRouteHandler {
     console.log(`Completed Search Query: ${inputQuery}`);
     console.log(`ISBN result list: ${await JSON.stringify(isbnResult)}`);
 
-    // If isbnResult is null, pull all books from the db
+    // If isbnResult is null, pull all books from the db matching our filters
     const result = [];
     const bookSet = new Set<string>();
     if (isbnResult == null) {
-      isbnResult = await this.retrieveAllISBNs();
+      isbnResult = await this.searchService.retrieveAllISBNs(extractedFilters, campus);
     }
 
-    // Retrieve book set from metadata function for each matching isbn result.
+    // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
-      if (!bookSet.has(isbnResult[i])) {
-        // Perhaps do this asynchronously to speed things up?
-        const metadata = await this.retrieveMetadata(isbnResult[i]);
-        // this just checks if there is any metadata first as {} is a possible return type
-        // the cast is to make typescript happy
-        if (Object.keys(metadata).length !== 0 && (metadata as ResultRow).id != null) {
-          result.push(metadata);
-          bookSet.add(isbnResult[i]);
-        }
+      // Perhaps do this asynchronously to speed things up?
+      const metadata = await this.searchService.retrieveMetadata(isbnResult[i], campus);
+    if (metadata != null && !bookSet.has(metadata.id)) {
+        // If metadata comes back non-null, add it to the result list and the bookSet
+        result.push(metadata);
+        bookSet.add(metadata.id);
       }
     }
 
     return result;
   }
 
-  private async retrieveMetadata(isbn: string): Promise<ResultRow | {}> {
-    // TODO: Use MySQL for this. The Google Books API is dog slow for each of these queries
-    const lookupURL = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
-    const response = await fetch(lookupURL);
-    const result = await response.json();
-
-    if (result.items != null && result.items[0] != null) {
-      const bookObj = result.items[0];
-      return {
-        id: bookObj.selfLink,
-        isbn,
-        title: bookObj.volumeInfo.title ?? "Unknown",
-        author:
-          bookObj.volumeInfo.authors != null && bookObj.volumeInfo.authors.length > 0
-            ? bookObj.volumeInfo.authors[0]
-            : "Unknown",
-        genre: bookObj.volumeInfo.categories ?? ["Unknown"],
-        series: "N/A",
-      };
-    } else {
-      return {};
-    }
-  }
-
-  private async retrieveAllISBNs(): Promise<string[]> {
-    // TODO: Use MySQL for this to do a select * on all books available.
-    return ["123456789X", "987654321X"];
-  }
+  // ---------- Helper functions for string query parsing ----------
 
   // Extraction schema is ||Key:Value||||Key:Value||{...}||Key:Value||Search%20Query
   private extractFilters(inputQuery: string): Filters {

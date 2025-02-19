@@ -1,4 +1,5 @@
 import IsbnService from "./service/IsbnService";
+import SearchDataService from './service/SearchDataService'
 import SearchRouteHandler from "./handler/SearchRouteHandler";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -52,9 +53,6 @@ export class Config {
     }
     const dynamoDb = new DynamoDb(documentClient);
 
-    // Service Class Dependencies
-    const isbnService = new IsbnService();
-
     // Database Access Class Dependencies
     const dbConnectionManager = new DBConnectionManager();
     dbConnectionManager.testConnection();
@@ -79,10 +77,15 @@ export class Config {
     const userDao = new UserDao(dbConnectionManager.kyselyDB);
     const userRoleDao = new UserRoleDao(dbConnectionManager.kyselyDB);
 
+    // Service Class Dependencies
+    const isbnService = new IsbnService();
+    const searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, campusDao);
+
     // Route Handlers
     this.dependencies.searchRouteHandler = new SearchRouteHandler(
       isbnService,
-      dynamoDb
+      dynamoDb,
+      searchDataService
     );
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.authHandler = new AuthHandler(

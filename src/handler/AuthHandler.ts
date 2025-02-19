@@ -36,8 +36,10 @@ export class AuthHandler {
 
   async createUser(username: string, password: string, role: UserJWTData) {
     // First grab id's
-    const campusId = await this.getIdFromName(role.campus, this.campusDao)
-    const roleId = await this.getIdFromName(role.roleType, this.userRoleDao)
+    const campusResult = await this.campusDao.getByKeyAndValue('campus_name', role.campus)
+    const campusId = campusResult.object.id
+    const roleIdResult = await this.userRoleDao.getByKeyAndValue('role_name', role.roleType)
+    const roleId = roleIdResult.object.id
 
     // Next grab whether there's another user with the username provided
     const userResponse = await this.userDao.getByPrimaryKey(username)
@@ -68,10 +70,10 @@ export class AuthHandler {
     // Next grab id's
     let campusId, roleId
     if (role.campus != null) {
-        campusId = await this.getIdFromName(role.campus, this.campusDao)
+        campusId = await this.campusDao.getByKeyAndValue('campus_name', role.campus)
     }
     if (role.roleType != null) {
-        roleId = await this.getIdFromName(role.roleType, this.userRoleDao)
+        roleId = await this.userRoleDao.getByKeyAndValue('role_name', role.roleType)
     }
 
     // Next populate everything with the latest information
@@ -113,7 +115,7 @@ export class AuthHandler {
     const roleType = await this.userRoleDao.getByPrimaryKey(userData.role_id)
     const email = userData.email
 
-    return { campus: campus.object.name, roleType: roleType.object.name, email }
+    return { campus: campus.object.campus_name, roleType: roleType.object.role_name, email }
   }
 
   private async hashPassword(password: string): Promise<string> {
@@ -127,16 +129,6 @@ export class AuthHandler {
       return hash;
     } catch (error) {
       throw new Error("Error hashing password: " + error.message);
-    }
-  }
-
-  private async getIdFromName(name: string, dao: any) {
-    const resultObject = await dao.getByKeyAndValue('name', name)
-
-    if (resultObject.object == null) {
-        throw new Error(`Problem Getting ID For the attribute ${name}`)
-    } else {
-        return resultObject.object.id
     }
   }
 }

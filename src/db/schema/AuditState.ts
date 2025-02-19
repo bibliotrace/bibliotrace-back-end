@@ -1,6 +1,6 @@
 interface AuditState {
   id: number;
-  name: string;
+  audit_state_name: string;
 }
 
 export type { AuditState };
