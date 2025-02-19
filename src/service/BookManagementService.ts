@@ -12,27 +12,15 @@ import Response from "../db/response/Response";
 import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import ServerErrorResponse from "../db/response/ServerErrorResponse";
 import SuccessResponse from "../db/response/SuccessResponse";
+import Service from "./Service";
+import DaoFactory from "../db/dao/DaoFactory";
 
 const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
-export default class BookManagementService {
-  private audienceDao: AudienceDao;
-  private bookDao: BookDao
-  private campusDao: CampusDao;
-  private checkoutDao: CheckoutDao;
-  private genreTypeDao: GenreTypeDao;
-  private inventoryDao: InventoryDao;
-  private seriesDao: SeriesDao;
-
-  constructor(audienceDao: AudienceDao, bookDao: BookDao, campusDao: CampusDao, checkoutDao: CheckoutDao, genreTypeDao: GenreTypeDao, inventoryDao: InventoryDao, seriesDao: SeriesDao) {
-    this.audienceDao = audienceDao;
-    this.bookDao = bookDao;
-    this.campusDao = campusDao;
-    this.checkoutDao = checkoutDao;
-    this.genreTypeDao = genreTypeDao;
-    this.inventoryDao = inventoryDao;
-    this.seriesDao = seriesDao;
-  } 
+export default class BookManagementService extends Service {
+  constructor(daoFactory: DaoFactory) {
+    super(daoFactory);
+  }
 
   public async getByIsbn(isbn: string): Promise<Response<Book>> {
     return this.bookDao.getBookByIsbn(isbn);

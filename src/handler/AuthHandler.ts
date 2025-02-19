@@ -1,36 +1,37 @@
-import jwt from 'jsonwebtoken'
-import UserDao from '../db/dao/UserDao'
-import UserRoleDao from '../db/dao/UserRoleDao'
-import { User } from '../db/schema/User'
-import argon2 from 'argon2'
-import CampusDao from '../db/dao/CampusDao';
+import jwt from "jsonwebtoken";
+import UserDao from "../db/dao/UserDao";
+import UserRoleDao from "../db/dao/UserRoleDao";
+import { User } from "../db/schema/User";
+import argon2 from "argon2";
+import CampusDao from "../db/dao/CampusDao";
+import DaoFactory from "../db/dao/DaoFactory";
 
 export class AuthHandler {
-  private readonly campusDao: CampusDao
-  private readonly userDao: UserDao
-  private readonly userRoleDao: UserRoleDao
+  private readonly campusDao: CampusDao;
+  private readonly userDao: UserDao;
+  private readonly userRoleDao: UserRoleDao;
 
-  constructor(campusDao, userDao, userRoleDao) {
-    this.campusDao = campusDao
-    this.userDao = userDao
-    this.userRoleDao = userRoleDao
+  constructor(daoFactory: DaoFactory) {
+    this.campusDao = daoFactory.getCampusDao();
+    this.userDao = daoFactory.getUserDao();
+    this.userRoleDao = daoFactory.getUserRoleDao();
   }
 
   async login(username: string, password: string): Promise<string> {
-    const userResult = await this.userDao.getByPrimaryKey(username)
+    const userResult = await this.userDao.getByPrimaryKey(username);
 
     if (userResult.object == null) {
-      console.log('User Doesn\'t Exist!')
-      return null
+      console.log("User Doesn't Exist!");
+      return null;
     }
 
-    const realHash = await argon2.verify(userResult.object.password_hash, password)
+    const realHash = await argon2.verify(userResult.object.password_hash, password);
     if (realHash) {
-      const role = await this.getUserRole(userResult.object)
-      return await this.buildJWT(role)
+      const role = await this.getUserRole(userResult.object);
+      return await this.buildJWT(role);
     } else {
-      console.log('Password Is Wrong')
-      return null
+      console.log("Password Is Wrong");
+      return null;
     }
   }
 
@@ -42,9 +43,9 @@ export class AuthHandler {
     const roleId = roleIdResult.object.id
 
     // Next grab whether there's another user with the username provided
-    const userResponse = await this.userDao.getByPrimaryKey(username)
+    const userResponse = await this.userDao.getByPrimaryKey(username);
     if (userResponse.object != null) {
-        throw new Error(`User with the username ${username} already exists!`)
+      throw new Error(`User with the username ${username} already exists!`);
     }
 
     // Then make and send off the new user object
@@ -53,22 +54,24 @@ export class AuthHandler {
       password_hash: await this.hashPassword(password),
       role_id: roleId,
       email: role.email,
-      campus_id: campusId
-    }
+      campus_id: campusId,
+    };
 
-    await this.userDao.create(newUserObject)
+    await this.userDao.create(newUserObject);
   }
 
   async updateUser(username: string, password: string, role: UserJWTData) {
     // First look up the user, make sure they exist
-    const userObject = await this.userDao.getByPrimaryKey(username)
+    const userObject = await this.userDao.getByPrimaryKey(username);
 
     if (userObject.object == null) {
-        throw new Error(`User with the Username ${username} doesn't exist! Use the PUT call to create a new user`)
+      throw new Error(
+        `User with the Username ${username} doesn't exist! Use the PUT call to create a new user`
+      );
     }
 
     // Next grab id's
-    let campusId, roleId
+    let campusId, roleId;
     if (role.campus != null) {
         campusId = await this.campusDao.getByKeyAndValue('campus_name', role.campus)
     }
@@ -79,41 +82,48 @@ export class AuthHandler {
     // Next populate everything with the latest information
     const newUserObject = {
       username,
-      password_hash: (password == null) ? userObject.object.password_hash : await this.hashPassword(password),
+      password_hash:
+        password == null
+          ? userObject.object.password_hash
+          : await this.hashPassword(password),
       role_id: roleId ?? userObject.object.role_id,
       email: role.email ?? userObject.object.email,
-      campus_id: campusId ?? userObject.object.campus_id
-    }
+      campus_id: campusId ?? userObject.object.campus_id,
+    };
 
-    await this.userDao.update(username, newUserObject)
+    await this.userDao.update(username, newUserObject);
   }
 
   async deleteUser(username: string) {
     // First look up the user, make sure they exist
-    const userObject = await this.userDao.getByPrimaryKey(username)
+    const userObject = await this.userDao.getByPrimaryKey(username);
 
     if (userObject.object == null) {
-      throw new Error('User Not Found')
+      throw new Error("User Not Found");
     }
 
-    await this.userDao.delete(username)
+    await this.userDao.delete(username);
   }
 
   private async buildJWT(userRole: UserJWTData) {
-    let token
-    if (userRole.roleType === 'Admin') {
-      token = jwt.sign({ userRole }, process.env.AUTH_KEY ?? 'hello world!', { expiresIn: '6d' })
+    let token;
+    if (userRole.roleType === "Admin") {
+      token = jwt.sign({ userRole }, process.env.AUTH_KEY ?? "hello world!", {
+        expiresIn: "6d",
+      });
     } else {
-      token = jwt.sign({ userRole }, process.env.AUTH_KEY ?? 'hello world!', { expiresIn: '1h' })
+      token = jwt.sign({ userRole }, process.env.AUTH_KEY ?? "hello world!", {
+        expiresIn: "1h",
+      });
     }
-    console.log(`Token Generated: ${token}`)
-    return token
+    console.log(`Token Generated: ${token}`);
+    return token;
   }
 
   private async getUserRole(userData: User): Promise<UserJWTData> {
-    const campus = await this.campusDao.getByPrimaryKey(userData.campus_id)
-    const roleType = await this.userRoleDao.getByPrimaryKey(userData.role_id)
-    const email = userData.email
+    const campus = await this.campusDao.getByPrimaryKey(userData.campus_id);
+    const roleType = await this.userRoleDao.getByPrimaryKey(userData.role_id);
+    const email = userData.email;
 
     return { campus: campus.object.campus_name, roleType: roleType.object.role_name, email }
   }
@@ -134,7 +144,7 @@ export class AuthHandler {
 }
 
 export interface UserJWTData {
-  campus: string,
-  roleType: string,
-  email: string
+  campus: string;
+  roleType: string;
+  email: string;
 }
