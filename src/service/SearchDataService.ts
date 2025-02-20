@@ -74,7 +74,10 @@ export default class SearchDataService {
             const dbResult = await dbQuery.execute()
 
             if (dbResult != null) {
-                return dbResult.flatMap((input) => { return input.isbn_list })
+                return dbResult.flatMap((input) => { 
+                    const result = input.isbn_list
+                    return result.split("|")[0]
+                 })
             } else {
                 throw new Error('dbResult was null for some reason!')
             }
