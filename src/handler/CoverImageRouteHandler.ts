@@ -2,52 +2,35 @@ export class CoverImageRouteHandler {
   constructor() {}
 
   async relayImage(isbn: string): Promise<Buffer | null> {
-    const imageSizes = ["L", "M", "S"];
-    const controller = new AbortController();
-    const signal = controller.signal;
+    if (isbn.includes('.jpg')) {
+      const result = await this.fetchImage(`https://images.isbndb.com/covers/${isbn}`)
+      return result
+    }
 
-    const fetchImage = async (url: string): Promise<Buffer | null> => {
-      try {
-        const response = await fetch(url, { signal });
-        if (response.ok) {
-          const buffer = await response.arrayBuffer();
-          if (buffer.byteLength >= 100) {
-            controller.abort(); // Cancel other fetches
-            return Buffer.from(buffer);
-          }
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.log(`Error fetching ${url}:`, error);
-        }
+    const imageSizes = ["L", "M"]; // You can add "S" to this list but those ones tend to be pretty rough... Use at your own risk
+
+    for (let i = 0; i < imageSizes.length; i++) {
+      const result = await this.fetchImage(`https://covers.openlibrary.org/b/isbn/${isbn}-${imageSizes[i]}.jpg`)
+      if (result != null) {
+        return result
       }
-      return null;
-    };
-
-    const fetchPromises = imageSizes.map((size) =>
-      fetchImage(`https://covers.openlibrary.org/b/isbn/${isbn}-${size}.jpg`)
-    );
-
-    // Add Google Books API fetch
-    fetchPromises.push(
-      (async () => {
-        try {
-          const lookupURL = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`;
-          const response = await fetch(lookupURL, { signal });
-          if (!response.ok) return null;
-          const data = await response.json();
-          const imageURL = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
-          if (imageURL) return fetchImage(imageURL);
-        } catch (error) {
-          if (error.name !== "AbortError") {
-            console.log(`Error fetching Google Books API:`, error);
-          }
-        }
-        return null;
-      })()
-    );
-
-    const firstSuccessfulResponse = await Promise.any(fetchPromises);
-    return firstSuccessfulResponse;
+    }
   }
+
+  async fetchImage (url: string): Promise<Buffer | null> {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const buffer = await response.arrayBuffer();
+        if (buffer.byteLength >= 100) {
+          return Buffer.from(buffer);
+        }
+      } else {
+        console.log('Response from Internet Archive was not ok...', response)
+        return null
+      }
+    } catch (error) {
+      console.log("Error while fetching image", error)
+    }
+  };
 }
