@@ -67,35 +67,31 @@ export default class BookManagementService extends Service {
       return checkoutResponse;
     }
 
-    return new SuccessResponse(`Book ${bookResponse.object.name} successfully created`);
+    return new SuccessResponse(
+      `Book ${bookResponse.object.book_title} successfully created`
+    );
   }
 
-  private async parseBook(bookRequest: BookInsertRequest): Promise<Response<Book>> {
+  private async parseBook(bookRequest: BookInsertRequest): Promise<Response<any>> {
     // TODO: there has GOT to be some way to store the id mappings for the audiences and genres somewhere cause querying every time is dumb
     // if the front end can store the raw id mappings, then we can just send the id mappings to the back end and save some pain
-    let primary_genre_id: number;
-    try {
-      primary_genre_id = (
-        await this.genreTypeDao.getAllMatchingOnIndex("name", bookRequest.primary_genre)
-      ).object[0].id;
-    } catch (error) {
-      return new ServerErrorResponse(
-        `Failed to retrieve primary genre id with error ${error.message}`,
-        500
-      );
+    const genreIdResponse = await this.genreTypeDao.getAllMatchingOnIndex(
+      "genre_name",
+      bookRequest.primary_genre
+    );
+    if (genreIdResponse.statusCode !== 200) {
+      return genreIdResponse;
     }
+    const primary_genre_id = genreIdResponse.object[0].id;
 
-    let audience_id: number;
-    try {
-      audience_id = (
-        await this.audienceDao.getAllMatchingOnIndex("name", bookRequest.audience)
-      ).object[0].id;
-    } catch (error) {
-      return new ServerErrorResponse(
-        `Failed to retrieve audience id with error ${error.message}`,
-        500
-      );
+    const audienceIdResponse = await this.audienceDao.getAllMatchingOnIndex(
+      "audience_name",
+      bookRequest.audience
+    );
+    if (audienceIdResponse.statusCode !== 200) {
+      return audienceIdResponse;
     }
+    const audience_id = audienceIdResponse.object[0].id;
 
     const book: Book = {
       book_title: bookRequest.name,
@@ -109,17 +105,14 @@ export default class BookManagementService extends Service {
       book.pages = bookRequest.pages;
     }
     if (bookRequest.series_name) {
-      try {
-        const series_id = (
-          await this.seriesDao.getByKeyAndValue("series_name", bookRequest.series_name)
-        ).object.id;
-        book.series_id = series_id;
-      } catch (error) {
-        return new ServerErrorResponse(
-          `Failed to retrieve series id with error ${error}`,
-          500
-        );
+      const seriesResponse = await this.seriesDao.getByKeyAndValue(
+        "series_name",
+        bookRequest.series_name
+      );
+      if (seriesResponse.statusCode !== 200) {
+        return seriesResponse;
       }
+      book.series_id = seriesResponse.object.id;
     }
     if (bookRequest.series_number) {
       book.series_number = bookRequest.series_number;
@@ -146,10 +139,14 @@ export default class BookManagementService extends Service {
   ): Promise<Response<any>> {
     // again, find some way to store the campus ID mapping to avoid needing this query
     let campus_id: number;
-    const campusResponse = await this.campusDao.getByKeyAndValue("name", request.campus);
+    const campusResponse = await this.campusDao.getByKeyAndValue(
+      "campus_name",
+      request.campus
+    );
     if (campusResponse.statusCode !== 200) {
       return campusResponse;
     }
+    campus_id = campusResponse.object.id;
 
     const inventory: Inventory = {
       qr: request.qr,

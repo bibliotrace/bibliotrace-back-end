@@ -176,7 +176,11 @@ export class AuthService extends Service {
     const roleType = await this.userRoleDao.getByPrimaryKey(userData.role_id);
     const email = userData.email;
 
-    return { campus: campus.object.name, roleType: roleType.object.name, email };
+    return {
+      campus: campus.object.campus_name,
+      roleType: roleType.object.role_name,
+      email,
+    };
   }
 
   // this is only called on the campus and user role DAOs which means we can specify the generics

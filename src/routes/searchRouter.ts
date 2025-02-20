@@ -8,7 +8,7 @@ searchRouter.get("/query/:searchQuery?", async (req, res) => {
     console.log("Handling call to /search with query " + req.params.searchQuery);
     const results = await Config.dependencies.searchRouteHandler.conductSearch(
       req.params.searchQuery ?? "",
-      req.auth.userRole.campus
+      req.auth.userRole.campus // this might break because the express types aren't sure if there's an auth
     );
     res.send({ results });
     console.log("Call to /search complete");

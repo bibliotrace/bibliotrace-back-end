@@ -2,7 +2,6 @@ import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import SuggestionService from "../service/SuggestionService";
 import Response from "../db/response/Response";
 import { Transporter } from "nodemailer";
-import { SentMessageInfo, Options } from "nodemailer/lib/smtp-pool";
 import ServerErrorResponse from "../db/response/ServerErrorResponse";
 
 export class SuggestionHandler {
