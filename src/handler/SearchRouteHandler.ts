@@ -142,7 +142,10 @@ export default class SearchRouteHandler {
                 output.push({ key: 'genre_types.genre_name', value: genreStrings })
             }
             if (targetKey == 'Audience') {
-                // TODO
+                const audienceStrings = targetVal.split(',')
+                console.log('Audience Strings: ', audienceStrings)
+
+                output.push({ key: 'audiences.audience_name', value: audienceStrings })
             }
         }
     }

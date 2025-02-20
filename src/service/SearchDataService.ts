@@ -1,8 +1,8 @@
 import CampusDao from '../db/dao/CampusDao';
 import GenreTypeDao from '../db/dao/GenreTypeDao'
-import { Kysely, sql, Transaction } from "kysely";
+import { Kysely } from "kysely";
 import Database from "../db/schema/Database";
-import { ResultRow, Filters } from '../handler/SearchRouteHandler'
+import { ResultRow } from '../handler/SearchRouteHandler'
 import DaoFactory from '../db/dao/DaoFactory';
 
 
@@ -24,6 +24,7 @@ export default class SearchDataService {
             let dbQuery = this.db.selectFrom('books')
                 .innerJoin('inventory', 'inventory.book_id', 'books.id')
                 .leftJoin('genre_types', 'books.primary_genre_id', 'genre_types.id')
+                .leftJoin('audiences', 'audiences.id', 'books.audience_id')
                 .leftJoin('series', 'series.id', 'books.series_id')
                 .select(['books.id', 'books.book_title', 'books.author', 'genre_types.genre_name', 'series.series_name'])
                 .where('inventory.campus_id', '=', campusId)
@@ -63,6 +64,7 @@ export default class SearchDataService {
                 .select('isbn_list')
                 .innerJoin('inventory', 'inventory.book_id', 'books.id')
                 .leftJoin('genre_types', 'books.primary_genre_id', 'genre_types.id')
+                .leftJoin('audiences', 'audiences.id', 'books.audience_id')
                 .where('inventory.campus_id', '=', campusId)
 
             if (filterQueryList.length > 0) {
