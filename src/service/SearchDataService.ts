@@ -18,6 +18,8 @@ export default class SearchDataService {
     }
 
     async retrieveMetadata(filterQueryList: any[], isbn: string, campus: string): Promise<ResultRow> {
+        const splitIsbn = isbn.split('||')
+
         try {
             let dbQuery = this.db.selectFrom('books')
                 .innerJoin('inventory', 'inventory.book_id', 'books.id')
@@ -27,7 +29,7 @@ export default class SearchDataService {
                 .leftJoin('campus', 'campus.id', 'inventory.campus_id')
                 .select(['books.id', 'books.book_title', 'books.author', 'genre_types.genre_name', 'series.series_name'])
                 .where('campus.campus_name', '=', campus)
-                .where('books.isbn_list', 'like', `%${isbn}%`)
+                .where('books.isbn_list', 'like', `%${splitIsbn[0]}%`)
 
             if (filterQueryList.length > 0) {
                 for (const filter of filterQueryList) {
@@ -38,14 +40,21 @@ export default class SearchDataService {
             const dbResult = await dbQuery.executeTakeFirst()
 
             if (dbResult != null) {
-                return {
+                const output = {
                     id: String(dbResult.id),
                     title: dbResult.book_title,
                     author: dbResult.author ?? 'Unknown',
                     genre: dbResult.genre_name,
                     series: dbResult.series_name ?? 'None',
-                    isbn
+                    isbn: splitIsbn[0],
+                    coverImageId: null
                 }
+                if (splitIsbn.length > 1) {
+                    const coverUrl = splitIsbn[1]
+                    const chunksOfUrl = coverUrl.split('/')
+                    output.coverImageId = chunksOfUrl[chunksOfUrl.length - 1]
+                }
+                return output
             } else {
                 return null
             }

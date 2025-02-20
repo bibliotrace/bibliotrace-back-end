@@ -1,7 +1,7 @@
 import { sanitizeUrl } from "@braintree/sanitize-url";
 
 class IsbnService {
-  async conductSearch(inputQuery: string): Promise<string[]> {
+  async conductSearch(inputQuery: string): Promise<any[]> {
     const result = await fetch(
       `${process.env.ISBN_HOST}/books/${sanitizeUrl(inputQuery)}?pageSize=1000`,
       {
@@ -22,8 +22,8 @@ class IsbnService {
 
     const isbnList = [];
     resultJson.books.map((result) => {
-      if (result.isbn10 != null) isbnList.push(result.isbn10);
-      if (result.isbn13 != null) isbnList.push(result.isbn13);
+      if (result.isbn10 != null) isbnList.push(`${result.isbn10}||${result.image}`);
+      if (result.isbn13 != null) isbnList.push(`${result.isbn13}||${result.image}`);
     });
 
     return isbnList;

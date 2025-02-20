@@ -16,11 +16,9 @@ services:
   dynamodb:
     image: amazon/dynamodb-local
     container_name: dynamodb_container
-    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb"]
+    command: ["-jar", "DynamoDBLocal.jar"]
     ports:
       - "8000:8000"
-    volumes:
-      - dynamodb_data:/home/dynamodblocal/data
 
   bibliotrace:
     platform: linux/amd64
@@ -44,4 +42,3 @@ services:
 
 volumes:
   mysql_data:
-  dynamodb_data:

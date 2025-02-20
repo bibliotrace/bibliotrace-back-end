@@ -20,7 +20,7 @@ export default class SearchRouteHandler {
     const extractedQuery = extractedObject.inputQuery;
 
     // Get search results from the given query, either from ISBNdb or our query cache
-    let isbnResult: undefined | string[];
+    let isbnResult: undefined | any[];
     if (extractedQuery != null && extractedQuery !== "") {
       // First, get the target list of isbn numbers from the querystring.
       isbnResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
@@ -34,7 +34,7 @@ export default class SearchRouteHandler {
     // Turn the query list into actionable db query data
     const filterQueryList = await this.addFiltersToQuery(extractedFilters)
 
-    console.log(`ISBN result list: ${await JSON.stringify(isbnResult)}`);
+    console.log(`ISBN result list: `, isbnResult);
 
     // If isbnResult is null, pull all books from the db matching our filters
     const result = [];
@@ -160,6 +160,7 @@ export interface ResultRow {
   genre: string | undefined;
   series: string | undefined;
   isbn: string | undefined;
+  coverImageId: string | undefined;
 }
 
 export interface Filters {
