@@ -35,13 +35,7 @@ class SuggestionService extends Service {
     return await this.suggestionDao.create(suggestion);
   }
 
-  public async emailSuggestionList(transporter) {
-    transporter.verify(function (error, success) {
-      if (error) {
-        return new ServerErrorResponse(error.message, 500);
-      }
-    });
-
+  public async emailSuggestionList(transporter): Promise<Response<any>> {
     const campus_response: Response<Campus[]> = await this.campusDao.getAll();
     if (campus_response.statusCode !== 200) {
       return campus_response;

@@ -1,5 +1,5 @@
-import express from "express"
+import express from "express";
 
-const reportsRouter = express.Router();
+export const reportsRouter = express.Router();
 
 module.exports = { reportsRouter };

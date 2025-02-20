@@ -18,7 +18,7 @@ abstract class Dao<E, K extends number | string> {
   public async create(
     entity: E,
     transaction?: Transaction<Database>
-  ): Promise<Response<undefined>> {
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -54,9 +54,7 @@ abstract class Dao<E, K extends number | string> {
           .where(key as any, "=", value)
           .executeTakeFirst();
         return new SuccessResponse<E>(
-          `${this.capitalizeFirstLetter(
-            this.entityName
-          )} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E
         );
       } catch (error) {
@@ -83,9 +81,7 @@ abstract class Dao<E, K extends number | string> {
           .where(key as any, "=", value)
           .execute();
         return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(
-            this.entityName
-          )} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E[]
         );
       } catch (error) {
@@ -109,13 +105,11 @@ abstract class Dao<E, K extends number | string> {
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
           .where(this.keyName as any, "=", key)
-          .execute();
+          .executeTakeFirst();
 
         return new SuccessResponse<E>(
-          `${this.capitalizeFirstLetter(
-            this.entityName
-          )} retrieved successfully`,
-          result[0] as E
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          result as E
         );
       } catch (error) {
         return new ServerErrorResponse(
@@ -140,9 +134,7 @@ abstract class Dao<E, K extends number | string> {
           .where(index as any, "=", true)
           .execute();
         return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(
-            this.entityName
-          )} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E[]
         );
       } catch (error) {
@@ -169,9 +161,7 @@ abstract class Dao<E, K extends number | string> {
           .where(index as any, "like", `%${match}%`)
           .execute();
         return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(
-            this.entityName
-          )} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E[]
         );
       } catch (error) {
@@ -183,7 +173,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async getAll(transaction?: Transaction<Database>) {
+  public async getAll(transaction?: Transaction<Database>): Promise<Response<E[]>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
@@ -213,7 +203,7 @@ abstract class Dao<E, K extends number | string> {
     key: K,
     entity: Partial<E>,
     transaction?: Transaction<Database>
-  ): Promise<Response<undefined>> {
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -238,7 +228,7 @@ abstract class Dao<E, K extends number | string> {
   public async delete(
     key: K,
     transaction?: Transaction<Database>
-  ): Promise<Response<undefined>> {
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
