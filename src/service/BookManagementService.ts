@@ -98,7 +98,7 @@ export default class BookManagementService extends Service {
     }
 
     const book: Book = {
-      name: bookRequest.name,
+      book_title: bookRequest.name,
       isbn_list: bookRequest.isbn,
       author: bookRequest.author,
       primary_genre_id: primary_genre_id,

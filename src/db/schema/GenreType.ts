@@ -1,6 +1,6 @@
 interface GenreType {
   id: number;
-  name: string;
+  genre_name: string;
 }
 
 export type { GenreType };

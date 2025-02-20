@@ -1,4 +1,4 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import SearchDataService from './service/SearchDataService'
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import DaoFactory from "./db/dao/DaoFactory";
 import { DynamoDb } from "./db/dao/DynamoDb";
@@ -12,13 +12,13 @@ import AuditService from "./service/AuditService";
 import BookManagementService from "./service/BookManagementService";
 import CheckoutService from "./service/CheckoutService";
 import IsbnService from "./service/IsbnService";
-import SearchService from "./service/SearchService";
 import SuggestionService from "./service/SuggestionService";
 import { AuthService } from "./service/AuthService";
 import Response from "./db/response/Response";
 import { Inventory } from "./db/schema/Inventory";
 import { InventoryHandler } from "./handler/InventoryHandler";
 import { SuggestionHandler } from "./handler/SuggestionHandler";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 
 export class Config {
   static dependencies: ConfigTypes = {};
@@ -49,13 +49,13 @@ export class Config {
     const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
     const ddbClientConfig = hasDynamoEndpoint
       ? {
-          region: "us-west-2",
-          endpoint: process.env.DYNAMO_ENDPOINT,
-          credentials: {
-            accessKeyId: "test",
-            secretAccessKey: "test",
-          },
-        }
+        region: "us-west-2",
+        endpoint: process.env.DYNAMO_ENDPOINT,
+        credentials: {
+          accessKeyId: "test",
+          secretAccessKey: "test",
+        },
+      }
       : {};
     const dynamoClient = new DynamoDBClient(ddbClientConfig);
     const documentClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -81,7 +81,7 @@ export class Config {
     this.auditService = new AuditService(daoFactory);
     this.bookManagementService = new BookManagementService(daoFactory);
     this.checkoutService = new CheckoutService(daoFactory);
-    this.searchService = new SearchService(daoFactory);
+    this.searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, daoFactory);    
     this.authService = new AuthService(daoFactory);
 
     // Route Handlers
@@ -89,8 +89,9 @@ export class Config {
     this.dependencies.inventoryHandler = new InventoryHandler(this.bookManagementService);
     this.dependencies.suggestionHandler = new SuggestionHandler(this.suggestionService);
     this.dependencies.searchRouteHandler = new SearchRouteHandler(
-      Config.isbnService,
-      dynamoDb
+      this.isbnService,
+      dynamoDb,
+      this.searchDataService
     );
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);

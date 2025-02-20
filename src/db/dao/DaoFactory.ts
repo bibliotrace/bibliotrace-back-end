@@ -16,20 +16,20 @@ import UserDao from "./UserDao";
 import UserRoleDao from "./UserRoleDao";
 
 class DaoFactory {
-  private audienceDao: AudienceDao;
-  private auditDao: AuditDao;
-  private auditStateDao: AuditStateDao;
-  private bookDao: BookDao;
-  private campusDao: CampusDao;
-  private checkoutDao: CheckoutDao;
-  private genresDao: GenresDao;
-  private genreTypeDao: GenreTypeDao;
-  private inventoryDao: InventoryDao;
-  private seriesDao: SeriesDao;
-  private suggestionDao: SuggestionDao;
-  private tagDao: TagDao;
-  private userDao: UserDao;
-  private userRoleDao: UserRoleDao;
+  audienceDao: AudienceDao;
+  auditDao: AuditDao;
+  auditStateDao: AuditStateDao;
+  bookDao: BookDao;
+  campusDao: CampusDao;
+  checkoutDao: CheckoutDao;
+  genresDao: GenresDao;
+  genreTypeDao: GenreTypeDao;
+  inventoryDao: InventoryDao;
+  seriesDao: SeriesDao;
+  suggestionDao: SuggestionDao;
+  tagDao: TagDao;
+  userDao: UserDao;
+  userRoleDao: UserRoleDao;
 
   constructor(db: Kysely<Database>) {
     this.audienceDao = new AudienceDao(db);
@@ -44,6 +44,7 @@ class DaoFactory {
     this.seriesDao = new SeriesDao(db);
     this.suggestionDao = new SuggestionDao(db);
     this.tagDao = new TagDao(db);
+    this.userDao = new UserDao(db);
     this.userRoleDao = new UserRoleDao(db);
   }
 

@@ -13,6 +13,17 @@ class CampusDao extends Dao<Campus, number> {
     this.keyName = "id";
     this.entityName = "campus";
   }
+
+  async convertCampusStringToId(campus: string): Promise<number> {
+    try {
+      const campusResult = await this.getByKeyAndValue('campus_name', campus)
+      if (campusResult != null && campusResult.object != null && campusResult.statusCode === 200) {
+        return campusResult.object.id
+      }
+    } catch (error) {
+      throw new Error(`Error trying to get campus ID from campus string: ${error.message}`)
+    }
+  }
 }
 
 export default CampusDao;

@@ -62,7 +62,7 @@ export class AuthHandler {
     if (!params.username) {
       return new RequestErrorResponse("Username is required", 400);
     }
-
+    
     return this.authService.deleteUser(params.username);
   }
 }
