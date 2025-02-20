@@ -1,8 +1,8 @@
 import CampusDao from '../db/dao/CampusDao';
 import GenreTypeDao from '../db/dao/GenreTypeDao'
-import { Kysely, sql, Transaction } from "kysely";
+import { Kysely } from "kysely";
 import Database from "../db/schema/Database";
-import { ResultRow, Filters } from '../handler/SearchRouteHandler'
+import { ResultRow } from '../handler/SearchRouteHandler'
 import DaoFactory from '../db/dao/DaoFactory';
 
 
@@ -18,15 +18,15 @@ export default class SearchDataService {
     }
 
     async retrieveMetadata(filterQueryList: any[], isbn: string, campus: string): Promise<ResultRow> {
-        const campusId = await this.campusDao.convertCampusStringToId(campus)
-
         try {
             let dbQuery = this.db.selectFrom('books')
                 .innerJoin('inventory', 'inventory.book_id', 'books.id')
                 .leftJoin('genre_types', 'books.primary_genre_id', 'genre_types.id')
+                .leftJoin('audiences', 'audiences.id', 'books.audience_id')
                 .leftJoin('series', 'series.id', 'books.series_id')
+                .leftJoin('campus', 'campus.id', 'inventory.campus_id')
                 .select(['books.id', 'books.book_title', 'books.author', 'genre_types.genre_name', 'series.series_name'])
-                .where('inventory.campus_id', '=', campusId)
+                .where('campus.campus_name', '=', campus)
                 .where('books.isbn_list', 'like', `%${isbn}%`)
 
             if (filterQueryList.length > 0) {
@@ -56,14 +56,14 @@ export default class SearchDataService {
     }
 
     async retrieveAllISBNs(filterQueryList: any[], campus: string): Promise<string[]> {
-        const campusId = await this.campusDao.convertCampusStringToId(campus)
-
         try {
             let dbQuery = this.db.selectFrom("books").distinct()
                 .select('isbn_list')
                 .innerJoin('inventory', 'inventory.book_id', 'books.id')
                 .leftJoin('genre_types', 'books.primary_genre_id', 'genre_types.id')
-                .where('inventory.campus_id', '=', campusId)
+                .leftJoin('audiences', 'audiences.id', 'books.audience_id')
+                .leftJoin('campus', 'campus.id', 'inventory.campus_id')
+                .where('campus.campus_name', '=', campus)
 
             if (filterQueryList.length > 0) {
                 for (const filter of filterQueryList) {

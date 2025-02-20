@@ -23,7 +23,7 @@ export default class FilterTypeRoutesHandler {
     console.log(result.object);
 
     return result.object.map((item) => {
-      return item.name;
+      return item.genre_name;
     });
   }
 
@@ -39,7 +39,7 @@ export default class FilterTypeRoutesHandler {
     console.log(result.object);
 
     return result.object.map((item) => {
-      return item.name;
+      return item.audience_name;
     });
   }
 }

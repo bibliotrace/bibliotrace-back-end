@@ -1,11 +1,11 @@
 import IsbnService from "../service/IsbnService";
 import { DynamoDb } from "../db/dao/DynamoDb";
-import SearchService from "../service/SearchDataService";
+import SearchDataService from "../service/SearchDataService";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
   dynamoDb: DynamoDb;
-  searchService: SearchService;
+  searchService: SearchDataService;
 
   constructor(isbn: IsbnService, dynamoDb: DynamoDb, searchService) {
     this.isbn = isbn;
@@ -34,7 +34,7 @@ export default class SearchRouteHandler {
     // Turn the query list into actionable db query data
     const filterQueryList = await this.addFiltersToQuery(extractedFilters)
 
-    // console.log(`ISBN result list: ${await JSON.stringify(isbnResult)}`);
+    console.log(`ISBN result list: ${await JSON.stringify(isbnResult)}`);
 
     // If isbnResult is null, pull all books from the db matching our filters
     const result = [];
@@ -47,7 +47,7 @@ export default class SearchRouteHandler {
     for (let i = 0; i < isbnResult.length; i++) {
       // Perhaps do this asynchronously to speed things up?
       const metadata = await this.searchService.retrieveMetadata(filterQueryList, isbnResult[i], campus);
-    if (metadata != null && !bookSet.has(metadata.id)) {
+      if (metadata != null && !bookSet.has(metadata.id)) {
         // If metadata comes back non-null, add it to the result list and the bookSet
         result.push(metadata);
         bookSet.add(metadata.id);
@@ -131,23 +131,26 @@ export default class SearchRouteHandler {
     if (filters != null) {
 
 
-        for (let i = 0; i < filters.length; i++) {
-            const targetKey = filters[i].queryKey
-            const targetVal = filters[i].queryValue
+      for (let i = 0; i < filters.length; i++) {
+        const targetKey = filters[i].queryKey
+        const targetVal = filters[i].queryValue
 
-            if (targetKey == 'Genre') {
-                const genreStrings = targetVal.split(",")
-                console.log('Genre Strings: ', genreStrings)
+        if (targetKey == 'Genre') {
+          const genreStrings = targetVal.split(",")
+          console.log('Genre Strings: ', genreStrings)
 
-                output.push({ key: 'genre_types.genre_name', value: genreStrings })
-            }
-            if (targetKey == 'Audience') {
-                // TODO
-            }
+          output.push({ key: 'genre_types.genre_name', value: genreStrings })
         }
+        if (targetKey == 'Audience') {
+          const audienceStrings = targetVal.split(',')
+          console.log('Audience Strings: ', audienceStrings)
+
+          output.push({ key: 'audiences.audience_name', value: audienceStrings })
+        }
+      }
     }
     return output
-}
+  }
 }
 
 export interface ResultRow {
