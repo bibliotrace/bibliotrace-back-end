@@ -19,7 +19,6 @@ export class CoverImageRouteHandler {
 
   async fetchImage (url: string): Promise<Buffer | null> {
     try {
-      console.log('URL FOR FETCH IS ', url)
       const response = await fetch(url);
       if (response.ok) {
         const buffer = await response.arrayBuffer();

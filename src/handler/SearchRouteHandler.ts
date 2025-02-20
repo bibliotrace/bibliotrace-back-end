@@ -34,8 +34,6 @@ export default class SearchRouteHandler {
     // Turn the query list into actionable db query data
     const filterQueryList = await this.addFiltersToQuery(extractedFilters)
 
-    console.log(`ISBN result list: `, isbnResult);
-
     // If isbnResult is null, pull all books from the db matching our filters
     const result = [];
     const bookSet = new Set<string>();
