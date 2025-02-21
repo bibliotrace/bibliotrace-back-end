@@ -26,8 +26,16 @@ export default class SearchRouteHandler {
       isbnResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
       if (isbnResult == null) {
         console.log(`Submitting Query to ISBN: ${extractedQuery}`);
-        isbnResult = await this.isbn.conductSearch(extractedQuery);
-        await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
+        const isbnDbCallResponse = await this.isbn.conductSearch(extractedQuery);
+        if (isbnDbCallResponse.object != null) {
+          isbnResult = isbnDbCallResponse.object
+          await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
+        } else {
+          console.log('Nothing came back from search to ISBN')
+          if (isbnDbCallResponse.statusCode !== null) {
+            console.error(`Status code received was a ${isbnDbCallResponse.statusCode}. Message is ${isbnDbCallResponse.message}`)
+          }
+        }
       }
     }
 
