@@ -28,11 +28,11 @@ jobs:
           cache-dependency-path: '*/package-lock.json'
 
       - name: npm ci
-        working-directory: app
+        working-directory: src
         run: npm ci --prefer-offline
 
       - name: npm test
-        working-directory: app
+        working-directory: src
         run: npm test
 
   audit:
@@ -49,7 +49,7 @@ jobs:
       # We don't need to install deps to audit them
 
       - name: npm audit
-        working-directory: app
+        working-directory: src
         run: npm audit --audit-level=critical
 
   lint:
@@ -66,11 +66,11 @@ jobs:
           cache-dependency-path: '*/package-lock.json'
 
       - name: npm ci
-        working-directory: app
+        working-directory: src
         run: npm ci --prefer-offline
 
       - name: npm lint
-        working-directory: app
+        working-directory: src
         run: npm run lint
 
   docker:
@@ -85,6 +85,6 @@ jobs:
       - name: docker build
         uses: docker/build-push-action@v6
         with:
-          context: app
+          context: src
           cache-from: type=gha
           cache-to: type=gha,mode=max
