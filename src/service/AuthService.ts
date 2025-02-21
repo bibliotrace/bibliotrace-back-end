@@ -16,7 +16,7 @@ export class AuthService extends Service {
     super(daoFactory);
   }
 
-  async login(username: string, password: string): Promise<Response<String>> {
+  async login(username: string, password: string): Promise<Response<string>> {
     const userResponse = await this.userDao.getByPrimaryKey(username);
 
     if (userResponse.statusCode !== 200) {
@@ -40,7 +40,7 @@ export class AuthService extends Service {
     username: string,
     password: string,
     role: UserJWTData
-  ): Promise<Response<any>> {
+  ) {
     // First grab id's
     const ids = await this.getCampusAndRoleIds(role);
     if (ids instanceof ServerErrorResponse) {
@@ -81,7 +81,7 @@ export class AuthService extends Service {
     role?: string,
     email?: string,
     campus?: string
-  ): Promise<Response<any>> {
+  ) {
     // First look up the user, make sure they exist
     const userResponse = await this.userDao.getByPrimaryKey(username);
     if (userResponse.statusCode !== 200) {
@@ -133,7 +133,7 @@ export class AuthService extends Service {
     await this.userDao.update(username, newUserObject);
   }
 
-  async deleteUser(username: string): Promise<Response<any>> {
+  async deleteUser(username: string) {
     // First look up the user, make sure they exist
     const userResponse = await this.userDao.getByPrimaryKey(username);
     if (userResponse.statusCode !== 200) {
@@ -146,7 +146,7 @@ export class AuthService extends Service {
     return await this.userDao.delete(username);
   }
 
-  public checkForUserBody(body: any): boolean {
+  public checkForUserBody(body): boolean {
     return (
       body.username != null &&
       body.password != null &&
@@ -187,7 +187,7 @@ export class AuthService extends Service {
   private async getIdFromName(
     name: string,
     dao: Dao<Campus | UserRole, number>
-  ): Promise<Response<any>> {
+  ) {
     const idResponse = await dao.getByKeyAndValue("name", name);
 
     if (idResponse.statusCode === 200) {
@@ -195,9 +195,9 @@ export class AuthService extends Service {
         `Successfully retrieved id for ${name}`,
         idResponse.object.id
       );
+    } else {
+      return new ServerErrorResponse('Error getting an ID given a name', idResponse.statusCode)
     }
-
-    return idResponse;
   }
 
   private async getCampusAndRoleIds(
@@ -205,13 +205,13 @@ export class AuthService extends Service {
   ): Promise<ServerErrorResponse | { campusId: number; roleId: number }> {
     const campusIdResponse = await this.getIdFromName(role.campus, this.campusDao);
     if (campusIdResponse.statusCode !== 200) {
-      return campusIdResponse;
+      return campusIdResponse as ServerErrorResponse;
     }
     const campusId = campusIdResponse.object as number;
 
     const roleIdResponse = await this.getIdFromName(role.roleType, this.userRoleDao);
     if (roleIdResponse.statusCode !== 200) {
-      return roleIdResponse;
+      return roleIdResponse as ServerErrorResponse;
     }
     const roleId = roleIdResponse.object as number;
 

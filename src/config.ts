@@ -1,4 +1,4 @@
-import SearchDataService from './service/SearchDataService'
+import SearchDataService from "./service/SearchDataService";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import DaoFactory from "./db/dao/DaoFactory";
 import { DynamoDb } from "./db/dao/DynamoDb";
@@ -14,8 +14,6 @@ import CheckoutService from "./service/CheckoutService";
 import IsbnService from "./service/IsbnService";
 import SuggestionService from "./service/SuggestionService";
 import { AuthService } from "./service/AuthService";
-import Response from "./db/response/Response";
-import { Inventory } from "./db/schema/Inventory";
 import { InventoryHandler } from "./handler/InventoryHandler";
 import { SuggestionHandler } from "./handler/SuggestionHandler";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -26,7 +24,7 @@ export class Config {
   static auditService: AuditService;
   static bookManagementService: BookManagementService;
   static checkoutService: CheckoutService;
-  static searchService: SearchService;
+  static searchDataService: SearchDataService;
   static authService: AuthService;
   static isbnService: IsbnService;
 
@@ -40,7 +38,7 @@ export class Config {
       this.suggestionService != null ||
       this.auditService != null ||
       this.checkoutService != null ||
-      this.searchService != null
+      this.searchDataService != null
     ) {
       return; // Prevent re-initialization
     }
@@ -49,13 +47,13 @@ export class Config {
     const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
     const ddbClientConfig = hasDynamoEndpoint
       ? {
-        region: "us-west-2",
-        endpoint: process.env.DYNAMO_ENDPOINT,
-        credentials: {
-          accessKeyId: "test",
-          secretAccessKey: "test",
-        },
-      }
+          region: "us-west-2",
+          endpoint: process.env.DYNAMO_ENDPOINT,
+          credentials: {
+            accessKeyId: "test",
+            secretAccessKey: "test",
+          },
+        }
       : {};
     const dynamoClient = new DynamoDBClient(ddbClientConfig);
     const documentClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -81,7 +79,10 @@ export class Config {
     this.auditService = new AuditService(daoFactory);
     this.bookManagementService = new BookManagementService(daoFactory);
     this.checkoutService = new CheckoutService(daoFactory);
-    this.searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, daoFactory);    
+    this.searchDataService = new SearchDataService(
+      dbConnectionManager.kyselyDB,
+      daoFactory
+    );
     this.authService = new AuthService(daoFactory);
 
     // Route Handlers
@@ -112,7 +113,7 @@ export interface ConfigTypes {
 export default new Config();
 
 // this logic is duplicated across multiple routes
-export function validateUserType(req: any, res: any, type: string): boolean {
+export function validateUserType(req, res, type: string): boolean {
   if (req.auth.userRole.roleType !== type) {
     res
       .status(401)
@@ -122,8 +123,8 @@ export function validateUserType(req: any, res: any, type: string): boolean {
   return true;
 }
 
-export function sendResponse(res: any, response: Response<any>): void {
-  const responseBody: any = { message: response.message };
+export function sendResponse(res, response): void {
+  const responseBody = { message: response.message, object: null };
   if (response.object) {
     responseBody.object = response.object;
   }

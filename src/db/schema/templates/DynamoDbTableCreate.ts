@@ -31,7 +31,7 @@ export async function createIsbnQueryCacheTable (documentClient: DynamoDBDocumen
     }
 
     try {
-        const data = await documentClient.send(new CreateTableCommand(params))
+        await documentClient.send(new CreateTableCommand(params))
         console.log(`Table Created Successfully`)
     } catch (err) {
         console.log(`Error: ${err}`)

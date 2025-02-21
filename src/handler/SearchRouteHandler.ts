@@ -20,14 +20,22 @@ export default class SearchRouteHandler {
     const extractedQuery = extractedObject.inputQuery;
 
     // Get search results from the given query, either from ISBNdb or our query cache
-    let isbnResult: undefined | any[];
+    let isbnResult
     if (extractedQuery != null && extractedQuery !== "") {
       // First, get the target list of isbn numbers from the querystring.
       isbnResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
       if (isbnResult == null) {
         console.log(`Submitting Query to ISBN: ${extractedQuery}`);
-        isbnResult = await this.isbn.conductSearch(extractedQuery);
-        await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
+        const isbnDbCallResponse = await this.isbn.conductSearch(extractedQuery);
+        if (isbnDbCallResponse.object != null) {
+          isbnResult = isbnDbCallResponse.object
+          await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
+        } else {
+          console.log('Nothing came back from search to ISBN')
+          if (isbnDbCallResponse.statusCode !== null) {
+            console.error(`Status code received was a ${isbnDbCallResponse.statusCode}. Message is ${isbnDbCallResponse.message}`)
+          }
+        }
       }
     }
 
@@ -63,11 +71,11 @@ export default class SearchRouteHandler {
     const queryList = [];
 
     while (queryIndexes != null) {
-      let queryKey = inputQuery.slice(
+      const queryKey = inputQuery.slice(
         queryIndexes.firstDelimiterIndex + 1,
         queryIndexes.separatorIndex
       );
-      let queryValue = inputQuery.slice(
+      const queryValue = inputQuery.slice(
         queryIndexes.separatorIndex + 1,
         queryIndexes.secondDelimiterIndex
       );
@@ -83,7 +91,7 @@ export default class SearchRouteHandler {
     return { queryList, inputQuery };
   }
 
-  private findIndexes(inputString: string): any {
+  private findIndexes(inputString: string) {
     let firstDelimiterIndex = -1;
     let secondDelimiterIndex = -1;
     let separatorIndex = -1;
@@ -123,8 +131,8 @@ export default class SearchRouteHandler {
     }
   }
 
-  private async addFiltersToQuery(filters: any[]): Promise<any[]> {
-    let output = []
+  private async addFiltersToQuery(filters) {
+    const output = []
 
     if (filters != null) {
 

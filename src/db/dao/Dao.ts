@@ -1,4 +1,6 @@
-import { Kysely, sql, Transaction } from "kysely";
+import { Kysely, Transaction } from "kysely";
+import { Book } from "../schema/Book";
+import { Inventory } from "../schema/Inventory";
 import Database from "../schema/Database";
 import Response from "../response/Response";
 import ServerErrorResponse from "../response/ServerErrorResponse";
@@ -18,7 +20,7 @@ abstract class Dao<E, K extends number | string> {
   public async create(
     entity: E,
     transaction?: Transaction<Database>
-  ): Promise<Response<any>> {
+  ): Promise<Response<Book | Inventory>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {

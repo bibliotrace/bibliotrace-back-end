@@ -1,6 +1,8 @@
 import Response from "../db/response/Response";
 import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import { AuthService } from "../service/AuthService";
+import { Book } from "../db/schema/Book";
+import { Inventory } from "../db/schema/Inventory";
 
 export class AuthHandler {
   private authService: AuthService;
@@ -9,7 +11,7 @@ export class AuthHandler {
     this.authService = authService;
   }
 
-  public async login(body: any): Promise<Response<any>> {
+  public async login(body): Promise<Response<string>> {
     if (!body.username) {
       return new RequestErrorResponse("Username is required", 400);
     }
@@ -20,7 +22,7 @@ export class AuthHandler {
     return this.authService.login(body.username, body.password);
   }
 
-  public async createUser(body: any): Promise<Response<any>> {
+  public async createUser(body): Promise<Response<Book | Inventory | string>> {
     if (!body.username) {
       return new RequestErrorResponse("Username is required", 400);
     }
@@ -44,7 +46,7 @@ export class AuthHandler {
     });
   }
 
-  public async updateUser(body: any): Promise<Response<any>> {
+  public async updateUser(body): Promise<Response<string | number>> {
     if (!body.username) {
       return new RequestErrorResponse("Username is required", 400);
     }
@@ -58,7 +60,7 @@ export class AuthHandler {
     );
   }
 
-  public async deleteUser(params: any): Promise<Response<any>> {
+  public async deleteUser(params): Promise<Response<string>> {
     if (!params.username) {
       return new RequestErrorResponse("Username is required", 400);
     }

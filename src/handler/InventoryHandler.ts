@@ -2,7 +2,6 @@ import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import BookManagementService, {
   BookInsertRequest,
 } from "../service/BookManagementService";
-import Response from "../db/response/Response";
 
 export class InventoryHandler {
   private bookManagementService: BookManagementService;
@@ -11,7 +10,7 @@ export class InventoryHandler {
     this.bookManagementService = bookManagementService;
   }
 
-  public async insertBook(body: any): Promise<Response<any>> {
+  public async insertBook(body) {
     if (!body.isbn || !body.name) {
       return new RequestErrorResponse("ISBN or name is required to insert a book", 400);
     }
@@ -24,7 +23,7 @@ export class InventoryHandler {
     return this.bookManagementService.insertBook(request as BookInsertRequest);
   }
 
-  public async getByIsbn(params: any): Promise<Response<any>> {
+  public async getByIsbn(params: any) {
     if (!params.isbn) {
       return new RequestErrorResponse("ISBN is required to get a book", 400);
     }
@@ -32,7 +31,7 @@ export class InventoryHandler {
     return this.bookManagementService.getByIsbn(params.isbn);
   }
 
-  private parseInsertRequest(body: any): RequestErrorResponse | BookInsertRequest {
+  private parseInsertRequest(body): RequestErrorResponse | BookInsertRequest {
     const requiredFields = [
       "name",
       "author",
@@ -51,7 +50,7 @@ export class InventoryHandler {
       }
     }
 
-    let bookRequest: BookInsertRequest = {
+    const bookRequest: BookInsertRequest = {
       name: body.name,
       author: body.author,
       primary_genre: body.primary_genre,

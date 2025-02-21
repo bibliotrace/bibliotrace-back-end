@@ -17,7 +17,7 @@ export default class SearchDataService {
   }
 
   async retrieveMetadata(
-    filterQueryList: any[],
+    filterQueryList,
     isbn: string,
     campus: string
   ): Promise<ResultRow> {
@@ -73,7 +73,7 @@ export default class SearchDataService {
     }
   }
 
-  async retrieveAllISBNs(filterQueryList: any[], campus: string): Promise<string[]> {
+  async retrieveAllISBNs(filterQueryList, campus: string): Promise<string[]> {
     try {
       let dbQuery = this.db
         .selectFrom("books")

@@ -1,7 +1,9 @@
 import { sanitizeUrl } from "@braintree/sanitize-url";
+import SuccessResponse from "../db/response/SuccessResponse";
+import RequestErrorResponse from "../db/response/RequestErrorResponse";
 
 class IsbnService {
-  async conductSearch(inputQuery: string): Promise<any[]> {
+  async conductSearch(inputQuery: string) {
     const result = await fetch(
       `${process.env.ISBN_HOST}/books/${sanitizeUrl(inputQuery)}?pageSize=1000`,
       {
@@ -12,9 +14,12 @@ class IsbnService {
       }
     );
     if (!result.ok) {
-      throw new Error(
-        `Call to ISBNdb Not Ok, status: ${result.status}, body: ${await result.text()}`
-      );
+      if (result.status === 404) {
+        //TODO: make a "did you mean response"
+        return new SuccessResponse('No Books Found')
+      } else {
+        return new RequestErrorResponse(`Call to ISBNdb Not Ok, status: ${result.status}, body: ${await result.text()}`, result.status)
+      }
     }
     const resultJson = await result.json();
 
@@ -26,7 +31,7 @@ class IsbnService {
       if (result.isbn13 != null) isbnList.push(`${result.isbn13}||${result.image}`);
     });
 
-    return isbnList;
+    return new SuccessResponse('Successfully Pulled in ISBNs', isbnList);
   }
 }
 
