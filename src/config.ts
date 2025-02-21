@@ -1,4 +1,4 @@
-import SearchDataService from './service/SearchDataService'
+import SearchDataService from "./service/SearchDataService";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import DaoFactory from "./db/dao/DaoFactory";
 import { DynamoDb } from "./db/dao/DynamoDb";
@@ -47,13 +47,13 @@ export class Config {
     const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
     const ddbClientConfig = hasDynamoEndpoint
       ? {
-        region: "us-west-2",
-        endpoint: process.env.DYNAMO_ENDPOINT,
-        credentials: {
-          accessKeyId: "test",
-          secretAccessKey: "test",
-        },
-      }
+          region: "us-west-2",
+          endpoint: process.env.DYNAMO_ENDPOINT,
+          credentials: {
+            accessKeyId: "test",
+            secretAccessKey: "test",
+          },
+        }
       : {};
     const dynamoClient = new DynamoDBClient(ddbClientConfig);
     const documentClient = DynamoDBDocumentClient.from(dynamoClient);
@@ -79,7 +79,10 @@ export class Config {
     this.auditService = new AuditService(daoFactory);
     this.bookManagementService = new BookManagementService(daoFactory);
     this.checkoutService = new CheckoutService(daoFactory);
-    this.searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, daoFactory);    
+    this.searchDataService = new SearchDataService(
+      dbConnectionManager.kyselyDB,
+      daoFactory
+    );
     this.authService = new AuthService(daoFactory);
 
     // Route Handlers
