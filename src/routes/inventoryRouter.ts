@@ -11,9 +11,10 @@ inventoryRouter.put("/insert", async (req, res) => {
 });
 
 inventoryRouter.get("/get/:isbn", async (req, res) => {
-  const isbn = req.params.isbn;
-  const response = await Config.dependencies.inventoryHandler.getByIsbn(isbn);
-  sendResponse(res, response);
+  if (validateUserType(req, res, "Admin")) {
+    const response = await Config.dependencies.inventoryHandler.getByIsbn(req.params);
+    sendResponse(res, response);
+  }
 });
 
 module.exports = { inventoryRouter };

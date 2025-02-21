@@ -24,12 +24,12 @@ export class InventoryHandler {
     return this.bookManagementService.insertBook(request as BookInsertRequest);
   }
 
-  public async getByIsbn(body: any): Promise<Response<any>> {
-    if (!body.isbn) {
+  public async getByIsbn(params: any): Promise<Response<any>> {
+    if (!params.isbn) {
       return new RequestErrorResponse("ISBN is required to get a book", 400);
     }
 
-    return this.bookManagementService.getByIsbn(body.isbn);
+    return this.bookManagementService.getByIsbn(params.isbn);
   }
 
   private parseInsertRequest(body: any): RequestErrorResponse | BookInsertRequest {
