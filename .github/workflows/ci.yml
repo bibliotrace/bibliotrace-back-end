@@ -1,0 +1,90 @@
+name: CI / App
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited]
+    paths:
+      - 'src/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/ci.yml'
+env:
+  node_version: "22.x"
+  FORCE_COLOR: 3
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.node_version }}
+          cache: npm
+          cache-dependency-path: '*/package-lock.json'
+
+      - name: npm ci
+        working-directory: app
+        run: npm ci --prefer-offline
+
+      - name: npm test
+        working-directory: app
+        run: npm test
+
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.node_version }}
+
+      # We don't need to install deps to audit them
+
+      - name: npm audit
+        working-directory: app
+        run: npm audit --audit-level=critical
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.node_version }}
+          cache: npm
+          cache-dependency-path: '*/package-lock.json'
+
+      - name: npm ci
+        working-directory: app
+        run: npm ci --prefer-offline
+
+      - name: npm lint
+        working-directory: app
+        run: npm run lint
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: docker build
+        uses: docker/build-push-action@v6
+        with:
+          context: app
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
