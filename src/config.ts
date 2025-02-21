@@ -74,7 +74,7 @@ export class Config {
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
 
     // Services
-    this.isbnService = new IsbnService(daoFactory);
+    this.isbnService = new IsbnService();
     this.suggestionService = new SuggestionService(daoFactory);
     this.auditService = new AuditService(daoFactory);
     this.bookManagementService = new BookManagementService(daoFactory);
