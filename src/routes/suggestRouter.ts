@@ -3,6 +3,7 @@ import { Config, sendResponse } from "../config";
 import nodemailer from "nodemailer";
 import cron from "node-cron";
 import Response from "../db/response/Response";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 export const suggestRouter = express.Router();
 
@@ -16,7 +17,7 @@ const transporter = nodemailer.createTransport({
     clientSecret: process.env.OAUTH_CLIENT_SECRET,
     refreshToken: process.env.OAUTH_REFRESH_TOKEN,
   },
-});
+} as SMTPTransport.Options);
 
 cron.schedule("0 8 * * 5", async () => {
   const response: Response<any> =

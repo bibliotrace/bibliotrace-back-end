@@ -15,7 +15,6 @@ import IsbnService from "./service/IsbnService";
 import SuggestionService from "./service/SuggestionService";
 import { AuthService } from "./service/AuthService";
 import Response from "./db/response/Response";
-import { Inventory } from "./db/schema/Inventory";
 import { InventoryHandler } from "./handler/InventoryHandler";
 import { SuggestionHandler } from "./handler/SuggestionHandler";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -26,7 +25,7 @@ export class Config {
   static auditService: AuditService;
   static bookManagementService: BookManagementService;
   static checkoutService: CheckoutService;
-  static searchService: SearchService;
+  static searchDataService: SearchDataService;
   static authService: AuthService;
   static isbnService: IsbnService;
 
@@ -40,7 +39,7 @@ export class Config {
       this.suggestionService != null ||
       this.auditService != null ||
       this.checkoutService != null ||
-      this.searchService != null
+      this.searchDataService != null
     ) {
       return; // Prevent re-initialization
     }
