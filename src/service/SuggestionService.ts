@@ -2,6 +2,8 @@ import DaoFactory from "../db/dao/DaoFactory";
 import ServerErrorResponse from "../db/response/ServerErrorResponse";
 import SuccessResponse from "../db/response/SuccessResponse";
 import { Campus } from "../db/schema/Campus";
+import { Book } from "../db/schema/Book";
+import { Inventory } from "../db/schema/Inventory";
 import { Suggestion } from "../db/schema/Suggestion";
 import { User } from "../db/schema/User";
 import Service from "./Service";
@@ -15,7 +17,7 @@ class SuggestionService extends Service {
   public async addSuggestion(
     campus_name: string,
     suggestion_string: string
-  ): Promise<Response<any>> {
+  ): Promise<Response<Book | Inventory>> {
     const campus_response = await this.campusDao.getByKeyAndValue("name", campus_name);
     if (campus_response.statusCode !== 200) {
       return new ServerErrorResponse(
@@ -35,7 +37,7 @@ class SuggestionService extends Service {
     return await this.suggestionDao.create(suggestion);
   }
 
-  public async emailSuggestionList(transporter): Promise<Response<any>> {
+  public async emailSuggestionList(transporter): Promise<Response<Campus[] | Suggestion[] | User[]>> {
     const campus_response: Response<Campus[]> = await this.campusDao.getAll();
     if (campus_response.statusCode !== 200) {
       return campus_response;
@@ -73,7 +75,7 @@ class SuggestionService extends Service {
             html: `<p>Suggestions: </p><ul>${suggestions_list}</ul>`,
           };
 
-          transporter.sendMail(mailOptions, function (error, info) {
+          transporter.sendMail(mailOptions, function (error) {
             if (error) {
               return new ServerErrorResponse(error.message, 500);
             }

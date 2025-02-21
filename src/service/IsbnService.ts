@@ -1,7 +1,7 @@
 import { sanitizeUrl } from "@braintree/sanitize-url";
 
 class IsbnService {
-  async conductSearch(inputQuery: string): Promise<any[]> {
+  async conductSearch(inputQuery: string) {
     const result = await fetch(
       `${process.env.ISBN_HOST}/books/${sanitizeUrl(inputQuery)}?pageSize=1000`,
       {

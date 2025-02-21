@@ -14,7 +14,6 @@ import CheckoutService from "./service/CheckoutService";
 import IsbnService from "./service/IsbnService";
 import SuggestionService from "./service/SuggestionService";
 import { AuthService } from "./service/AuthService";
-import Response from "./db/response/Response";
 import { InventoryHandler } from "./handler/InventoryHandler";
 import { SuggestionHandler } from "./handler/SuggestionHandler";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
@@ -111,7 +110,7 @@ export interface ConfigTypes {
 export default new Config();
 
 // this logic is duplicated across multiple routes
-export function validateUserType(req: any, res: any, type: string): boolean {
+export function validateUserType(req, res, type: string): boolean {
   if (req.auth.userRole.roleType !== type) {
     res
       .status(401)
@@ -121,8 +120,8 @@ export function validateUserType(req: any, res: any, type: string): boolean {
   return true;
 }
 
-export function sendResponse(res: any, response: Response<any>): void {
-  const responseBody: any = { message: response.message };
+export function sendResponse(res, response): void {
+  const responseBody = { message: response.message, object: null };
   if (response.object) {
     responseBody.object = response.object;
   }
