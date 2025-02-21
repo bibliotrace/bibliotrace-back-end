@@ -1,4 +1,3 @@
-import { Server } from "mysql2/typings/mysql/lib/Server";
 import Response from "../response/Response";
 import SuccessResponse from "../response/SuccessResponse";
 import { Book } from "../schema/Book";

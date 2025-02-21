@@ -1,8 +1,8 @@
 import { Book } from "../db/schema/Book";
+import { Campus } from "../db/schema/Campus";
 import { Checkout } from "../db/schema/Checkout";
 import { Inventory } from "../db/schema/Inventory";
 import Response from "../db/response/Response";
-import ServerErrorResponse from "../db/response/ServerErrorResponse";
 import SuccessResponse from "../db/response/SuccessResponse";
 import Service from "./Service";
 import DaoFactory from "../db/dao/DaoFactory";
@@ -20,9 +20,9 @@ export default class BookManagementService extends Service {
 
   public async insertBook(
     request: BookInsertRequest
-  ): Promise<Response<Book | Inventory>> {
+  ) {
     // check ISBN first because it's faster to match on than book name string
-    let bookResponse: Response<Book>;
+    let bookResponse
     if (request.isbn) {
       bookResponse = await this.bookDao.getBookByIsbn(request.isbn);
       if (bookResponse.statusCode !== 200) {
@@ -45,12 +45,12 @@ export default class BookManagementService extends Service {
       }
     }
 
-    let inventoryResponse = await this.parseInventory(request, bookResponse.object.id);
-    if (inventoryResponse.statusCode != 200) {
-      return inventoryResponse;
+    const inventoryParseResponse = await this.parseInventory(request, bookResponse.object.id)
+    if (inventoryParseResponse.statusCode != 200) {
+      return inventoryParseResponse;
     }
 
-    inventoryResponse = await this.inventoryDao.create(inventoryResponse.object);
+    const inventoryResponse = await this.inventoryDao.create(inventoryParseResponse.object as Inventory) as Response<Inventory>;
     if (inventoryResponse.statusCode != 200) {
       return inventoryResponse;
     }
@@ -72,7 +72,7 @@ export default class BookManagementService extends Service {
     );
   }
 
-  private async parseBook(bookRequest: BookInsertRequest): Promise<Response<any>> {
+  private async parseBook(bookRequest: BookInsertRequest) {
     // TODO: there has GOT to be some way to store the id mappings for the audiences and genres somewhere cause querying every time is dumb
     // if the front end can store the raw id mappings, then we can just send the id mappings to the back end and save some pain
     const genreIdResponse = await this.genreTypeDao.getAllMatchingOnIndex(
@@ -136,9 +136,8 @@ export default class BookManagementService extends Service {
   private async parseInventory(
     request: BookInsertRequest,
     book_id: number
-  ): Promise<Response<any>> {
+  ): Promise<Response<Campus | Inventory>> {
     // again, find some way to store the campus ID mapping to avoid needing this query
-    let campus_id: number;
     const campusResponse = await this.campusDao.getByKeyAndValue(
       "campus_name",
       request.campus
@@ -146,7 +145,7 @@ export default class BookManagementService extends Service {
     if (campusResponse.statusCode !== 200) {
       return campusResponse;
     }
-    campus_id = campusResponse.object.id;
+    const campus_id = campusResponse.object.id;
 
     const inventory: Inventory = {
       qr: request.qr,

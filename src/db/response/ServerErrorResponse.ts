@@ -1,6 +1,6 @@
 import Response from "./Response";
 
-class ServerErrorResponse<T = any> extends Response<T> {
+class ServerErrorResponse<T = string> extends Response<T> {
   constructor(message: string, statusCode: number = 500) {
     super(message, statusCode);
   }

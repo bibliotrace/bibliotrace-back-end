@@ -1,6 +1,5 @@
 import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import SuggestionService from "../service/SuggestionService";
-import Response from "../db/response/Response";
 import { Transporter } from "nodemailer";
 import ServerErrorResponse from "../db/response/ServerErrorResponse";
 
@@ -11,7 +10,7 @@ export class SuggestionHandler {
     this.suggestionService = suggestionService;
   }
 
-  public async addSuggestion(body: any): Promise<Response<any>> {
+  public async addSuggestion(body) {
     if (!body.campus) {
       return new RequestErrorResponse("Campus is required", 400);
     }
@@ -22,8 +21,8 @@ export class SuggestionHandler {
     return this.suggestionService.addSuggestion(body.campus, body.suggestion);
   }
 
-  public async emailSuggestionList(transporter: Transporter): Promise<Response<any>> {
-    transporter.verify(function (error, success) {
+  public async emailSuggestionList(transporter: Transporter) {
+    transporter.verify(function (error) {
       if (error) {
         return new ServerErrorResponse(error.message, 500);
       }

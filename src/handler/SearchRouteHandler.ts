@@ -20,7 +20,7 @@ export default class SearchRouteHandler {
     const extractedQuery = extractedObject.inputQuery;
 
     // Get search results from the given query, either from ISBNdb or our query cache
-    let isbnResult: undefined | any[];
+    let isbnResult
     if (extractedQuery != null && extractedQuery !== "") {
       // First, get the target list of isbn numbers from the querystring.
       isbnResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
@@ -63,11 +63,11 @@ export default class SearchRouteHandler {
     const queryList = [];
 
     while (queryIndexes != null) {
-      let queryKey = inputQuery.slice(
+      const queryKey = inputQuery.slice(
         queryIndexes.firstDelimiterIndex + 1,
         queryIndexes.separatorIndex
       );
-      let queryValue = inputQuery.slice(
+      const queryValue = inputQuery.slice(
         queryIndexes.separatorIndex + 1,
         queryIndexes.secondDelimiterIndex
       );
@@ -83,7 +83,7 @@ export default class SearchRouteHandler {
     return { queryList, inputQuery };
   }
 
-  private findIndexes(inputString: string): any {
+  private findIndexes(inputString: string) {
     let firstDelimiterIndex = -1;
     let secondDelimiterIndex = -1;
     let separatorIndex = -1;
@@ -123,8 +123,8 @@ export default class SearchRouteHandler {
     }
   }
 
-  private async addFiltersToQuery(filters: any[]): Promise<any[]> {
-    let output = []
+  private async addFiltersToQuery(filters) {
+    const output = []
 
     if (filters != null) {
 
