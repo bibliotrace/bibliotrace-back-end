@@ -18,7 +18,10 @@ class SuggestionService extends Service {
     campus_name: string,
     suggestion_string: string
   ): Promise<Response<Book | Inventory>> {
-    const campus_response = await this.campusDao.getByKeyAndValue("name", campus_name);
+    const campus_response = await this.campusDao.getByKeyAndValue(
+      "campus_name",
+      campus_name
+    );
     if (campus_response.statusCode !== 200) {
       return new ServerErrorResponse(
         `Failed to get campus with name ${campus_name}`,
@@ -37,7 +40,9 @@ class SuggestionService extends Service {
     return await this.suggestionDao.create(suggestion);
   }
 
-  public async emailSuggestionList(transporter): Promise<Response<Campus[] | Suggestion[] | User[]>> {
+  public async emailSuggestionList(
+    transporter
+  ): Promise<Response<Campus[] | Suggestion[] | User[]>> {
     const campus_response: Response<Campus[]> = await this.campusDao.getAll();
     if (campus_response.statusCode !== 200) {
       return campus_response;

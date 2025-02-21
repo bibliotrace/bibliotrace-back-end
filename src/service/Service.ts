@@ -43,6 +43,7 @@ abstract class Service {
     this.seriesDao = daoFactory.getSeriesDao();
     this.suggestionDao = daoFactory.getSuggestionDao();
     this.tagDao = daoFactory.getTagDao();
+    this.userDao = daoFactory.getUserDao();
     this.userRoleDao = daoFactory.getUserRoleDao();
   }
 }
