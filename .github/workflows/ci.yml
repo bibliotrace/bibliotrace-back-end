@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: ${{ env.node_version }}
           cache: npm
-          cache-dependency-path: '*/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
 
       - name: npm ci
         working-directory: src
@@ -63,7 +63,7 @@ jobs:
         with:
           node-version: ${{ env.node_version }}
           cache: npm
-          cache-dependency-path: '*/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
 
       - name: npm ci
         working-directory: src
@@ -85,6 +85,6 @@ jobs:
       - name: docker build
         uses: docker/build-push-action@v6
         with:
-          context: src
+          context: .
           cache-from: type=gha
           cache-to: type=gha,mode=max
