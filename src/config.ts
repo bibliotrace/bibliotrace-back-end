@@ -108,6 +108,7 @@ export interface ConfigTypes {
   filterTypeRoutesHandler?: FilterTypeRoutesHandler;
   inventoryHandler?: InventoryHandler;
   suggestionHandler?: SuggestionHandler;
+  checkoutService?: CheckoutService;
 }
 
 export default new Config();

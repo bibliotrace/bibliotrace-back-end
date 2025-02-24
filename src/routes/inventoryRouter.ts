@@ -17,4 +17,22 @@ inventoryRouter.get("/get/:isbn", async (req, res) => {
   }
 });
 
+inventoryRouter.post("/checkout", async (req, res) => {
+  if (!req.body.qr_code || !req.body.campus) {
+    res.status(400).send("missing qr_code or campus");
+  }
+
+  const [response, book_obj] = await Config.dependencies.checkoutService.checkout(
+    req.body.qr_code,
+    req.body.campus
+  );
+
+  res.status(response.statusCode).send(
+    JSON.stringify({
+      title: book_obj.book_title,
+      author: book_obj.author,
+    }) ?? response.message
+  );
+});
+
 module.exports = { inventoryRouter };
