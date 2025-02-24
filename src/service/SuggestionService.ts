@@ -1,24 +1,32 @@
-import CampusDao from "../db/dao/CampusDao";
-import SuggestionDao from "../db/dao/SuggestionDao";
-
+import DaoFactory from "../db/dao/DaoFactory";
+import ServerErrorResponse from "../db/response/ServerErrorResponse";
+import SuccessResponse from "../db/response/SuccessResponse";
+import { Campus } from "../db/schema/Campus";
+import { Book } from "../db/schema/Book";
+import { Inventory } from "../db/schema/Inventory";
 import { Suggestion } from "../db/schema/Suggestion";
+import { User } from "../db/schema/User";
+import Service from "./Service";
+import Response from "../db/response/Response";
 
-class SuggestionService {
-  private campusDao: CampusDao;
-  private suggestionDao: SuggestionDao;
-
-  constructor(campusDao: CampusDao, suggestionDao: SuggestionDao) {
-    this.campusDao = campusDao;
-    this.suggestionDao = suggestionDao;
+class SuggestionService extends Service {
+  constructor(daoFactory: DaoFactory) {
+    super(daoFactory);
   }
 
-  public async addSuggestion(campus_name: string, suggestion_string: string) {
+  public async addSuggestion(
+    campus_name: string,
+    suggestion_string: string
+  ): Promise<Response<Book | Inventory>> {
     const campus_response = await this.campusDao.getByKeyAndValue(
-      "name",
+      "campus_name",
       campus_name
     );
     if (campus_response.statusCode !== 200) {
-      throw Error(campus_response.message);
+      return new ServerErrorResponse(
+        `Failed to get campus with name ${campus_name}`,
+        500
+      );
     }
 
     const campus_id = campus_response.object.id;
@@ -29,30 +37,23 @@ class SuggestionService {
       campus_id: campus_id,
     };
 
-    const suggestion_response = await this.suggestionDao.create(suggestion);
-    if (suggestion_response.statusCode !== 200) {
-      throw Error(suggestion_response.message);
-    }
+    return await this.suggestionDao.create(suggestion);
   }
 
-  public async emailSuggestionList(transporter) {
-    transporter.verify(function (error, success) {
-      if (error) {
-        throw new Error(error);
-      }
-    });
-
-    const campus_response = await this.campusDao.getAll();
+  public async emailSuggestionList(
+    transporter
+  ): Promise<Response<Campus[] | Suggestion[] | User[]>> {
+    const campus_response: Response<Campus[]> = await this.campusDao.getAll();
     if (campus_response.statusCode !== 200) {
-      throw Error(campus_response.message);
+      return campus_response;
     }
 
     for (const campus of campus_response.object) {
-      const suggestion_response =
+      const suggestion_response: Response<Suggestion[]> =
         await this.suggestionDao.getSuggestionsByCampus(campus.id);
 
       if (suggestion_response.statusCode !== 200) {
-        throw Error(suggestion_response.message);
+        return suggestion_response;
       }
 
       const suggestions = suggestion_response.object;
@@ -61,20 +62,34 @@ class SuggestionService {
         ""
       );
 
-      const mailOptions = {
-        from: "bibliotrace@gmail.com",
-        //TODO: add email field to campus and remove mine
-        to: campus.email ?? "kellyko2003@gmail.com",
-        subject: "Bibliotrace Suggestions",
-        html: `<p>Suggestions: </p><ul>${suggestions_list}</ul>`,
-      };
+      const userResponse: Response<User[]> = await this.userDao.getAllByKeyAndValue(
+        "campus_id",
+        campus.id.toString()
+      );
 
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          throw new Error(error);
+      if (userResponse.statusCode !== 200) {
+        return userResponse;
+      }
+
+      for (const user of userResponse.object) {
+        if (user.email) {
+          const mailOptions = {
+            from: "bibliotrace@gmail.com",
+            to: user.email,
+            subject: "Bibliotrace Suggestions",
+            html: `<p>Suggestions: </p><ul>${suggestions_list}</ul>`,
+          };
+
+          transporter.sendMail(mailOptions, function (error) {
+            if (error) {
+              return new ServerErrorResponse(error.message, 500);
+            }
+          });
         }
-      });
+      }
     }
+
+    return new SuccessResponse("Emailed suggestions list successfully");
   }
 }
 

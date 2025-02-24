@@ -4,13 +4,13 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import { Config } from "./config";
-import { expressjwt, ExpressJwtRequest } from "express-jwt";
+import { expressjwt } from "express-jwt";
 
-const { authRouter } = require("./routes/authRouter.js");
-const { searchRouter } = require("./routes/searchRouter");
-const { inventoryRouter } = require("./routes/inventoryRouter");
-const { suggestRouter } = require("./routes/suggestRouter");
-const { reportsRouter } = require("./routes/reportsRouter");
+import { authRouter } from "./routes/authRouter.js";
+import { searchRouter } from "./routes/searchRouter";
+import { inventoryRouter } from "./routes/inventoryRouter";
+import { suggestRouter } from "./routes/suggestRouter";
+import { reportsRouter } from "./routes/reportsRouter";
 
 const server = express();
 const localPort = 8080;

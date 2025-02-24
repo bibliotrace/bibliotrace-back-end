@@ -1,6 +1,6 @@
 import Response from "./Response";
 
-class SuccessResponse<T = any> extends Response<T> {
+class SuccessResponse<T> extends Response<T> {
   constructor(message: string, object?: T) {
     super(message, 200, object);
   }

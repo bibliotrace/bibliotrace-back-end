@@ -1,6 +1,8 @@
-import { Kysely, sql, Transaction } from "kysely";
+import { Kysely, Transaction } from "kysely";
+import { Book } from "../schema/Book";
+import { Inventory } from "../schema/Inventory";
 import Database from "../schema/Database";
-import Response from '../response/Response';
+import Response from "../response/Response";
 import ServerErrorResponse from "../response/ServerErrorResponse";
 import SuccessResponse from "../response/SuccessResponse";
 
@@ -18,7 +20,7 @@ abstract class Dao<E, K extends number | string> {
   public async create(
     entity: E,
     transaction?: Transaction<Database>
-  ): Promise<Response<undefined>> {
+  ): Promise<Response<Book | Inventory>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -54,9 +56,7 @@ abstract class Dao<E, K extends number | string> {
           .where(key as any, "=", value)
           .executeTakeFirst();
         return new SuccessResponse<E>(
-          `${this.capitalizeFirstLetter(
-            this.entityName
-          )} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E
         );
       } catch (error) {
@@ -68,7 +68,37 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
+  public async getAllByKeyAndValue(
+    key: string,
+    value: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<E[]>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .where(key as any, "=", value)
+          .execute();
+        return new SuccessResponse<E[]>(
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          result as E[]
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve ${this.entityName} with error ${error}`,
+          500
+        );
+      }
+    }
+  }
+
+  public async getByPrimaryKey(
+    key: K,
+    transaction?: Transaction<Database>
+  ): Promise<Response<E>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -77,11 +107,11 @@ abstract class Dao<E, K extends number | string> {
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
           .where(this.keyName as any, "=", key)
-          .execute();
+          .executeTakeFirst();
 
-          return new SuccessResponse<E>(
+        return new SuccessResponse<E>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
-          result[0] as E
+          result as E
         );
       } catch (error) {
         return new ServerErrorResponse(
@@ -145,24 +175,28 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async getAll(transaction?: Transaction<Database>) {
+  public async getAll(transaction?: Transaction<Database>): Promise<Response<E[]>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions are not supported yet", 500)
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        const result = await this.db 
+        const result = await this.db
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
-          .execute()
-        
+          .execute();
+
         return new SuccessResponse<E[]>(
-          `All rows from the ${this.capitalizeFirstLetter(this.tableName)} table retrieved successfully`,
+          `All rows from the ${this.capitalizeFirstLetter(
+            this.tableName
+          )} table retrieved successfully`,
           result as E[]
-        )
+        );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to retrieve all data from the ${this.capitalizeFirstLetter(this.tableName)} table with error ${error.message}`
-        )
+          `Failed to retrieve all data from the ${this.capitalizeFirstLetter(
+            this.tableName
+          )} table with error ${error.message}`
+        );
       }
     }
   }
@@ -171,7 +205,7 @@ abstract class Dao<E, K extends number | string> {
     key: K,
     entity: Partial<E>,
     transaction?: Transaction<Database>
-  ): Promise<Response<undefined>> {
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -193,7 +227,10 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async delete(key: K, transaction?: Transaction<Database>): Promise<Response<undefined>> {
+  public async delete(
+    key: K,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {

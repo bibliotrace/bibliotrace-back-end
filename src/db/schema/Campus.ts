@@ -1,6 +1,6 @@
 interface Campus {
   id: number;
-  name: string;
+  campus_name: string;
 }
 
 export type { Campus };

@@ -1,4 +1,3 @@
-import { Server } from "mysql2/typings/mysql/lib/Server";
 import Response from "../response/Response";
 import SuccessResponse from "../response/SuccessResponse";
 import { Book } from "../schema/Book";
@@ -38,7 +37,7 @@ class BookDao extends Dao<Book, number> {
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
         .selectAll()
-        .where("name", "like", `%${name}%`)
+        .where("book_title", "like", `%${name}%`)
         .executeTakeFirst(); // not necessarily unique but pretty close to it
       // TODO: if not unique, return a list of books matching the provided name
       return new SuccessResponse(`Successfully retrieved book with name ${name}`, book);
