@@ -26,9 +26,35 @@ export class InventoryHandler {
   public async getByIsbn(params: any) {
     if (!params.isbn) {
       return new RequestErrorResponse("ISBN is required to get a book", 400);
+    } else if (!this.isValidISBN(params.isbn)) {
+      return new RequestErrorResponse(`Invalid ISBN ${params.isbn} provided`, 400);
     }
 
     return this.bookManagementService.getByIsbn(params.isbn);
+  }
+
+  private isValidISBN(isbn: string): boolean {
+    const isbnClean = isbn.replace(/[-\s]/g, ""); // Remove hyphens and spaces
+
+    // Check if ISBN is ISBN-10
+    if (isbnClean.length === 10) {
+      const checkSum = isbnClean.split("").reduce((sum, char, index) => {
+        const digit = char === "X" ? 10 : parseInt(char, 10);
+        return sum + digit * (10 - index);
+      }, 0);
+      return checkSum % 11 === 0;
+    }
+
+    // Check if ISBN is ISBN-13
+    if (isbnClean.length === 13) {
+      const checkSum = isbnClean.split("").reduce((sum, char, index) => {
+        const digit = parseInt(char, 10);
+        return sum + (index % 2 === 0 ? digit : digit * 3);
+      }, 0);
+      return checkSum % 10 === 0;
+    }
+
+    return false; // Not a valid ISBN length
   }
 
   private parseInsertRequest(body): RequestErrorResponse | BookInsertRequest {

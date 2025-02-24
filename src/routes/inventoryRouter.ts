@@ -12,8 +12,21 @@ inventoryRouter.put("/insert", async (req, res) => {
 
 inventoryRouter.get("/get/:isbn", async (req, res) => {
   if (validateUserType(req, res, "Admin")) {
-    const response = await Config.dependencies.inventoryHandler.getByIsbn(req.params);
-    sendResponse(res, response);
+    const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(
+      req.params
+    );
+    if (inventoryResponse.statusCode === 200) {
+      sendResponse(res, inventoryResponse);
+    } else {
+      const isbnSearchResponse =
+        await Config.dependencies.searchRouteHandler.retrieveMetadataForIsbn(req.params);
+      sendResponse(res, isbnSearchResponse);
+    }
+  } else {
+    const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(
+      req.params
+    );
+    sendResponse(res, inventoryResponse);
   }
 });
 
