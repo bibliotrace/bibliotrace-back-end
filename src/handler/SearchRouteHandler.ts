@@ -7,7 +7,7 @@ export default class SearchRouteHandler {
   dynamoDb: DynamoDb;
   searchService: SearchDataService;
 
-  constructor(isbn: IsbnService, dynamoDb: DynamoDb, searchService) {
+  constructor(isbn: IsbnService, dynamoDb: DynamoDb, searchService: SearchDataService) {
     this.isbn = isbn;
     this.dynamoDb = dynamoDb;
     this.searchService = searchService;
@@ -20,7 +20,7 @@ export default class SearchRouteHandler {
     const extractedQuery = extractedObject.inputQuery;
 
     // Get search results from the given query, either from ISBNdb or our query cache
-    let isbnResult
+    let isbnResult;
     if (extractedQuery != null && extractedQuery !== "") {
       // First, get the target list of isbn numbers from the querystring.
       isbnResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
@@ -28,19 +28,21 @@ export default class SearchRouteHandler {
         console.log(`Submitting Query to ISBN: ${extractedQuery}`);
         const isbnDbCallResponse = await this.isbn.conductSearch(extractedQuery);
         if (isbnDbCallResponse.object != null) {
-          isbnResult = isbnDbCallResponse.object
+          isbnResult = isbnDbCallResponse.object;
           await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
         } else {
-          console.log('Nothing came back from search to ISBN')
+          console.log("Nothing came back from search to ISBN");
           if (isbnDbCallResponse.statusCode !== null) {
-            console.error(`Status code received was a ${isbnDbCallResponse.statusCode}. Message is ${isbnDbCallResponse.message}`)
+            console.error(
+              `Status code received was a ${isbnDbCallResponse.statusCode}. Message is ${isbnDbCallResponse.message}`
+            );
           }
         }
       }
     }
 
     // Turn the query list into actionable db query data
-    const filterQueryList = await this.addFiltersToQuery(extractedFilters)
+    const filterQueryList = await this.addFiltersToQuery(extractedFilters);
 
     // If isbnResult is null, pull all books from the db matching our filters
     const result = [];
@@ -52,7 +54,11 @@ export default class SearchRouteHandler {
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
       // Perhaps do this asynchronously to speed things up?
-      const metadata = await this.searchService.retrieveMetadata(filterQueryList, isbnResult[i], campus);
+      const metadata = await this.searchService.retrieveMetadata(
+        filterQueryList,
+        isbnResult[i],
+        campus
+      );
       if (metadata != null && !bookSet.has(metadata.id)) {
         // If metadata comes back non-null, add it to the result list and the bookSet
         result.push(metadata);
@@ -132,30 +138,28 @@ export default class SearchRouteHandler {
   }
 
   private async addFiltersToQuery(filters) {
-    const output = []
+    const output = [];
 
     if (filters != null) {
-
-
       for (let i = 0; i < filters.length; i++) {
-        const targetKey = filters[i].queryKey
-        const targetVal = filters[i].queryValue
+        const targetKey = filters[i].queryKey;
+        const targetVal = filters[i].queryValue;
 
-        if (targetKey == 'Genre') {
-          const genreStrings = targetVal.split(",")
-          console.log('Genre Strings: ', genreStrings)
+        if (targetKey == "Genre") {
+          const genreStrings = targetVal.split(",");
+          console.log("Genre Strings: ", genreStrings);
 
-          output.push({ key: 'genre_types.genre_name', value: genreStrings })
+          output.push({ key: "genre_types.genre_name", value: genreStrings });
         }
-        if (targetKey == 'Audience') {
-          const audienceStrings = targetVal.split(',')
-          console.log('Audience Strings: ', audienceStrings)
+        if (targetKey == "Audience") {
+          const audienceStrings = targetVal.split(",");
+          console.log("Audience Strings: ", audienceStrings);
 
-          output.push({ key: 'audiences.audience_name', value: audienceStrings })
+          output.push({ key: "audiences.audience_name", value: audienceStrings });
         }
       }
     }
-    return output
+    return output;
   }
 }
 
