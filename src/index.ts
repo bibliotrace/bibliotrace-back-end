@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
@@ -15,7 +15,7 @@ const { reportsRouter } = require("./routes/reportsRouter");
 const server = express();
 const localPort = 8080;
 
-Config.setup()
+Config.setup();
 
 if (process.env.FRONT_END_ORIGIN) {
   server.use(cors({ origin: process.env.FRONT_END_ORIGIN })); //TODO: set this as our production front-end url when we do deployment
@@ -27,7 +27,7 @@ server.use(express.json());
 
 server.use(
   expressjwt({
-    secret: process.env.AUTH_KEY ?? 'hello world!',
+    secret: process.env.AUTH_KEY ?? "hello world!",
     algorithms: ["HS256"],
     onExpired: async (req, err) => {
       console.log("EXPIREDDDD");

@@ -24,6 +24,7 @@ import UserRoleDao from "./db/dao/UserRoleDao";
 import BookManagementService from "./service/BookManagementService";
 import FilterTypeRoutesHandler from "./handler/FilterTypeRoutesHandler";
 import SuggestionService from "./service/SuggestionService";
+import CheckoutService from "./service/CheckoutService";
 
 export class Config {
   static dependencies: ConfigTypes = {};
@@ -80,16 +81,9 @@ export class Config {
     const userRoleDao = new UserRoleDao(dbConnectionManager.kyselyDB);
 
     // Route Handlers
-    this.dependencies.searchRouteHandler = new SearchRouteHandler(
-      isbnService,
-      dynamoDb
-    );
+    this.dependencies.searchRouteHandler = new SearchRouteHandler(isbnService, dynamoDb);
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
-    this.dependencies.authHandler = new AuthHandler(
-      campusDao,
-      userDao,
-      userRoleDao
-    );
+    this.dependencies.authHandler = new AuthHandler(campusDao, userDao, userRoleDao);
     this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(
       audienceDao,
       genreTypeDao
@@ -103,9 +97,11 @@ export class Config {
       inventoryDao,
       seriesDao
     );
-    this.dependencies.suggestionService = new SuggestionService(
+    this.dependencies.suggestionService = new SuggestionService(campusDao, suggestionDao);
+    this.dependencies.checkoutService = new CheckoutService(
+      inventoryDao,
       campusDao,
-      suggestionDao
+      bookDao
     );
 
     console.log("Dependencies Instantiated");
@@ -119,6 +115,7 @@ export interface ConfigTypes {
   filterTypeRoutesHandler?: FilterTypeRoutesHandler;
   bookManagementService?: BookManagementService;
   suggestionService?: SuggestionService;
+  checkoutService?: CheckoutService;
 }
 
 export default new Config();
