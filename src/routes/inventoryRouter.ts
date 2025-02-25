@@ -14,7 +14,7 @@ inventoryRouter.get("/get/:isbn", async (req, res) => {
     const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(
       req.params
     );
-    if (inventoryResponse.statusCode === 200) {
+    if (inventoryResponse.statusCode === 200 && inventoryResponse.object) {
       sendResponse(res, inventoryResponse);
     } else {
       console.log("ISBN not found in inventory, searching ISBNdb...");

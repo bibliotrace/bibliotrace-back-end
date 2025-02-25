@@ -2,6 +2,7 @@ import { sanitizeUrl } from "@braintree/sanitize-url";
 import SuccessResponse from "../db/response/SuccessResponse";
 import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import { Book } from "../db/schema/Book";
+import sanitizeHtml from "sanitize-html";
 
 class IsbnService {
   async conductSearch(
@@ -56,7 +57,6 @@ class IsbnService {
       );
     }
     const resultJson = await result.json();
-
     if (resultJson.error) {
       return new RequestErrorResponse(
         `Error in ISBNdb response: ${resultJson.error}`,
@@ -64,29 +64,36 @@ class IsbnService {
       );
     }
 
-    let book_title: string = resultJson.title ?? resultJson.title_long ?? "Unknown title";
+    const book = resultJson.book;
+    console.log(book);
+
+    let book_title: string = book.title ?? book.title_long ?? "Unknown title";
     let isbn_list: string = ""; // this should always exist given that we're querying by isbn here lol
-    if (resultJson.isbn && !resultJson.isbn13) {
-      isbn_list = resultJson.isbn;
-    } else if (resultJson.isbn13 && !resultJson.isbn) {
-      isbn_list = resultJson.isbn13;
+    if (book.isbn && !book.isbn13) {
+      isbn_list = book.isbn;
+    } else if (book.isbn13 && !book.isbn) {
+      isbn_list = book.isbn13;
     } else {
-      isbn_list = `${resultJson.isbn}||${resultJson.isbn13}`;
+      isbn_list = `${book.isbn}||${book.isbn13}`;
     }
-    let author: string;
-    if (!resultJson.authors) author = "Unknown author";
-    else author = resultJson.authors.join(", ");
+    let author: string = book.authors ? book.authors.join(", ") : "Unknown author";
     let primary_genre_id: number = -1; // unknown from just ISBN
     let audience_id: number = -1; // unknown from just ISBN
-    let pages: number = resultJson.pages ?? -1;
+    let pages: number = book.pages ?? -1;
     let series_id: number = -1; // unknown from just ISBN
     let series_number: number = -1; // unknown from just ISBN
-    let publish_date: number = resultJson.date_published
-      ? new Date(resultJson.date_published).getFullYear()
+    let publish_date: number = book.date_published
+      ? new Date(book.date_published).getFullYear()
       : -1;
-    let short_description: string = resultJson.synopsis ?? "No short description found";
-    let language: string = resultJson.language ?? "Unknown language";
-    let img_callback: string = resultJson.image ?? "No image found"; // tbh not sure what is in the json for an image here but we'll find out together
+    let short_description: string =
+      sanitizeHtml(book.synopsis, {
+        allowedTags: [],
+        allowedAttributes: {},
+      }) ?? "No short description found";
+    let language: string = book.language
+      ? this.parseLanguage(book.language)
+      : "Unknown language";
+    let img_callback: string = book.image ?? "No image found"; // tbh not sure what is in the json for an image here but we'll find out together
 
     return new SuccessResponse(`Metadata retrieved for ISBN ${isbn}`, {
       book_title,
@@ -102,6 +109,20 @@ class IsbnService {
       language,
       img_callback,
     });
+  }
+
+  private parseLanguage(language: string): string {
+    if (language == "en") return "English";
+    if (language == "es") return "Spanish";
+    if (language == "fr") return "French";
+    if (language == "de") return "German";
+    if (language == "it") return "Italian";
+    if (language == "pt") return "Portuguese";
+    if (language == "nl") return "Dutch";
+    if (language == "ja") return "Japanese";
+    if (language == "zh") return "Chinese";
+    // add more languages as needed
+    return "Unknown language";
   }
 }
 

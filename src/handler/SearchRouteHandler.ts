@@ -23,7 +23,7 @@ export default class SearchRouteHandler {
       return new RequestErrorResponse(`Invalid ISBN ${params.isbn} provided`, 400);
     }
 
-    return await this.isbn.retrieveMetadata(params.isbn);
+    return await this.isbn.retrieveMetadata(this.sanitizeISBN(params.isbn));
   }
 
   async conductSearch(inputQuery: string, campus: string): Promise<ResultRow[]> {
@@ -105,6 +105,10 @@ export default class SearchRouteHandler {
     }
 
     return false; // Not a valid ISBN length
+  }
+
+  private sanitizeISBN(isbn: string): string {
+    return isbn.replace(/[-\s]/g, "");
   }
 
   // ---------- Helper functions for string query parsing ----------

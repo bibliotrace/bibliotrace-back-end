@@ -30,7 +30,7 @@ export class InventoryHandler {
       return new RequestErrorResponse(`Invalid ISBN ${params.isbn} provided`, 400);
     }
 
-    return this.bookManagementService.getByIsbn(params.isbn);
+    return this.bookManagementService.getByIsbn(this.sanitizeISBN(params.isbn));
   }
 
   private isValidISBN(isbn: string): boolean {
@@ -55,6 +55,10 @@ export class InventoryHandler {
     }
 
     return false; // Not a valid ISBN length
+  }
+
+  private sanitizeISBN(isbn: string): string {
+    return isbn.replace(/[-\s]/g, "");
   }
 
   private parseInsertRequest(body): RequestErrorResponse | BookInsertRequest {
