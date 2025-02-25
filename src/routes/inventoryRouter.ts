@@ -5,8 +5,7 @@ export const inventoryRouter = express.Router();
 
 inventoryRouter.put("/insert", async (req, res) => {
   if (validateUserType(req, res, "Admin")) {
-    const response = await Config.dependencies.inventoryHandler.insertBook(req.body);
-    sendResponse(res, response);
+    sendResponse(res, await Config.dependencies.inventoryHandler.insertBook(req.body));
   }
 });
 
@@ -19,15 +18,13 @@ inventoryRouter.get("/get/:isbn", async (req, res) => {
       sendResponse(res, inventoryResponse);
     } else {
       console.log("ISBN not found in inventory, searching ISBNdb...");
-      const isbnSearchResponse =
-        await Config.dependencies.searchRouteHandler.retrieveMetadataForIsbn(req.params);
-      sendResponse(res, isbnSearchResponse);
+      sendResponse(
+        res,
+        await Config.dependencies.searchRouteHandler.retrieveMetadataForIsbn(req.params)
+      );
     }
   } else {
-    const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(
-      req.params
-    );
-    sendResponse(res, inventoryResponse);
+    sendResponse(res, await Config.dependencies.inventoryHandler.getByIsbn(req.params));
   }
 });
 
