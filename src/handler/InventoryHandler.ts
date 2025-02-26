@@ -1,5 +1,4 @@
 import RequestErrorResponse from "../db/response/RequestErrorResponse";
-import SuccessResponse from "../db/response/SuccessResponse";
 import BookManagementService, {
   BookInsertRequest,
 } from "../service/BookManagementService";
