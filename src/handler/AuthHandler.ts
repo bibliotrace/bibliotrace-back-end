@@ -1,10 +1,6 @@
 import Response from "../db/response/Response";
 import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import { AuthService } from "../service/AuthService";
-import { Book } from "../db/schema/Book";
-import { Inventory } from "../db/schema/Inventory";
-import SuccessResponse from "../db/response/SuccessResponse";
-import { User } from "../db/schema/User";
 
 export class AuthHandler {
   private authService: AuthService;

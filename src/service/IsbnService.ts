@@ -67,7 +67,7 @@ class IsbnService {
     const book = resultJson.book;
     console.log(book);
 
-    let book_title: string = book.title ?? book.title_long ?? "Unknown title";
+    const book_title: string = book.title ?? book.title_long ?? "Unknown title";
     let isbn_list: string = ""; // this should always exist given that we're querying by isbn here lol
     if (book.isbn && !book.isbn13) {
       isbn_list = book.isbn;
@@ -76,24 +76,24 @@ class IsbnService {
     } else {
       isbn_list = `${book.isbn}||${book.isbn13}`;
     }
-    let author: string = book.authors ? book.authors.join(", ") : "Unknown author";
-    let primary_genre_id: number = -1; // unknown from just ISBN
-    let audience_id: number = -1; // unknown from just ISBN
-    let pages: number = book.pages ?? -1;
-    let series_id: number = -1; // unknown from just ISBN
-    let series_number: number = -1; // unknown from just ISBN
-    let publish_date: number = book.date_published
+    const author: string = book.authors ? book.authors.join(", ") : "Unknown author";
+    const primary_genre_id: number = -1; // unknown from just ISBN
+    const audience_id: number = -1; // unknown from just ISBN
+    const pages: number = book.pages ?? -1;
+    const series_id: number = -1; // unknown from just ISBN
+    const series_number: number = -1; // unknown from just ISBN
+    const publish_date: number = book.date_published
       ? new Date(book.date_published).getFullYear()
       : -1;
-    let short_description: string =
+    const short_description: string =
       sanitizeHtml(book.synopsis, {
         allowedTags: [],
         allowedAttributes: {},
       }) ?? "No short description found";
-    let language: string = book.language
+    const language: string = book.language
       ? this.parseLanguage(book.language)
       : "Unknown language";
-    let img_callback: string = book.image ?? "No image found"; // tbh not sure what is in the json for an image here but we'll find out together
+    const img_callback: string = book.image ?? "No image found"; // this just returns the raw URL to the image, which unfortunately has CORS problems when rendered from the frontend
 
     return new SuccessResponse(`Metadata retrieved for ISBN ${isbn}`, {
       book_title,

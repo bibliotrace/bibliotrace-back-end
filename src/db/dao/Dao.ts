@@ -43,9 +43,7 @@ abstract class Dao<E, K extends number | string> {
   private parseDuplicateKeyError(error: string): ServerErrorResponse {
     const key = error.split("entry '")[1].split("'")[0];
     return new ServerErrorResponse(
-      `${this.capitalizeFirstLetter(this.keyName)} ${key} already exists in ${
-        this.entityName
-      } table. Please submit another request with a unique ${this.keyName}.`,
+      `${this.keyName} ${key} already exists in ${this.entityName} table. Please submit another request with a unique ${this.keyName}.`,
       500
     );
   }
