@@ -1,4 +1,5 @@
 import RequestErrorResponse from "../db/response/RequestErrorResponse";
+import SuccessResponse from "../db/response/SuccessResponse";
 import BookManagementService, {
   BookInsertRequest,
 } from "../service/BookManagementService";
@@ -76,6 +77,11 @@ export class InventoryHandler {
       }
     }
 
+    const qrResponse = this.parseQr(body.qr);
+    if (qrResponse instanceof RequestErrorResponse) {
+      return qrResponse;
+    }
+
     const bookRequest: BookInsertRequest = {
       book_title: body.book_title,
       author: body.author,
@@ -119,5 +125,12 @@ export class InventoryHandler {
     }
 
     return bookRequest;
+  }
+
+  private parseQr(qr: string) {
+    // TODO: figure out how the Access QR code is generated, this is just a placeholder
+    if (!qr || qr.length !== 6) {
+      return new RequestErrorResponse(`Invalid QR code ${qr} provided`, 400);
+    }
   }
 }

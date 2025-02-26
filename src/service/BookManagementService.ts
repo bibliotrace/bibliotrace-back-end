@@ -87,8 +87,6 @@ export default class BookManagementService extends Service {
   }
 
   private async parseBook(bookRequest: BookInsertRequest) {
-    // TODO: there has GOT to be some way to store the id mappings for the audiences and genres somewhere cause querying every time is dumb
-    // if the front end can store the raw id mappings, then we can just send the id mappings to the back end and save some pain
     const genreIdResponse = await this.genreTypeDao.getAllMatchingOnIndex(
       "genre_name",
       bookRequest.primary_genre
@@ -102,11 +100,9 @@ export default class BookManagementService extends Service {
       "audience_name",
       bookRequest.audience
     );
-    console.log("Audience ID Response", audienceIdResponse);
     if (audienceIdResponse.statusCode !== 200) {
       return audienceIdResponse;
     }
-    console.log("Audience Response Object", audienceIdResponse.object);
     const audience_id = audienceIdResponse.object[0].id;
 
     const book: Book = {
