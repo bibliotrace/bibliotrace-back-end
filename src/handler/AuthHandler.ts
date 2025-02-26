@@ -3,6 +3,8 @@ import RequestErrorResponse from "../db/response/RequestErrorResponse";
 import { AuthService } from "../service/AuthService";
 import { Book } from "../db/schema/Book";
 import { Inventory } from "../db/schema/Inventory";
+import SuccessResponse from "../db/response/SuccessResponse";
+import { User } from "../db/schema/User";
 
 export class AuthHandler {
   private authService: AuthService;
@@ -22,7 +24,7 @@ export class AuthHandler {
     return this.authService.login(body.username, body.password);
   }
 
-  public async createUser(body): Promise<Response<Book | Inventory | string>> {
+  public async createUser(body) {
     if (!body.username) {
       return new RequestErrorResponse("Username is required", 400);
     }
@@ -64,7 +66,7 @@ export class AuthHandler {
     if (!params.username) {
       return new RequestErrorResponse("Username is required", 400);
     }
-    
+
     return this.authService.deleteUser(params.username);
   }
 }

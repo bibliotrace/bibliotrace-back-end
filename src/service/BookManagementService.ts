@@ -6,6 +6,7 @@ import Response from "../db/response/Response";
 import SuccessResponse from "../db/response/SuccessResponse";
 import Service from "./Service";
 import DaoFactory from "../db/dao/DaoFactory";
+import ServerErrorResponse from "../db/response/ServerErrorResponse";
 
 const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
@@ -18,39 +19,52 @@ export default class BookManagementService extends Service {
     return this.bookDao.getBookByIsbn(isbn);
   }
 
-  public async insertBook(
-    request: BookInsertRequest
-  ) {
+  public async insertBook(request: BookInsertRequest) {
     // check ISBN first because it's faster to match on than book name string
-    let bookResponse
+    let bookResponse;
     if (request.isbn) {
-      bookResponse = await this.bookDao.getBookByIsbn(request.isbn);
-      if (bookResponse.statusCode !== 200) {
-        bookResponse = await this.bookDao.getBookByName(request.name);
+      bookResponse = await this.bookDao.getBookByIsbn(
+        this.parseIsbnList(request.isbn)[0]
+      );
+      if (bookResponse.statusCode !== 200 || !bookResponse.object) {
+        bookResponse = await this.bookDao.getBookByName(request.book_title);
       }
     } else {
-      bookResponse = await this.bookDao.getBookByName(request.name);
+      bookResponse = await this.bookDao.getBookByName(request.book_title);
     }
 
-    if (bookResponse.statusCode === 500) {
+    if (bookResponse.statusCode === 500 || !bookResponse.object) {
       // book does not already exist in book table
       bookResponse = await this.parseBook(request);
       if (bookResponse.statusCode != 200) {
         return bookResponse;
       }
 
-      const response = await this.bookDao.create(bookResponse.object);
-      if (response.statusCode != 200) {
-        return response;
+      bookResponse = await this.bookDao.create(bookResponse.object);
+      if (bookResponse.statusCode != 200) {
+        return bookResponse;
+      }
+
+      bookResponse = await this.bookDao.getBookByIsbn(
+        this.parseIsbnList(request.isbn)[0]
+      );
+      if (bookResponse.statusCode !== 200 || !bookResponse.object) {
+        // we can't find the book we just created lol
+        return new ServerErrorResponse(bookResponse.message);
       }
     }
 
-    const inventoryParseResponse = await this.parseInventory(request, bookResponse.object.id)
+    const inventoryParseResponse = await this.parseInventory(
+      request,
+      bookResponse.object.id
+    );
     if (inventoryParseResponse.statusCode != 200) {
       return inventoryParseResponse;
     }
 
-    const inventoryResponse = await this.inventoryDao.create(inventoryParseResponse.object as Inventory) as Response<Inventory>;
+    const inventoryResponse = (await this.inventoryDao.create(
+      inventoryParseResponse.object as Inventory
+    )) as Response<Inventory>;
     if (inventoryResponse.statusCode != 200) {
       return inventoryResponse;
     }
@@ -88,13 +102,15 @@ export default class BookManagementService extends Service {
       "audience_name",
       bookRequest.audience
     );
+    console.log("Audience ID Response", audienceIdResponse);
     if (audienceIdResponse.statusCode !== 200) {
       return audienceIdResponse;
     }
+    console.log("Audience Response Object", audienceIdResponse.object);
     const audience_id = audienceIdResponse.object[0].id;
 
     const book: Book = {
-      book_title: bookRequest.name,
+      book_title: bookRequest.book_title,
       isbn_list: bookRequest.isbn,
       author: bookRequest.author,
       primary_genre_id: primary_genre_id,
@@ -157,11 +173,14 @@ export default class BookManagementService extends Service {
 
     return new SuccessResponse<Inventory>("Successfully parsed inventory", inventory);
   }
+
+  private parseIsbnList(isbnList: string): string[] {
+    return isbnList.split("||");
+  }
 }
 
 export interface BookInsertRequest {
-  id?: number;
-  name: string;
+  book_title: string;
   isbn?: string; // this unfortunately needs to be optional because some ISBNs have been obscured or are illegible
   author: string;
   primary_genre: string;

@@ -11,10 +11,6 @@ export class InventoryHandler {
   }
 
   public async insertBook(body) {
-    if (!body.isbn || !body.name) {
-      return new RequestErrorResponse("ISBN or name is required to insert a book", 400);
-    }
-
     const request = this.parseInsertRequest(body);
     if (request instanceof RequestErrorResponse) {
       return request;
@@ -63,7 +59,7 @@ export class InventoryHandler {
 
   private parseInsertRequest(body): RequestErrorResponse | BookInsertRequest {
     const requiredFields = [
-      "name",
+      "book_title",
       "author",
       "primary_genre",
       "audience",
@@ -81,7 +77,7 @@ export class InventoryHandler {
     }
 
     const bookRequest: BookInsertRequest = {
-      name: body.name,
+      book_title: body.book_title,
       author: body.author,
       primary_genre: body.primary_genre,
       audience: body.audience,
@@ -89,10 +85,6 @@ export class InventoryHandler {
       location: body.location,
       campus: body.campus,
     };
-
-    if (body.id) {
-      bookRequest.id = body.id;
-    }
 
     if (body.isbn) {
       bookRequest.isbn = body.isbn;
