@@ -24,11 +24,14 @@ export class DynamoDb {
       const cacheResult = await this.dynamoClient.send(new GetItemCommand(params));
       if (cacheResult.Item != null) {
         return new SuccessResponse(
-          `Query ${query} successfully added to ISBN cache`,
+          `Query ${query} successfully retrieved ISBN data`,
           cacheResult.Item.result.S.split(",")
         );
       } else {
-        return null;
+        return new SuccessResponse(
+          `Query ${query} failed to find ISBN data`,
+          null
+        );
       }
     } catch (error) {
       return new ServerErrorResponse(
