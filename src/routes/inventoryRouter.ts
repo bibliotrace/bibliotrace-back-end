@@ -17,13 +17,13 @@ inventoryRouter.get("/get/:isbn", async (req, res) => {
   }
 });
 
-inventoryRouter.post("/checkout", async (req, res) => {
-  const response = await Config.dependencies.checkoutHandler.checkout(req.body);
+inventoryRouter.post("/checkout", async (req: any, res) => {
+  const response = await Config.dependencies.checkoutHandler.checkout(req.body, req.auth);
   sendResponse(res, response);
 });
 
-inventoryRouter.post("/checkin", async (req, res) => {
-  const response = await Config.dependencies.checkoutHandler.checkin(req.body);
+inventoryRouter.post("/checkin", async (req: any, res) => {
+  const response = await Config.dependencies.checkoutHandler.checkin(req.body, req.auth);
   sendResponse(res, response);
 });
 
