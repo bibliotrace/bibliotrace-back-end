@@ -132,8 +132,8 @@ export class InventoryHandler {
       !qr ||
       qr.length !== 6 ||
       !this.isAlphanumeric(qr) ||
-      !this.isAlpha(qr.substring(0, 1)) ||
-      !this.isNumeric(qr.substring(2, 5))
+      !this.isAlpha(qr.substring(0, 2)) ||
+      !this.isNumeric(qr.substring(2))
     ) {
       return new RequestErrorResponse("Invalid QR code provided", 400);
     }
