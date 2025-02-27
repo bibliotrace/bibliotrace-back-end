@@ -58,6 +58,11 @@ export class InventoryHandler {
   }
 
   private parseInsertRequest(body): RequestErrorResponse | BookInsertRequest {
+    const qrResponse = this.parseQr(body.qr);
+    if (qrResponse instanceof RequestErrorResponse) {
+      return qrResponse;
+    }
+
     const requiredFields = [
       "book_title",
       "author",
@@ -74,11 +79,6 @@ export class InventoryHandler {
           400
         );
       }
-    }
-
-    const qrResponse = this.parseQr(body.qr);
-    if (qrResponse instanceof RequestErrorResponse) {
-      return qrResponse;
     }
 
     const bookRequest: BookInsertRequest = {
