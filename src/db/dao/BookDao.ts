@@ -20,8 +20,11 @@ class BookDao extends Dao<Book, number> {
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
         .selectAll()
-        .where("isbn_list", "like", `%${isbn}%`)
+        .where("isbn_list", "like", `%${isbn}%` as any)
         .executeTakeFirst(); // isbn should be unique, thus we just take the first row containing the isbn
+      if (!book) {
+        return new SuccessResponse(`No book found with isbn ${isbn}`);
+      }
       return new SuccessResponse(`Successfully retrieved book with isbn ${isbn}`, book);
     } catch (error) {
       return new ServerErrorResponse(
@@ -37,9 +40,12 @@ class BookDao extends Dao<Book, number> {
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
         .selectAll()
-        .where("book_title", "like", `%${name}%`)
+        .where("book_title", "like", `%${name}%` as any)
         .executeTakeFirst(); // not necessarily unique but pretty close to it
       // TODO: if not unique, return a list of books matching the provided name
+      if (!book) {
+        return new SuccessResponse(`No book found with name ${name}`);
+      }
       return new SuccessResponse(`Successfully retrieved book with name ${name}`, book);
     } catch (error) {
       return new ServerErrorResponse(

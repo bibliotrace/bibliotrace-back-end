@@ -1,6 +1,9 @@
 import IsbnService from "../service/IsbnService";
 import { DynamoDb } from "../db/dao/DynamoDb";
 import SearchDataService from "../service/SearchDataService";
+import Response from "../db/response/Response";
+import { Book } from "../db/schema/Book";
+import RequestErrorResponse from "../db/response/RequestErrorResponse";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
@@ -11,6 +14,16 @@ export default class SearchRouteHandler {
     this.isbn = isbn;
     this.dynamoDb = dynamoDb;
     this.searchService = searchService;
+  }
+
+  public async retrieveMetadataForIsbn(params): Promise<Response<Book | unknown>> {
+    if (!params.isbn) {
+      return new RequestErrorResponse("ISBN is required to get a book", 400);
+    } else if (!this.isValidISBN(params.isbn)) {
+      return new RequestErrorResponse(`Invalid ISBN ${params.isbn} provided`, 400);
+    }
+
+    return await this.isbn.retrieveMetadata(this.sanitizeISBN(params.isbn));
   }
 
   async conductSearch(inputQuery: string, campus: string): Promise<ResultRow[]> {
@@ -72,6 +85,35 @@ export default class SearchRouteHandler {
     }
 
     return result;
+  }
+
+  private isValidISBN(isbn: string): boolean {
+    const isbnClean = isbn.replace(/[-\s]/g, ""); // Remove hyphens and spaces
+
+    // Check if ISBN is ISBN-10
+    if (isbnClean.length === 10) {
+      const checkSum = isbnClean.split("").reduce((sum, char, index) => {
+        // ISBN10 numbers sometimes contain an X, which stands for 10
+        const digit = char === "X" ? 10 : parseInt(char, 10);
+        return sum + digit * (10 - index);
+      }, 0);
+      return checkSum % 11 === 0;
+    }
+
+    // Check if ISBN is ISBN-13
+    if (isbnClean.length === 13) {
+      const checkSum = isbnClean.split("").reduce((sum, char, index) => {
+        const digit = parseInt(char, 10);
+        return sum + (index % 2 === 0 ? digit : digit * 3);
+      }, 0);
+      return checkSum % 10 === 0;
+    }
+
+    return false; // Not a valid ISBN length
+  }
+
+  private sanitizeISBN(isbn: string): string {
+    return isbn.replace(/[-\s]/g, "");
   }
 
   // ---------- Helper functions for string query parsing ----------

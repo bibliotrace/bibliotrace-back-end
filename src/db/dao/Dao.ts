@@ -1,6 +1,4 @@
 import { Kysely, Transaction } from "kysely";
-import { Book } from "../schema/Book";
-import { Inventory } from "../schema/Inventory";
 import Database from "../schema/Database";
 import Response from "../response/Response";
 import ServerErrorResponse from "../response/ServerErrorResponse";
@@ -17,10 +15,7 @@ abstract class Dao<E, K extends number | string> {
     this.db = db;
   }
 
-  public async create(
-    entity: E,
-    transaction?: Transaction<Database>
-  ): Promise<Response<Book | Inventory>> {
+  public async create(entity: E, transaction?: Transaction<Database>) {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -30,15 +25,27 @@ abstract class Dao<E, K extends number | string> {
           .values(entity)
           .execute();
         return new SuccessResponse(
-          `${this.capitalizeFirstLetter(this.entityName)} created successfully`
+          `${this.capitalizeFirstLetter(this.entityName)} created successfully`,
+          entity
         );
       } catch (error) {
+        if (error.message.includes("Duplicate entry")) {
+          return this.parseDuplicateKeyError(error.message);
+        }
         return new ServerErrorResponse(
           `Failed to create ${this.entityName} with error ${error.message}`,
           500
         );
       }
     }
+  }
+
+  private parseDuplicateKeyError(error: string): ServerErrorResponse {
+    const key = error.split("entry '")[1].split("'")[0];
+    return new ServerErrorResponse(
+      `${this.keyName} ${key} already exists in ${this.entityName} table. Please submit another request with a unique ${this.keyName}.`,
+      500
+    );
   }
 
   public async getByKeyAndValue(
@@ -160,8 +167,13 @@ abstract class Dao<E, K extends number | string> {
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
-          .where(index as any, "like", `%${match}%`)
+          .where(index as any, "like", `%${match}%` as any)
           .execute();
+        if (!result || result.length === 0) {
+          return new SuccessResponse<E[]>(
+            `No ${this.entityName}s found matching ${match} on ${index}`
+          );
+        }
         return new SuccessResponse<E[]>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E[]
