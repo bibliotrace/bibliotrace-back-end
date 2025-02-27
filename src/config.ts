@@ -18,6 +18,7 @@ import { InventoryHandler } from "./handler/InventoryHandler";
 import { SuggestionHandler } from "./handler/SuggestionHandler";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import Response from "./db/response/Response";
+import { CheckoutHandler } from "./handler/CheckoutHandler";
 
 export class Config {
   static dependencies: ConfigTypes = {};
@@ -35,6 +36,7 @@ export class Config {
       this.dependencies.coverImageRouteHandler != null ||
       this.dependencies.authHandler != null ||
       this.dependencies.filterTypeRoutesHandler != null ||
+      this.dependencies.checkoutHandler != null ||
       this.bookManagementService != null ||
       this.suggestionService != null ||
       this.auditService != null ||
@@ -97,6 +99,7 @@ export class Config {
     );
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);
+    this.dependencies.checkoutHandler = new CheckoutHandler(this.checkoutService);
 
     console.log("Dependencies Instantiated");
   }
@@ -109,7 +112,7 @@ export interface ConfigTypes {
   filterTypeRoutesHandler?: FilterTypeRoutesHandler;
   inventoryHandler?: InventoryHandler;
   suggestionHandler?: SuggestionHandler;
-  checkoutService?: CheckoutService;
+  checkoutHandler?: CheckoutHandler;
 }
 
 export default new Config();

@@ -36,12 +36,18 @@ export default class SearchRouteHandler {
     let isbnResult;
     if (extractedQuery != null && extractedQuery !== "") {
       // First, get the target list of isbn numbers from the querystring.
-      isbnResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
+      const queryCacheResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
+      if (queryCacheResult != null && queryCacheResult.statusCode === 200) {
+        isbnResult = queryCacheResult.object
+      }
       if (isbnResult == null) {
         console.log(`Submitting Query to ISBN: ${extractedQuery}`);
         const isbnDbCallResponse = await this.isbn.conductSearch(extractedQuery);
         if (isbnDbCallResponse.object != null) {
           isbnResult = isbnDbCallResponse.object;
+
+          console.log(isbnResult)
+
           await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
         } else {
           console.log("Nothing came back from search to ISBN");
@@ -66,7 +72,6 @@ export default class SearchRouteHandler {
 
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
-      // Perhaps do this asynchronously to speed things up?
       const metadata = await this.searchService.retrieveMetadata(
         filterQueryList,
         isbnResult[i],

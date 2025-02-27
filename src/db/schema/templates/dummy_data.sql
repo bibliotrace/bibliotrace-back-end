@@ -37,8 +37,24 @@ VALUES
 ('Catching Fire', '9780439023498|9780439023528', 'Suzanne Collins', 4, 5, 391, 2009, 'Katniss and Peeta face a new challenge in the Quarter Quell.', 'English', NULL),
 ('Mockingjay', '9780439023511|9780439023528', 'Suzanne Collins', 4, 5, 390, 2010, 'Katniss becomes the symbol of the rebellion against the Capitol.', 'English', NULL);
 
+
 INSERT INTO inventory (qr, book_id, location, campus_id, ttl)
 VALUES
+('abcd1', 1, 'storage', 1, '123456789'),
+('abcd2', 2, 'storage', 1, '123456789'),
+('abcd3', 3, 'storage', 1, '123456789'),
+('abcd4', 4, 'storage', 1, '123456789'),
+('abcd5', 5, 'storage', 1, '123456789'),
+('abcd6', 6, 'storage', 1, '123456789'),
+('abcd7', 7, 'storage', 1, '123456789'),
+('abcd8', 8, 'storage', 1, '123456789'),
+('abcd9', 9, 'storage', 1, '123456789'),
+('abc10', 10, 'storage', 1, '123456789'),
+('abc11', 11, 'storage', 1, '123456789'),
+('abc12', 12, 'storage', 1, '123456789'),
+('abc13', 13, 'storage', 1, '123456789'),
+('abc14', 14, 'storage', 1, '123456789'),
+('abc15', 15, 'storage', 1, '123456789'),
 ('AA1111', 1, 'Ur Moms House', 2, '123456789'),
 ('AA2222', 2, 'Ur Moms House', 2, '123456789'),
 ('AA3333', 3, 'Another Fun Location', 2, '123456789'),

@@ -82,7 +82,6 @@ CREATE TABLE checkout (
   qr VARCHAR(15) NOT NULL,
   book_id INT UNSIGNED NOT NULL,
   state ENUM('First', 'In', 'Out') NOT NULL,
-  FOREIGN KEY (qr) REFERENCES inventory(qr),
   FOREIGN KEY (book_id) REFERENCES books(id)
 );
 CREATE INDEX idx_qr ON checkout(qr);

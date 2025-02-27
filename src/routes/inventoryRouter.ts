@@ -28,22 +28,14 @@ inventoryRouter.get("/get/:isbn", async (req, res) => {
   }
 });
 
-inventoryRouter.post("/checkout", async (req, res) => {
-  if (!req.body.qr_code || !req.body.campus) {
-    res.status(400).send("missing qr_code or campus");
-  }
+inventoryRouter.post("/checkout", async (req: any, res) => {
+  const response = await Config.dependencies.checkoutHandler.checkout(req.body, req.auth);
+  sendResponse(res, response);
+});
 
-  const [response, book_obj] = await Config.dependencies.checkoutService.checkout(
-    req.body.qr_code,
-    req.body.campus
-  );
-
-  res.status(response.statusCode).send(
-    JSON.stringify({
-      title: book_obj.book_title,
-      author: book_obj.author,
-    }) ?? response.message
-  );
+inventoryRouter.post("/checkin", async (req: any, res) => {
+  const response = await Config.dependencies.checkoutHandler.checkin(req.body, req.auth);
+  sendResponse(res, response);
 });
 
 module.exports = { inventoryRouter };
