@@ -8,6 +8,7 @@ import DaoFactory from "../db/dao/DaoFactory";
 import GenresDao from "../db/dao/GenresDao";
 import GenreTypeDao from "../db/dao/GenreTypeDao";
 import InventoryDao from "../db/dao/InventoryDao";
+import LocationDao from "../db/dao/LocationDao";
 import SeriesDao from "../db/dao/SeriesDao";
 import SuggestionDao from "../db/dao/SuggestionDao";
 import TagDao from "../db/dao/TagDao";
@@ -24,6 +25,7 @@ abstract class Service {
   protected readonly genresDao: GenresDao;
   protected readonly genreTypeDao: GenreTypeDao;
   protected readonly inventoryDao: InventoryDao;
+  protected readonly locationDao: LocationDao;
   protected readonly seriesDao: SeriesDao;
   protected readonly suggestionDao: SuggestionDao;
   protected readonly tagDao: TagDao;
@@ -40,6 +42,7 @@ abstract class Service {
     this.genresDao = daoFactory.getGenresDao();
     this.genreTypeDao = daoFactory.getGenreTypeDao();
     this.inventoryDao = daoFactory.getInventoryDao();
+    this.locationDao = daoFactory.getLocationDao();
     this.seriesDao = daoFactory.getSeriesDao();
     this.suggestionDao = daoFactory.getSuggestionDao();
     this.tagDao = daoFactory.getTagDao();

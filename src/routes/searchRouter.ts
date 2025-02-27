@@ -6,7 +6,7 @@ export const searchRouter = express.Router();
 searchRouter.get("/query/:searchQuery?", async (req, res) => {
   try {
     console.log("Handling call to /search with query " + req.params.searchQuery);
-    const authCampus = (req as unknown as CustomRequest).auth.userRole.campus
+    const authCampus = (req as unknown as CustomRequest).auth.userRole.campus;
 
     const results = await Config.dependencies.searchRouteHandler.conductSearch(
       req.params.searchQuery ?? "",
@@ -65,7 +65,7 @@ module.exports = { searchRouter };
 interface CustomRequest extends Request {
   auth: {
     userRole: {
-      campus: string
-    }
-  }
+      campus: string;
+    };
+  };
 }

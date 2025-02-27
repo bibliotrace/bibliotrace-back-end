@@ -18,11 +18,9 @@ export default class BookManagementService extends Service {
     return this.bookDao.getBookByIsbn(isbn);
   }
 
-  public async insertBook(
-    request: BookInsertRequest
-  ) {
+  public async insertBook(request: BookInsertRequest) {
     // check ISBN first because it's faster to match on than book name string
-    let bookResponse
+    let bookResponse;
     if (request.isbn) {
       bookResponse = await this.bookDao.getBookByIsbn(request.isbn);
       if (bookResponse.statusCode !== 200) {
@@ -45,12 +43,17 @@ export default class BookManagementService extends Service {
       }
     }
 
-    const inventoryParseResponse = await this.parseInventory(request, bookResponse.object.id)
+    const inventoryParseResponse = await this.parseInventory(
+      request,
+      bookResponse.object.id
+    );
     if (inventoryParseResponse.statusCode != 200) {
       return inventoryParseResponse;
     }
 
-    const inventoryResponse = await this.inventoryDao.create(inventoryParseResponse.object as Inventory) as Response<Inventory>;
+    const inventoryResponse = (await this.inventoryDao.create(
+      inventoryParseResponse.object as Inventory
+    )) as Response<Inventory>;
     if (inventoryResponse.statusCode != 200) {
       return inventoryResponse;
     }
@@ -150,7 +153,7 @@ export default class BookManagementService extends Service {
     const inventory: Inventory = {
       qr: request.qr,
       book_id: book_id,
-      location: request.location,
+      location_id: request.location_id,
       campus_id: campus_id,
       ttl: MAX_TTL,
     };
@@ -174,6 +177,6 @@ export interface BookInsertRequest {
   language?: string;
   img_callback?: string;
   qr: string;
-  location: string;
+  location_id: number;
   campus: string;
 }

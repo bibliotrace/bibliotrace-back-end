@@ -34,6 +34,13 @@ CREATE TABLE campus (
   campus_name VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE location (
+  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  campus_id TINYINT UNSIGNED NOT NULL,
+  location_name VARCHAR(255) NOT NULL,
+  FOREIGN KEY (campus_id) REFERENCES campus(id)
+);
+
 CREATE TABLE books (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_title VARCHAR(255) NOT NULL,
@@ -67,13 +74,14 @@ CREATE TABLE audit (
 CREATE TABLE inventory (
   qr VARCHAR(15) PRIMARY KEY,
   book_id INT UNSIGNED NOT NULL,
-  location VARCHAR(255) NOT NULL,
+  location_id INT UNSIGNED NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
   ttl INT UNSIGNED NOT NULL,
   FOREIGN KEY (book_id) REFERENCES books(id),
-  FOREIGN KEY (campus_id) REFERENCES campus(id)
+  FOREIGN KEY (campus_id) REFERENCES campus(id),
+  FOREIGN KEY (location_id) REFERENCES location(id)
 );
-CREATE INDEX idx_location ON inventory(location);
+CREATE INDEX idx_location ON inventory(location_id);
 CREATE INDEX idx_campus_id ON campus(id);
 CREATE INDEX idx_ttl ON inventory(ttl);
 

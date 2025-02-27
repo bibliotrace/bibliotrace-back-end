@@ -38,7 +38,7 @@ export class InventoryHandler {
       "primary_genre",
       "audience",
       "qr",
-      "location",
+      "location_id",
       "campus",
     ];
     for (const field of requiredFields) {
@@ -56,7 +56,7 @@ export class InventoryHandler {
       primary_genre: body.primary_genre,
       audience: body.audience,
       qr: body.qr,
-      location: body.location,
+      location_id: body.location_id,
       campus: body.campus,
     };
 
