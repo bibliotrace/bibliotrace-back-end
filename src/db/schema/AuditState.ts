@@ -1,5 +1,5 @@
 interface AuditState {
-  id: number;
+  id?: number;
   audit_state_name: string;
 }
 

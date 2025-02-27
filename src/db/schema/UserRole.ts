@@ -1,5 +1,5 @@
 interface UserRole {
-  id: number;
+  id?: number;
   role_name: string;
 }
 

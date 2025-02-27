@@ -33,6 +33,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.10.0",
     "path": "^0.12.7",
+    "sanitize-html": "^2.14.0",
     "ts-node": "^10.9.2"
   },
   "devDependencies": {
@@ -42,6 +43,7 @@
     "@types/jest": "^29.5.14",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.17",
+    "@types/sanitize-html": "^2.13.0",
     "dotenv": "^16.4.7",
     "eslint": "^9.18.0",
     "globals": "^15.14.0",

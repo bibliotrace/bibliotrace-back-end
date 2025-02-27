@@ -17,6 +17,7 @@ import { AuthService } from "./service/AuthService";
 import { InventoryHandler } from "./handler/InventoryHandler";
 import { SuggestionHandler } from "./handler/SuggestionHandler";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import Response from "./db/response/Response";
 import { CheckoutHandler } from "./handler/CheckoutHandler";
 import LocationService from "./service/LocationService";
 import LocationHandler from "./handler/LocationHandler";
@@ -134,7 +135,7 @@ export function validateUserType(req, res, type: string): boolean {
   return true;
 }
 
-export function sendResponse(res, response): void {
+export function sendResponse(res, response: Response<any>): void {
   const responseBody = { message: response.message, object: null };
   if (response.object) {
     responseBody.object = response.object;

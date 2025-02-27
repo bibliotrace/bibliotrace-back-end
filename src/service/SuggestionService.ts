@@ -2,8 +2,6 @@ import DaoFactory from "../db/dao/DaoFactory";
 import ServerErrorResponse from "../db/response/ServerErrorResponse";
 import SuccessResponse from "../db/response/SuccessResponse";
 import { Campus } from "../db/schema/Campus";
-import { Book } from "../db/schema/Book";
-import { Inventory } from "../db/schema/Inventory";
 import { Suggestion } from "../db/schema/Suggestion";
 import { User } from "../db/schema/User";
 import Service from "./Service";
@@ -14,10 +12,7 @@ class SuggestionService extends Service {
     super(daoFactory);
   }
 
-  public async addSuggestion(
-    campus_name: string,
-    suggestion_string: string
-  ): Promise<Response<Book | Inventory>> {
+  public async addSuggestion(campus_name: string, suggestion_string: string) {
     const campus_response = await this.campusDao.getByKeyAndValue(
       "campus_name",
       campus_name

@@ -1,5 +1,5 @@
 interface Audience {
-  id: number;
+  id?: number;
   audience_name: string;
 }
 

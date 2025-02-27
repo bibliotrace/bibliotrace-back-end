@@ -19,15 +19,16 @@ const transporter = nodemailer.createTransport({
 } as SMTPTransport.Options);
 
 cron.schedule("0 8 * * 5", async () => {
-  const response = await Config.dependencies.suggestionHandler.emailSuggestionList(transporter);
+  const response = await Config.dependencies.suggestionHandler.emailSuggestionList(
+    transporter
+  );
   if (response.statusCode !== 200) {
     console.log(response.message);
   }
 });
 
 suggestRouter.post("/", async (req, res) => {
-  const response = await Config.dependencies.suggestionHandler.addSuggestion(req.body);
-  sendResponse(res, response);
+  sendResponse(res, await Config.dependencies.suggestionHandler.addSuggestion(req.body));
 });
 
 module.exports = { suggestRouter };
