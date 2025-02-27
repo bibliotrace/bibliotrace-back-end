@@ -23,7 +23,8 @@ export class InventoryHandler {
     if (!params.isbn) {
       return new RequestErrorResponse("ISBN is required to get a book", 400);
     } else if (!this.isValidISBN(params.isbn)) {
-      return new RequestErrorResponse(`Invalid ISBN ${params.isbn} provided`, 400);
+      // isbn not included in response message as it can overflow the error modal lol
+      return new RequestErrorResponse(`Invalid ISBN provided`, 400);
     }
 
     return this.bookManagementService.getByIsbn(this.sanitizeISBN(params.isbn));
@@ -75,7 +76,7 @@ export class InventoryHandler {
     for (const field of requiredFields) {
       if (body[field] == null) {
         return new RequestErrorResponse(
-          `Missing required field ${field} for book in insertion request body`,
+          `Required field ${field} missing in book modification request`,
           400
         );
       }
@@ -104,6 +105,9 @@ export class InventoryHandler {
     }
 
     if (body.series_number) {
+      if (body.series_number < 1) {
+        return new RequestErrorResponse("Series number must be a positive integer", 400);
+      }
       bookRequest.series_number = body.series_number;
     }
 

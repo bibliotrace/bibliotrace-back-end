@@ -1,5 +1,5 @@
 interface Campus {
-  id: number;
+  id?: number;
   campus_name: string;
 }
 

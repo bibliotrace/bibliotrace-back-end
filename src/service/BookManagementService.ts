@@ -19,6 +19,20 @@ export default class BookManagementService extends Service {
     return this.bookDao.getBookByIsbn(isbn);
   }
 
+  private async updateBookCorrespondingToIsbn(request: BookInsertRequest) {
+    const isbn = this.parseIsbnList(request.isbn)[0]; // we only need one ISBN to update
+    const bookResponse = await this.getByIsbn(isbn);
+    if (bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (!bookResponse.object) {
+      return new ServerErrorResponse(`No book found with isbn ${isbn} to update`);
+    }
+    const book = bookResponse.object; // guaranteed to exist here
+
+    return await this.bookDao.update(book.id, book);
+  }
+
+  // TODO: this should roll back if any of the requests fail with transaction stuff
   public async insertBook(request: BookInsertRequest) {
     // check ISBN first because it's faster to match on than book name string
     let bookResponse;
@@ -55,6 +69,12 @@ export default class BookManagementService extends Service {
         // we can't find the book we just created lol
         return new ServerErrorResponse(bookResponse.message);
       }
+    } else if (bookResponse.statusCode === 200) {
+      // book already exists in book table
+      const updateResponse = await this.updateBookCorrespondingToIsbn(request);
+      if (updateResponse.statusCode !== 200) {
+        return updateResponse;
+      }
     }
 
     const inventoryParseResponse = await this.parseInventory(
@@ -68,13 +88,19 @@ export default class BookManagementService extends Service {
     const inventoryResponse = (await this.inventoryDao.create(
       inventoryParseResponse.object as Inventory
     )) as Response<Inventory>;
-    if (inventoryResponse.statusCode != 200) {
+    if (inventoryResponse.message.includes("already exists")) {
+      return await this.inventoryDao.update(
+        request.qr,
+        inventoryParseResponse.object as Inventory
+      );
+      // updating an existing inventory item should not trigger a new checkout, thus we return here
+    } else if (inventoryResponse.statusCode !== 200) {
       return inventoryResponse;
     }
 
     const checkout: Checkout = {
       timestamp: new Date().toISOString().slice(0, 19).replace("T", " "), // TODO: make sure this matches what MySQL expects
-      qr: inventoryResponse.object.qr,
+      qr: request.qr,
       book_id: bookResponse.object.id,
       state: "First",
     };
@@ -120,12 +146,20 @@ export default class BookManagementService extends Service {
       book.pages = bookRequest.pages;
     }
     if (bookRequest.series_name) {
-      const seriesResponse = await this.seriesDao.getByKeyAndValue(
+      let seriesResponse: Response<any> = await this.seriesDao.getByKeyAndValue(
         "series_name",
         bookRequest.series_name
       );
       if (seriesResponse.statusCode !== 200) {
         return seriesResponse;
+      } else if (!seriesResponse.object) {
+        // query executed successfully, but no series found
+        seriesResponse = await this.seriesDao.create({
+          series_name: bookRequest.series_name,
+        });
+        if (seriesResponse.statusCode !== 200) {
+          return seriesResponse;
+        }
       }
       book.series_id = seriesResponse.object.id;
     }
@@ -152,7 +186,6 @@ export default class BookManagementService extends Service {
     request: BookInsertRequest,
     book_id: number
   ): Promise<Response<Campus | Inventory>> {
-    // again, find some way to store the campus ID mapping to avoid needing this query
     const campusResponse = await this.campusDao.getByKeyAndValue(
       "campus_name",
       request.campus
