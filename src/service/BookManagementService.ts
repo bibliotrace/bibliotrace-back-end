@@ -33,7 +33,10 @@ export default class BookManagementService extends Service {
       bookResponse = await this.bookDao.getBookByName(request.book_title);
     }
 
-    if (bookResponse.statusCode === 500 || !bookResponse.object) {
+    if (
+      bookResponse.statusCode === 500 ||
+      bookResponse.message.includes("No book found")
+    ) {
       // book does not already exist in book table
       bookResponse = await this.parseBook(request);
       if (bookResponse.statusCode != 200) {

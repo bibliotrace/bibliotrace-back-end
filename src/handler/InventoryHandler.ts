@@ -128,8 +128,26 @@ export class InventoryHandler {
 
   private parseQr(qr: string) {
     // TODO: figure out how the Access QR code is generated, this is just a placeholder
-    if (!qr || qr.length !== 6) {
-      return new RequestErrorResponse(`Invalid QR code ${qr} provided`, 400);
+    if (
+      !qr ||
+      qr.length !== 6 ||
+      !this.isAlphanumeric(qr) ||
+      !this.isAlpha(qr.substring(0, 1)) ||
+      !this.isNumeric(qr.substring(2, 5))
+    ) {
+      return new RequestErrorResponse("Invalid QR code provided", 400);
     }
+  }
+
+  private isAlphanumeric(str: string): boolean {
+    return /^[a-zA-Z0-9]+$/.test(str);
+  }
+
+  private isAlpha(str: string): boolean {
+    return /^[a-zA-Z]+$/.test(str);
+  }
+
+  private isNumeric(str: string): boolean {
+    return /^[0-9]+$/.test(str);
   }
 }
