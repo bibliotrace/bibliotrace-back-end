@@ -13,6 +13,7 @@ export default class CheckoutService extends Service {
 
   public async checkin(
     qr_code: string,
+    location_id: number,
     campus_name: string
   ): Promise<[Response<any>, Book]> {
     //get campus
@@ -47,12 +48,11 @@ export default class CheckoutService extends Service {
       return [checkin_response, null];
     }
 
-    //TODO: GET LOCATION ID
     //add book to inventory
     const inventory: Inventory = {
       qr: qr_code,
       book_id: book_id,
-      location_id: 0,
+      location_id: location_id,
       campus_id: campus_response.object.id,
       ttl: 10,
     };

@@ -38,7 +38,7 @@ inventoryRouter.post("/checkin", async (req: any, res) => {
   sendResponse(res, response);
 });
 
-inventoryRouter.get("/locations", async (req, res) => {
+inventoryRouter.get("/locations", async (req: any, res) => {
   const response = await Config.dependencies.locationHandler.getLocationsForCampus(
     req.auth
   );

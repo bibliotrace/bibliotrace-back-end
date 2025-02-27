@@ -1,5 +1,5 @@
 interface Location {
-  id: number;
+  id?: number;
   campus_id: number;
   location_name: string;
 }
