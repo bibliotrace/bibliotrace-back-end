@@ -19,7 +19,7 @@ class IsbnService {
     );
     if (!result.ok) {
       if (result.status === 404) {
-        //TODO: make a "did you mean response"
+        //TODO: make a "did you mean" response
         return new SuccessResponse("No Books Found");
       } else {
         return new RequestErrorResponse(

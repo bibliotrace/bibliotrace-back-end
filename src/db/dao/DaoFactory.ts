@@ -14,6 +14,7 @@ import SuggestionDao from "./SuggestionDao";
 import TagDao from "./TagDao";
 import UserDao from "./UserDao";
 import UserRoleDao from "./UserRoleDao";
+import LocationDao from "./LocationDao";
 
 class DaoFactory {
   audienceDao: AudienceDao;
@@ -25,6 +26,7 @@ class DaoFactory {
   genresDao: GenresDao;
   genreTypeDao: GenreTypeDao;
   inventoryDao: InventoryDao;
+  locationDao: LocationDao;
   seriesDao: SeriesDao;
   suggestionDao: SuggestionDao;
   tagDao: TagDao;
@@ -41,6 +43,7 @@ class DaoFactory {
     this.genresDao = new GenresDao(db);
     this.genreTypeDao = new GenreTypeDao(db);
     this.inventoryDao = new InventoryDao(db);
+    this.locationDao = new LocationDao(db);
     this.seriesDao = new SeriesDao(db);
     this.suggestionDao = new SuggestionDao(db);
     this.tagDao = new TagDao(db);
@@ -82,6 +85,10 @@ class DaoFactory {
 
   getInventoryDao(): InventoryDao {
     return this.inventoryDao;
+  }
+
+  getLocationDao(): LocationDao {
+    return this.locationDao;
   }
 
   getSeriesDao(): SeriesDao {

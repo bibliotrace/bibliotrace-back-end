@@ -37,22 +37,25 @@ VALUES
 ('Catching Fire', '9780439023498|9780439023528', 'Suzanne Collins', 4, 5, 391, 2009, 'Katniss and Peeta face a new challenge in the Quarter Quell.', 'English', NULL),
 ('Mockingjay', '9780439023511|9780439023528', 'Suzanne Collins', 4, 5, 390, 2010, 'Katniss becomes the symbol of the rebellion against the Capitol.', 'English', NULL);
 
-INSERT INTO inventory (qr, book_id, location, campus_id, ttl)
+INSERT INTO location (campus_id, location_name) VALUES 
+(1, 'storage'),
+(1, 'shelf'),
+(1, 'downstairs');
+
+INSERT INTO inventory (qr, book_id, location_id, campus_id, ttl)
 VALUES
-('AA1111', 1, 'Ur Moms House', 2, '123456789'),
-('AA2222', 2, 'Ur Moms House', 2, '123456789'),
-('AA3333', 3, 'Another Fun Location', 2, '123456789'),
-('AA4444', 4, 'Another Fun Location', 2, '123456789'),
-('AA5555', 5, 'The Basement', 2, '123456789'),
-('AA6666', 6, 'The Basement', 2, '123456789'),
-('AA7777', 7, 'Mens Bathroom Lol', 2, '123456789'),
-('AA8888', 7, 'Womens Bathroom Lol', 2, '123456789'),
-('BB8888', 7, 'The Nurses Lounge', 1, '123456789'),
-('BB1111', 8, 'Ur Moms House', 2, '123456789'),
-('BB2222', 9, 'Ur Moms House', 2, '123456789'),
-('BB3333', 10, 'Ur Moms House', 2, '123456789'),
-('BB4444', 11, 'Ur Moms House', 2, '123456789'),
-('BB5555', 12, 'Ur Moms House', 2, '123456789'),
-('BB6666', 13, 'Ur Moms House', 2, '123456789'),
-('BB7777', 14, 'Ur Moms House', 2, '123456789'),
-('BB9999', 15, 'Ur Moms House', 2, '123456789');
+('abcd1', 1, 1, 1, '123456789'),
+('abcd2', 2, 1, 1, '123456789'),
+('abcd3', 3, 1, 1, '123456789'),
+('abcd4', 4, 1, 1, '123456789'),
+('abcd5', 5, 1, 1, '123456789'),
+('abcd6', 6, 1, 1, '123456789'),
+('abcd7', 7, 1, 1, '123456789'),
+('abcd8', 8, 1, 1, '123456789'),
+('abcd9', 9, 1, 1, '123456789'),
+('abc10', 10, 1, 1, '123456789'),
+('abc11', 11, 1, 1, '123456789'),
+('abc12', 12, 1, 1, '123456789'),
+('abc13', 13, 1, 1, '123456789'),
+('abc14', 14, 1, 1, '123456789'),
+('abc15', 15, 1, 1, '123456789');

@@ -198,7 +198,7 @@ export default class BookManagementService extends Service {
     const inventory: Inventory = {
       qr: request.qr,
       book_id: book_id,
-      location: request.location,
+      location_id: request.location_id,
       campus_id: campus_id,
       ttl: MAX_TTL,
     };
@@ -225,6 +225,6 @@ export interface BookInsertRequest {
   language?: string;
   img_callback?: string;
   qr: string;
-  location: string;
+  location_id: number;
   campus: string;
 }
