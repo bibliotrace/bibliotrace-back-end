@@ -11,6 +11,7 @@ import { searchRouter } from "./routes/searchRouter";
 import { inventoryRouter } from "./routes/inventoryRouter";
 import { suggestRouter } from "./routes/suggestRouter";
 import { reportsRouter } from "./routes/reportsRouter";
+import { metadataRouter } from "./routes/metadataRouter";
 
 const server = express();
 const localPort = 8080;
@@ -42,6 +43,7 @@ server.use("/api", apiRouter);
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/search", searchRouter);
 apiRouter.use("/inventory", inventoryRouter);
+apiRouter.use("/metadata", metadataRouter);
 apiRouter.use("/reports", reportsRouter);
 apiRouter.use("/suggest", suggestRouter);
 
