@@ -38,11 +38,4 @@ inventoryRouter.post("/checkin", async (req: any, res) => {
   sendResponse(res, response);
 });
 
-inventoryRouter.get("/locations", async (req: any, res) => {
-  const response = await Config.dependencies.locationHandler.getLocationsForCampus(
-    req.auth
-  );
-  sendResponse(res, response);
-});
-
 module.exports = { inventoryRouter };
