@@ -19,6 +19,8 @@ import { SuggestionHandler } from "./handler/SuggestionHandler";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import Response from "./db/response/Response";
 import { CheckoutHandler } from "./handler/CheckoutHandler";
+import LocationService from "./service/LocationService";
+import LocationHandler from "./handler/LocationHandler";
 
 export class Config {
   static dependencies: ConfigTypes = {};
@@ -29,6 +31,7 @@ export class Config {
   static searchDataService: SearchDataService;
   static authService: AuthService;
   static isbnService: IsbnService;
+  static locationService: LocationService;
 
   static async setup(): Promise<void> {
     if (
@@ -41,7 +44,8 @@ export class Config {
       this.suggestionService != null ||
       this.auditService != null ||
       this.checkoutService != null ||
-      this.searchDataService != null
+      this.searchDataService != null ||
+      this.locationService != null
     ) {
       return; // Prevent re-initialization
     }
@@ -87,6 +91,7 @@ export class Config {
       daoFactory
     );
     this.authService = new AuthService(daoFactory);
+    this.locationService = new LocationService(daoFactory);
 
     // Route Handlers
     this.dependencies.authHandler = new AuthHandler(this.authService);
@@ -100,6 +105,7 @@ export class Config {
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);
     this.dependencies.checkoutHandler = new CheckoutHandler(this.checkoutService);
+    this.dependencies.locationHandler = new LocationHandler(this.locationService);
 
     console.log("Dependencies Instantiated");
   }
@@ -113,6 +119,7 @@ export interface ConfigTypes {
   inventoryHandler?: InventoryHandler;
   suggestionHandler?: SuggestionHandler;
   checkoutHandler?: CheckoutHandler;
+  locationHandler?: LocationHandler;
 }
 
 export default new Config();

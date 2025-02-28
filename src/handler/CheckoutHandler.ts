@@ -13,10 +13,10 @@ export class CheckoutHandler {
     if (!body.qr_code) {
       return new RequestErrorResponse("QR code is required", 400);
     }
-    const campus = authData.userRole.campus
+    const campus = authData.userRole.campus;
 
     if (campus == null) {
-      return new RequestErrorResponse('Missing Campus Data in Authentication', 400)
+      return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
     const [response, book_obj] = await this.checkoutService.checkout(
@@ -37,14 +37,18 @@ export class CheckoutHandler {
   public async checkin(body, authData) {
     if (!body.qr_code) {
       return new RequestErrorResponse("QR code is required", 400);
+    } else if (!body.location_id) {
+      return new RequestErrorResponse("Location is required", 400);
     }
-    const campus = authData.userRole.campus
+
+    const campus = authData.userRole.campus;
     if (campus == null) {
-      return new RequestErrorResponse("Missing Campus Data in Authentication", 400)
+      return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
     const [response, book_obj] = await this.checkoutService.checkin(
       body.qr_code,
+      body.location_id,
       campus
     );
 

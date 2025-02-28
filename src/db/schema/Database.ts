@@ -7,6 +7,7 @@ import { Checkout } from "./Checkout";
 import { Genres } from "./Genres";
 import { GenreType } from "./GenreType";
 import { Inventory } from "./Inventory";
+import { Location } from "./Location";
 import { Series } from "./Series";
 import { Suggestion } from "./Suggestion";
 import { Tag } from "./Tag";
@@ -23,6 +24,7 @@ interface Database {
   genres: Genres;
   genre_types: GenreType;
   inventory: Inventory;
+  location: Location;
   series: Series;
   suggestions: Suggestion;
   tags: Tag;
