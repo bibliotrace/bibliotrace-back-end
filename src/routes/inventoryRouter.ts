@@ -38,4 +38,6 @@ inventoryRouter.post("/checkin", async (req: any, res) => {
   sendResponse(res, response);
 });
 
+// TODO: write set book location endpoint
+
 module.exports = { inventoryRouter };

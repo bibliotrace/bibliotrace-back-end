@@ -50,7 +50,7 @@ export class AuthService extends Service {
 
     // Next grab whether there's another user with the username provided
     const userResponse = await this.userDao.getByPrimaryKey(username);
-    if (userResponse.statusCode === 200) {
+    if (userResponse.statusCode === 200 && userResponse.object != null) {
       return new RequestErrorResponse(
         `User with username ${username} already exists`,
         400
@@ -84,7 +84,7 @@ export class AuthService extends Service {
   ) {
     // First look up the user, make sure they exist
     const userResponse = await this.userDao.getByPrimaryKey(username);
-    if (userResponse.statusCode !== 200) {
+    if (userResponse.statusCode !== 200 || userResponse.object == null) {
       return new RequestErrorResponse(
         `User with username ${username} does not exist`,
         404
@@ -131,12 +131,14 @@ export class AuthService extends Service {
     };
 
     await this.userDao.update(username, newUserObject);
+
+    return new SuccessResponse('Successfully Updated User', newUserObject)
   }
 
   async deleteUser(username: string) {
     // First look up the user, make sure they exist
     const userResponse = await this.userDao.getByPrimaryKey(username);
-    if (userResponse.statusCode !== 200) {
+    if (userResponse.statusCode !== 200 || userResponse.object == null) {
       return new RequestErrorResponse(
         `User with username ${username} does not exist`,
         404
@@ -188,7 +190,13 @@ export class AuthService extends Service {
     name: string,
     dao: Dao<Campus | UserRole, number>
   ) {
-    const idResponse = await dao.getByKeyAndValue("name", name);
+    let idResponse
+    if (dao.tableName === 'campus') {
+      idResponse = await dao.getByKeyAndValue("campus_name", name);
+    } else {
+      idResponse = await dao.getByKeyAndValue("role_name", name);
+    }
+    
 
     if (idResponse.statusCode === 200) {
       return new SuccessResponse(

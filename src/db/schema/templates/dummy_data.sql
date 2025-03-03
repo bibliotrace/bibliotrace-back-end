@@ -11,7 +11,8 @@ VALUES ('Admin'), ('User');
 
 INSERT INTO users (username, password_hash, role_id, email, campus_id)
 VALUES ('test', '$argon2id$v=19$m=65536,t=3,p=2$zNxBnZCVc7lpGE3LJTAOGA$0TS+loWwHEtQDkJA4M3q7DXoFUWnKCZQNAWZ8CF2SSE', 1, 'testing@byu.edu', 1),
-('user', '$argon2id$v=19$m=65536,t=3,p=2$dyl9H5msFDyFLs8kUbzbQw$a55al+wfe6Da1BSN6KwwhCKy578DufkWNKGG5gAhQ2Q', 2, 'testingUser@byu.edu', 2);
+('user', '$argon2id$v=19$m=65536,t=3,p=2$dyl9H5msFDyFLs8kUbzbQw$a55al+wfe6Da1BSN6KwwhCKy578DufkWNKGG5gAhQ2Q', 2, 'testingUser@byu.edu', 2),
+('plebian', '$argon2id$v=19$m=65536,t=3,p=2$CgfQIb8btzWq1knZnDMi8Q$yWRLTEl8fPCt7cjNITV7nNe6GbAVXJ7I0AyRr8EOcVc', 2, 'plebian@byu.edu', 1);
 -- Username and password are the same thing for the users in this insert statement
 
 INSERT INTO audiences (audience_name) 
