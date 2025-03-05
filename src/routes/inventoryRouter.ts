@@ -2,6 +2,7 @@ import express from "express";
 import { Config } from "../config";
 import { sendResponse, validateUserType } from "../utils/utils";
 import SuccessResponse from "../response/SuccessResponse";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 
 export const inventoryRouter = express.Router();
 
@@ -31,6 +32,17 @@ inventoryRouter.get("/get/:isbn", async (req, res) => {
     }
   }
 });
+
+inventoryRouter.get("/get/tags/:isbn", async (req, res) => {
+  const tagsResponse = await Config.dependencies.inventoryHandler.getTagsByIsbn(req?.params)
+
+  if (tagsResponse.statusCode === 200 && tagsResponse.object) {
+    sendResponse(res, tagsResponse);
+    return;
+  } else {
+    sendResponse(res, new RequestErrorResponse('Book Not Found', 404))
+  }
+})
 
 inventoryRouter.post("/checkout", async (req: any, res) => {
   sendResponse(
