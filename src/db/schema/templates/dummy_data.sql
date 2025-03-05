@@ -11,7 +11,8 @@ VALUES ('Admin'), ('User');
 
 INSERT INTO users (username, password_hash, role_id, email, campus_id)
 VALUES ('test', '$argon2id$v=19$m=65536,t=3,p=2$zNxBnZCVc7lpGE3LJTAOGA$0TS+loWwHEtQDkJA4M3q7DXoFUWnKCZQNAWZ8CF2SSE', 1, 'testing@byu.edu', 1),
-('user', '$argon2id$v=19$m=65536,t=3,p=2$dyl9H5msFDyFLs8kUbzbQw$a55al+wfe6Da1BSN6KwwhCKy578DufkWNKGG5gAhQ2Q', 2, 'testingUser@byu.edu', 2);
+('user', '$argon2id$v=19$m=65536,t=3,p=2$dyl9H5msFDyFLs8kUbzbQw$a55al+wfe6Da1BSN6KwwhCKy578DufkWNKGG5gAhQ2Q', 2, 'testingUser@byu.edu', 2),
+('plebian', '$argon2id$v=19$m=65536,t=3,p=2$CgfQIb8btzWq1knZnDMi8Q$yWRLTEl8fPCt7cjNITV7nNe6GbAVXJ7I0AyRr8EOcVc', 2, 'plebian@byu.edu', 1);
 -- Username and password are the same thing for the users in this insert statement
 
 INSERT INTO audiences (audience_name) 
@@ -44,18 +45,33 @@ INSERT INTO location (campus_id, location_name) VALUES
 
 INSERT INTO inventory (qr, book_id, location_id, campus_id, ttl)
 VALUES
-('abcd1', 1, 1, 1, '123456789'),
-('abcd2', 2, 1, 1, '123456789'),
-('abcd3', 3, 1, 1, '123456789'),
-('abcd4', 4, 1, 1, '123456789'),
-('abcd5', 5, 1, 1, '123456789'),
-('abcd6', 6, 1, 1, '123456789'),
-('abcd7', 7, 1, 1, '123456789'),
-('abcd8', 8, 1, 1, '123456789'),
-('abcd9', 9, 1, 1, '123456789'),
-('abc10', 10, 1, 1, '123456789'),
-('abc11', 11, 1, 1, '123456789'),
-('abc12', 12, 1, 1, '123456789'),
-('abc13', 13, 1, 1, '123456789'),
-('abc14', 14, 1, 1, '123456789'),
-('abc15', 15, 1, 1, '123456789');
+('ab0001', 1, 1, 1, '123456789'),
+('ab0002', 2, 1, 1, '123456789'),
+('ab0003', 3, 1, 1, '123456789'),
+('ab0004', 4, 1, 1, '123456789'),
+('ab0005', 5, 1, 1, '123456789'),
+('ab0006', 6, 1, 1, '123456789'),
+('ab0007', 7, 1, 1, '123456789'),
+('ab0008', 8, 1, 1, '123456789'),
+('ab0009', 9, 1, 1, '123456789'),
+('ab0010', 10, 1, 1, '123456789'),
+('ab0011', 11, 1, 1, '123456789'),
+('ab0012', 12, 1, 1, '123456789'),
+('ab0013', 13, 1, 1, '123456789'),
+('ab0014', 14, 1, 1, '123456789'),
+('ab0015', 15, 1, 1, '123456789'),
+('ab0016', 1, 1, 2, '123456789'),
+('ab0017', 2, 1, 2, '123456789'),
+('ab0018', 3, 1, 2, '123456789'),
+('ab0019', 4, 1, 2, '123456789'),
+('ab0020', 5, 1, 2, '123456789'),
+('ab0021', 6, 1, 2, '123456789'),
+('ab0022', 7, 1, 2, '123456789'),
+('ab0023', 8, 1, 2, '123456789'),
+('ab0024', 9, 1, 2, '123456789'),
+('ab0025', 10, 1, 2, '123456789'),
+('ab0026', 11, 1, 2, '123456789'),
+('ab0027', 12, 1, 2, '123456789'),
+('ab0028', 13, 1, 2, '123456789'),
+('ab0029', 14, 1, 2, '123456789'),
+('ab0030', 15, 1, 2, '123456789');

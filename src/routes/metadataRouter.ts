@@ -33,3 +33,4 @@ metadataRouter.get("/locations", async (req: any, res) => {
   );
   sendResponse(res, response);
 });
+
