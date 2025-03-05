@@ -1,7 +1,5 @@
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
-import BookManagementService, {
-  BookInsertRequest,
-} from "../service/BookManagementService";
+import RequestErrorResponse from "../response/RequestErrorResponse";
+import BookManagementService, { BookInsertRequest } from "../service/BookManagementService";
 
 export class InventoryHandler {
   private bookManagementService: BookManagementService;

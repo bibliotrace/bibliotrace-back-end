@@ -1,5 +1,5 @@
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
-import Response from "../db/response/Response";
+import RequestErrorResponse from "../response/RequestErrorResponse";
+import Response from "../response/Response";
 import { Campus } from "../db/schema/Campus";
 import { Location } from "../db/schema/Location";
 import LocationService from "../service/LocationService";

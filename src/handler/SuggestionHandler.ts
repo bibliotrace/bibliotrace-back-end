@@ -1,7 +1,7 @@
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import SuggestionService from "../service/SuggestionService";
 import { Transporter } from "nodemailer";
-import ServerErrorResponse from "../db/response/ServerErrorResponse";
+import ServerErrorResponse from "../response/ServerErrorResponse";
 
 export class SuggestionHandler {
   private suggestionService: SuggestionService;

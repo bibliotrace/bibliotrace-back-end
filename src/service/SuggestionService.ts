@@ -1,11 +1,11 @@
 import DaoFactory from "../db/dao/DaoFactory";
-import ServerErrorResponse from "../db/response/ServerErrorResponse";
-import SuccessResponse from "../db/response/SuccessResponse";
+import ServerErrorResponse from "../response/ServerErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
 import { Campus } from "../db/schema/Campus";
 import { Suggestion } from "../db/schema/Suggestion";
 import { User } from "../db/schema/User";
 import Service from "./Service";
-import Response from "../db/response/Response";
+import Response from "../response/Response";
 
 class SuggestionService extends Service {
   constructor(daoFactory: DaoFactory) {
@@ -13,15 +13,9 @@ class SuggestionService extends Service {
   }
 
   public async addSuggestion(campus_name: string, suggestion_string: string) {
-    const campus_response = await this.campusDao.getByKeyAndValue(
-      "campus_name",
-      campus_name
-    );
+    const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
     if (campus_response.statusCode !== 200) {
-      return new ServerErrorResponse(
-        `Failed to get campus with name ${campus_name}`,
-        500
-      );
+      return new ServerErrorResponse(`Failed to get campus with name ${campus_name}`, 500);
     }
 
     const campus_id = campus_response.object.id;

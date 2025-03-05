@@ -2,9 +2,9 @@ import { Kysely, Transaction } from "kysely";
 import Database from "../schema/Database";
 import { Suggestion } from "../schema/Suggestion";
 import Dao from "./Dao";
-import Response from "../response/Response";
-import ServerErrorResponse from "../response/ServerErrorResponse";
-import SuccessResponse from "../response/SuccessResponse";
+import Response from "../../response/Response";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
+import SuccessResponse from "../../response/SuccessResponse";
 
 class SuggestionDao extends Dao<Suggestion, string> {
   constructor(db: Kysely<Database>) {
@@ -28,9 +28,7 @@ class SuggestionDao extends Dao<Suggestion, string> {
           .where("campus_id", "=", campus_id)
           .execute();
         return new SuccessResponse<Suggestion[]>(
-          `${this.capitalizeFirstLetter(
-            this.entityName
-          )} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as Suggestion[]
         );
       } catch (error) {

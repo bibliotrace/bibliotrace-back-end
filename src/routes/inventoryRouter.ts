@@ -1,5 +1,6 @@
 import express from "express";
-import { Config, sendResponse, validateUserType } from "../config";
+import { Config } from "../config";
+import { sendResponse, validateUserType } from "../utils/utils";
 
 export const inventoryRouter = express.Router();
 
@@ -11,9 +12,7 @@ inventoryRouter.put("/insert", async (req, res) => {
 
 inventoryRouter.get("/get/:isbn", async (req, res) => {
   if (validateUserType(req, res, "Admin")) {
-    const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(
-      req.params
-    );
+    const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(req.params);
     if (inventoryResponse.statusCode === 200 && inventoryResponse.object) {
       sendResponse(res, inventoryResponse);
     } else {

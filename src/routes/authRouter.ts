@@ -1,5 +1,6 @@
 import express from "express";
-import { Config, sendResponse, validateUserType } from "../config";
+import { Config } from "../config";
+import { sendResponse, validateUserType } from "../utils/utils";
 
 export const authRouter = express.Router();
 

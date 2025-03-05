@@ -1,5 +1,5 @@
-import Response from "../db/response/Response";
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
+import Response from "../response/Response";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import { AuthService } from "../service/AuthService";
 
 export class AuthHandler {

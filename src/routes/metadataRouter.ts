@@ -1,5 +1,6 @@
 import express from "express";
-import { Config, sendResponse } from "../config";
+import { Config } from "../config";
+import { sendResponse } from "../utils/utils";
 
 export const metadataRouter = express.Router();
 
@@ -28,9 +29,6 @@ metadataRouter.get("/audiences", async (req, res) => {
 });
 
 metadataRouter.get("/locations", async (req: any, res) => {
-  const response = await Config.dependencies.locationHandler.getLocationsForCampus(
-    req.auth
-  );
+  const response = await Config.dependencies.locationHandler.getLocationsForCampus(req.auth);
   sendResponse(res, response);
 });
-

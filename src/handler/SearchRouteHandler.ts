@@ -1,9 +1,9 @@
 import IsbnService from "../service/IsbnService";
 import { DynamoDb } from "../db/dao/DynamoDb";
 import SearchDataService from "../service/SearchDataService";
-import Response from "../db/response/Response";
+import Response from "../response/Response";
 import { Book } from "../db/schema/Book";
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
@@ -38,7 +38,7 @@ export default class SearchRouteHandler {
       // First, get the target list of isbn numbers from the querystring.
       const queryCacheResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
       if (queryCacheResult != null && queryCacheResult.statusCode === 200) {
-        isbnResult = queryCacheResult.object
+        isbnResult = queryCacheResult.object;
       }
       if (isbnResult == null) {
         console.log(`Submitting Query to ISBN: ${extractedQuery}`);
@@ -46,7 +46,7 @@ export default class SearchRouteHandler {
         if (isbnDbCallResponse.object != null) {
           isbnResult = isbnDbCallResponse.object;
 
-          console.log(isbnResult)
+          console.log(isbnResult);
 
           await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
         } else {
@@ -134,10 +134,7 @@ export default class SearchRouteHandler {
       );
       queryList.push({ queryKey, queryValue });
 
-      inputQuery = inputQuery.slice(
-        queryIndexes.secondDelimiterIndex + 2,
-        inputQuery.length
-      );
+      inputQuery = inputQuery.slice(queryIndexes.secondDelimiterIndex + 2, inputQuery.length);
       queryIndexes = this.findIndexes(inputQuery);
     }
 
@@ -171,11 +168,7 @@ export default class SearchRouteHandler {
       }
     }
 
-    if (
-      firstDelimiterIndex !== -1 &&
-      secondDelimiterIndex !== -1 &&
-      separatorIndex !== -1
-    ) {
+    if (firstDelimiterIndex !== -1 && secondDelimiterIndex !== -1 && separatorIndex !== -1) {
       return {
         firstDelimiterIndex,
         separatorIndex: separatorIndex,

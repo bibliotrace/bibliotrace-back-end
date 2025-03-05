@@ -1,5 +1,5 @@
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
-import SuccessResponse from "../db/response/SuccessResponse";
+import RequestErrorResponse from "../response/RequestErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
 import CheckoutService from "../service/CheckoutService";
 
 export class CheckoutHandler {
@@ -19,10 +19,7 @@ export class CheckoutHandler {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
-    const [response, book_obj] = await this.checkoutService.checkout(
-      body.qr_code,
-      campus
-    );
+    const [response, book_obj] = await this.checkoutService.checkout(body.qr_code, campus);
 
     if (response.statusCode !== 200) {
       return response;

@@ -1,9 +1,9 @@
-import Response from "../response/Response";
-import SuccessResponse from "../response/SuccessResponse";
+import Response from "../../response/Response";
+import SuccessResponse from "../../response/SuccessResponse";
 import { Book } from "../schema/Book";
 import Database from "../schema/Database";
 import Dao from "./Dao";
-import ServerErrorResponse from "../response/ServerErrorResponse";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
 import { Kysely } from "kysely";
 
 class BookDao extends Dao<Book, number> {

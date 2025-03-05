@@ -17,7 +17,6 @@ import { AuthService } from "./service/AuthService";
 import { InventoryHandler } from "./handler/InventoryHandler";
 import { SuggestionHandler } from "./handler/SuggestionHandler";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import Response from "./db/response/Response";
 import { CheckoutHandler } from "./handler/CheckoutHandler";
 import LocationService from "./service/LocationService";
 import LocationHandler from "./handler/LocationHandler";
@@ -86,10 +85,7 @@ export class Config {
     this.auditService = new AuditService(daoFactory);
     this.bookManagementService = new BookManagementService(daoFactory);
     this.checkoutService = new CheckoutService(daoFactory);
-    this.searchDataService = new SearchDataService(
-      dbConnectionManager.kyselyDB,
-      daoFactory
-    );
+    this.searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, daoFactory);
     this.authService = new AuthService(daoFactory);
     this.locationService = new LocationService(daoFactory);
 
@@ -123,22 +119,3 @@ export interface ConfigTypes {
 }
 
 export default new Config();
-
-// this logic is duplicated across multiple routes
-export function validateUserType(req, res, type: string): boolean {
-  if (req.auth.userRole.roleType !== type) {
-    res
-      .status(401)
-      .send({ message: `Improper Caller RoleType, required type is ${type}` });
-    return false;
-  }
-  return true;
-}
-
-export function sendResponse(res, response: Response<any>): void {
-  const responseBody = { message: response.message, object: null };
-  if (response.object) {
-    responseBody.object = response.object;
-  }
-  res.status(response.statusCode).send(responseBody);
-}
