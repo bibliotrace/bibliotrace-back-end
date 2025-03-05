@@ -35,6 +35,29 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
+  public async getBookTagsByIsbn(isbn: string): Promise<Response<any>> {
+    try {
+      const book = await this.db
+        .selectFrom(this.tableName as keyof Database)
+        .select('tags.tag')
+        .innerJoin('tags', 'tags.book_id', 'books.id')
+        .where("isbn_list", "like", `%${isbn}%` as any)
+        .execute();
+      if (!book) {
+        return new SuccessResponse(`No book found with isbn ${isbn}`);
+      }
+
+      console.log(book);
+
+      return new SuccessResponse(`Successfully retrieved book with isbn ${isbn}`, book);
+    } catch (error) {
+      return new ServerErrorResponse(
+        `Failed to retrieve book with isbn ${isbn} with error ${error}`,
+        500
+      );
+    }
+  }
+
   // TODO: optimize to use index on name
   public async getBookByName(name: string): Promise<Response<Book>> {
     try {
