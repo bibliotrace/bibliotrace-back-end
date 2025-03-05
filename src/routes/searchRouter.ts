@@ -1,5 +1,7 @@
 import express from "express";
 import { Config } from "../config";
+import SuccessResponse from "../response/SuccessResponse";
+import { sendResponse } from "../utils/utils";
 
 export const searchRouter = express.Router();
 
@@ -22,14 +24,14 @@ searchRouter.get("/query/:searchQuery?", async (req, res) => {
 
 searchRouter.get("/cover/:isbn", async (req, res) => {
   try {
-    const { isbn } = req.params as { isbn: string };
-    if (isbn === "none") {
-      res.status(200).send();
-    } else {
-      const results = await Config.dependencies.coverImageRouteHandler.relayImage(isbn);
-      res.send(results);
-      console.log(`Call to /cover/${isbn} completed successfully.`);
-    }
+    // TODO: this endpoint should be more fully refactored to use the new response classes
+    // which has better error handling but will require that the frontend look at the object parameter
+    // instead of the raw buffer.
+    // look at the inventoryRouter for an example of how to use the new response classes
+    const results = await Config.dependencies.coverImageRouteHandler.relayImage(req.params);
+    if (results instanceof SuccessResponse) sendResponse(res, results);
+    res.send(results);
+    console.log(`Call to /cover/${req.params.isbn} completed successfully.`);
   } catch (error) {
     res.status(500).send({ error: error.message });
     console.log("FAILURE: Call to /cover/:isbn failed for some reason");

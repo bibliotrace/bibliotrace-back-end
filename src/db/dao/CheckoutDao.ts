@@ -2,9 +2,9 @@ import { Kysely, Transaction } from "kysely";
 import Database from "../schema/Database";
 import { Checkout } from "../schema/Checkout";
 import Dao from "./Dao";
-import ServerErrorResponse from "../response/ServerErrorResponse";
-import SuccessResponse from "../response/SuccessResponse";
-import Response from "../response/Response";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
+import SuccessResponse from "../../response/SuccessResponse";
+import Response from "../../response/Response";
 
 class CheckoutDao extends Dao<Checkout, string> {
   constructor(db: Kysely<Database>) {

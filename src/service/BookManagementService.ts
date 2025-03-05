@@ -2,11 +2,11 @@ import { Book } from "../db/schema/Book";
 import { Campus } from "../db/schema/Campus";
 import { Checkout } from "../db/schema/Checkout";
 import { Inventory } from "../db/schema/Inventory";
-import Response from "../db/response/Response";
-import SuccessResponse from "../db/response/SuccessResponse";
+import Response from "../response/Response";
+import SuccessResponse from "../response/SuccessResponse";
 import Service from "./Service";
 import DaoFactory from "../db/dao/DaoFactory";
-import ServerErrorResponse from "../db/response/ServerErrorResponse";
+import ServerErrorResponse from "../response/ServerErrorResponse";
 
 const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
@@ -37,9 +37,7 @@ export default class BookManagementService extends Service {
     // check ISBN first because it's faster to match on than book name string
     let bookResponse;
     if (request.isbn) {
-      bookResponse = await this.bookDao.getBookByIsbn(
-        this.parseIsbnList(request.isbn)[0]
-      );
+      bookResponse = await this.bookDao.getBookByIsbn(this.parseIsbnList(request.isbn)[0]);
       if (bookResponse.statusCode !== 200 || !bookResponse.object) {
         bookResponse = await this.bookDao.getBookByName(request.book_title);
       }
@@ -47,10 +45,7 @@ export default class BookManagementService extends Service {
       bookResponse = await this.bookDao.getBookByName(request.book_title);
     }
 
-    if (
-      bookResponse.statusCode === 500 ||
-      bookResponse.message.includes("No book found")
-    ) {
+    if (bookResponse.statusCode === 500 || bookResponse.message.includes("No book found")) {
       // book does not already exist in book table
       bookResponse = await this.parseBook(request);
       if (bookResponse.statusCode != 200) {
@@ -62,9 +57,7 @@ export default class BookManagementService extends Service {
         return bookResponse;
       }
 
-      bookResponse = await this.bookDao.getBookByIsbn(
-        this.parseIsbnList(request.isbn)[0]
-      );
+      bookResponse = await this.bookDao.getBookByIsbn(this.parseIsbnList(request.isbn)[0]);
       if (bookResponse.statusCode !== 200 || !bookResponse.object) {
         // we can't find the book we just created lol
         return new ServerErrorResponse(bookResponse.message);
@@ -77,10 +70,7 @@ export default class BookManagementService extends Service {
       }
     }
 
-    const inventoryParseResponse = await this.parseInventory(
-      request,
-      bookResponse.object.id
-    );
+    const inventoryParseResponse = await this.parseInventory(request, bookResponse.object.id);
     if (inventoryParseResponse.statusCode != 200) {
       return inventoryParseResponse;
     }
@@ -89,10 +79,7 @@ export default class BookManagementService extends Service {
       inventoryParseResponse.object as Inventory
     )) as Response<Inventory>;
     if (inventoryResponse.message.includes("already exists")) {
-      return await this.inventoryDao.update(
-        request.qr,
-        inventoryParseResponse.object as Inventory
-      );
+      return await this.inventoryDao.update(request.qr, inventoryParseResponse.object as Inventory);
       // updating an existing inventory item should not trigger a new checkout, thus we return here
     } else if (inventoryResponse.statusCode !== 200) {
       return inventoryResponse;
@@ -110,9 +97,7 @@ export default class BookManagementService extends Service {
       return checkoutResponse;
     }
 
-    return new SuccessResponse(
-      `Book ${bookResponse.object.book_title} successfully created`
-    );
+    return new SuccessResponse(`Book ${bookResponse.object.book_title} successfully created`);
   }
 
   private async parseBook(bookRequest: BookInsertRequest) {
@@ -186,10 +171,7 @@ export default class BookManagementService extends Service {
     request: BookInsertRequest,
     book_id: number
   ): Promise<Response<Campus | Inventory>> {
-    const campusResponse = await this.campusDao.getByKeyAndValue(
-      "campus_name",
-      request.campus
-    );
+    const campusResponse = await this.campusDao.getByKeyAndValue("campus_name", request.campus);
     if (campusResponse.statusCode !== 200) {
       return campusResponse;
     }

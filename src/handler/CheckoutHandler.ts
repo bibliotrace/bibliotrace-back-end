@@ -1,6 +1,7 @@
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
-import SuccessResponse from "../db/response/SuccessResponse";
+import RequestErrorResponse from "../response/RequestErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
 import CheckoutService from "../service/CheckoutService";
+import { parseQr, parseRequiredFields } from "../utils/utils";
 
 export class CheckoutHandler {
   checkoutService: CheckoutService;
@@ -10,19 +11,20 @@ export class CheckoutHandler {
   }
 
   public async checkout(body, authData) {
-    if (!body.qr_code) {
-      return new RequestErrorResponse("QR code is required", 400);
-    }
+    const requiredFields = ["qr_code"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
+
+    const qrResponse = parseQr(body.qr_code);
+    if (qrResponse) return qrResponse;
+
     const campus = authData.userRole.campus;
 
     if (campus == null) {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
-    const [response, book_obj] = await this.checkoutService.checkout(
-      body.qr_code,
-      campus
-    );
+    const [response, book_obj] = await this.checkoutService.checkout(body.qr_code, campus);
 
     if (response.statusCode !== 200) {
       return response;
@@ -35,11 +37,12 @@ export class CheckoutHandler {
   }
 
   public async checkin(body, authData) {
-    if (!body.qr_code) {
-      return new RequestErrorResponse("QR code is required", 400);
-    } else if (!body.location_id) {
-      return new RequestErrorResponse("Location is required", 400);
-    }
+    const requiredFields = ["qr_code", "location_id"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
+
+    const qrResponse = parseQr(body.qr_code);
+    if (qrResponse) return qrResponse;
 
     const campus = authData.userRole.campus;
     if (campus == null) {

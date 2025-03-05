@@ -1,6 +1,6 @@
 import { sanitizeUrl } from "@braintree/sanitize-url";
-import SuccessResponse from "../db/response/SuccessResponse";
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import { Book } from "../db/schema/Book";
 import sanitizeHtml from "sanitize-html";
 
@@ -90,9 +90,7 @@ class IsbnService {
         allowedTags: [],
         allowedAttributes: {},
       }) ?? "No short description found";
-    const language: string = book.language
-      ? this.parseLanguage(book.language)
-      : "Unknown language";
+    const language: string = book.language ? this.parseLanguage(book.language) : "Unknown language";
     const img_callback: string = book.image ?? "No image found"; // this just returns the raw URL to the image, which unfortunately has CORS problems when rendered from the frontend
 
     return new SuccessResponse(`Metadata retrieved for ISBN ${isbn}`, {

@@ -1,15 +1,15 @@
 import DaoFactory from "../db/dao/DaoFactory";
 import Service from "./Service";
-import Response from "../db/response/Response";
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
+import Response from "../response/Response";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import argon2 from "argon2";
 import { User } from "../db/schema/User";
 import jwt from "jsonwebtoken";
-import SuccessResponse from "../db/response/SuccessResponse";
+import SuccessResponse from "../response/SuccessResponse";
 import Dao from "../db/dao/Dao";
 import { UserRole } from "../db/schema/UserRole";
 import { Campus } from "../db/schema/Campus";
-import ServerErrorResponse from "../db/response/ServerErrorResponse";
+import ServerErrorResponse from "../response/ServerErrorResponse";
 
 export class AuthService extends Service {
   constructor(daoFactory: DaoFactory) {
@@ -20,27 +20,29 @@ export class AuthService extends Service {
     const userResponse = await this.userDao.getByPrimaryKey(username);
 
     if (userResponse.statusCode !== 200) {
-      return new RequestErrorResponse(userResponse.message, 404); // change type from server error to request error
+      return new RequestErrorResponse(userResponse.message, 400); // change type from server error to request error
+    } else if (!userResponse.object) {
+      console.log("Username Doesn't Exist");
+      return new RequestErrorResponse(
+        "Incorrect username or password. Please modify your username and/or password.",
+        401 // technically should be a 404 but we don't want the user to know whether the username or password fails
+      );
     }
 
     const realHash = await argon2.verify(userResponse.object.password_hash, password);
     if (realHash) {
       const role = await this.getUserRole(userResponse.object);
-      return new SuccessResponse(
-        "Token generated successfully",
-        await this.buildJWT(role)
-      );
+      return new SuccessResponse("Token generated successfully", await this.buildJWT(role));
     } else {
       console.log("Password Is Wrong");
-      return new RequestErrorResponse("Incorrect username or password", 401);
+      return new RequestErrorResponse(
+        "Incorrect username or password. Please modify your username and/or password.",
+        401
+      );
     }
   }
 
-  async createUser(
-    username: string,
-    password: string,
-    role: UserJWTData
-  ) {
+  async createUser(username: string, password: string, role: UserJWTData) {
     // First grab id's
     const ids = await this.getCampusAndRoleIds(role);
     if (ids instanceof ServerErrorResponse) {
@@ -50,11 +52,9 @@ export class AuthService extends Service {
 
     // Next grab whether there's another user with the username provided
     const userResponse = await this.userDao.getByPrimaryKey(username);
+    // this could just check on userResponse.object as no error contains an object
     if (userResponse.statusCode === 200 && userResponse.object != null) {
-      return new RequestErrorResponse(
-        `User with username ${username} already exists`,
-        400
-      );
+      return new RequestErrorResponse(`User with username ${username} already exists`, 400);
     }
 
     const hashResponse = await this.hashPassword(password);
@@ -85,10 +85,7 @@ export class AuthService extends Service {
     // First look up the user, make sure they exist
     const userResponse = await this.userDao.getByPrimaryKey(username);
     if (userResponse.statusCode !== 200 || userResponse.object == null) {
-      return new RequestErrorResponse(
-        `User with username ${username} does not exist`,
-        404
-      );
+      return new RequestErrorResponse(`User with username ${username} does not exist`, 404);
     }
     const user = userResponse.object as User;
 
@@ -132,22 +129,20 @@ export class AuthService extends Service {
 
     await this.userDao.update(username, newUserObject);
 
-    return new SuccessResponse('Successfully Updated User', newUserObject)
+    return new SuccessResponse("Successfully Updated User", newUserObject);
   }
 
   async deleteUser(username: string) {
     // First look up the user, make sure they exist
     const userResponse = await this.userDao.getByPrimaryKey(username);
     if (userResponse.statusCode !== 200 || userResponse.object == null) {
-      return new RequestErrorResponse(
-        `User with username ${username} does not exist`,
-        404
-      );
+      return new RequestErrorResponse(`User with username ${username} does not exist`, 404);
     }
 
     return await this.userDao.delete(username);
   }
 
+  // this is not used as input verification is done in the handler
   public checkForUserBody(body): boolean {
     return (
       body.username != null &&
@@ -173,6 +168,7 @@ export class AuthService extends Service {
     return token;
   }
 
+  // TODO: return ServerErrorResponses if the dao calls fail
   private async getUserRole(userData: User): Promise<UserJWTData> {
     const campus = await this.campusDao.getByPrimaryKey(userData.campus_id);
     const roleType = await this.userRoleDao.getByPrimaryKey(userData.role_id);
@@ -186,25 +182,18 @@ export class AuthService extends Service {
   }
 
   // this is only called on the campus and user role DAOs which means we can specify the generics
-  private async getIdFromName(
-    name: string,
-    dao: Dao<Campus | UserRole, number>
-  ) {
-    let idResponse
-    if (dao.tableName === 'campus') {
+  private async getIdFromName(name: string, dao: Dao<Campus | UserRole, number>) {
+    let idResponse;
+    if (dao.tableName === "campus") {
       idResponse = await dao.getByKeyAndValue("campus_name", name);
     } else {
       idResponse = await dao.getByKeyAndValue("role_name", name);
     }
-    
 
     if (idResponse.statusCode === 200) {
-      return new SuccessResponse(
-        `Successfully retrieved id for ${name}`,
-        idResponse.object.id
-      );
+      return new SuccessResponse(`Successfully retrieved id for ${name}`, idResponse.object.id);
     } else {
-      return new ServerErrorResponse('Error getting an ID given a name', idResponse.statusCode)
+      return new ServerErrorResponse("Error getting an ID given a name", idResponse.statusCode);
     }
   }
 

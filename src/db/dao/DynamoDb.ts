@@ -1,7 +1,7 @@
 import { GetItemCommand, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import ServerErrorResponse from "../response/ServerErrorResponse";
-import SuccessResponse from "../response/SuccessResponse";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
+import SuccessResponse from "../../response/SuccessResponse";
 
 export class DynamoDb {
   private readonly dynamoClient: DynamoDBDocumentClient;
@@ -28,10 +28,7 @@ export class DynamoDb {
           cacheResult.Item.result.S.split(",")
         );
       } else {
-        return new SuccessResponse(
-          `Query ${query} failed to find ISBN data`,
-          null
-        );
+        return new SuccessResponse(`Query ${query} failed to find ISBN data`, null);
       }
     } catch (error) {
       return new ServerErrorResponse(

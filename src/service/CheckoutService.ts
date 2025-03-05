@@ -1,6 +1,6 @@
 import DaoFactory from "../db/dao/DaoFactory";
-import Response from "../db/response/Response";
-import ServerErrorResponse from "../db/response/ServerErrorResponse";
+import Response from "../response/Response";
+import ServerErrorResponse from "../response/ServerErrorResponse";
 import { Book } from "../db/schema/Book";
 import { Checkout } from "../db/schema/Checkout";
 import { Inventory } from "../db/schema/Inventory";
@@ -17,10 +17,7 @@ export default class CheckoutService extends Service {
     campus_name: string
   ): Promise<[Response<any>, Book]> {
     //get campus
-    const campus_response = await this.campusDao.getByKeyAndValue(
-      "campus_name",
-      campus_name
-    );
+    const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
     if (campus_response.statusCode !== 200) {
       return [campus_response, null];
     } else if (!campus_response.object) {
@@ -35,10 +32,7 @@ export default class CheckoutService extends Service {
     if (checkout_response.statusCode !== 200) {
       return [checkout_response, null];
     } else if (!checkout_response.object) {
-      return [
-        new ServerErrorResponse(`Could not find book with qr: ${qr_code}`, 500),
-        null,
-      ];
+      return [new ServerErrorResponse(`Could not find book with qr: ${qr_code}`, 500), null];
     }
     const book_id = checkout_response.object.book_id;
 
@@ -70,15 +64,9 @@ export default class CheckoutService extends Service {
     return [inventory_response, book_response.object];
   }
 
-  public async checkout(
-    qr_code: string,
-    campus_name: string
-  ): Promise<[Response<any>, Book]> {
+  public async checkout(qr_code: string, campus_name: string): Promise<[Response<any>, Book]> {
     //get campus
-    const campus_response = await this.campusDao.getByKeyAndValue(
-      "campus_name",
-      campus_name
-    );
+    const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
     if (campus_response.statusCode !== 200) {
       return [campus_response, null];
     } else if (!campus_response.object) {
@@ -89,26 +77,17 @@ export default class CheckoutService extends Service {
     }
 
     //check if book is in inventory and get book_id
-    const get_inventory_response = await this.inventoryDao.getByKeyAndValue(
-      "qr",
-      qr_code
-    );
+    const get_inventory_response = await this.inventoryDao.getByKeyAndValue("qr", qr_code);
     if (get_inventory_response.statusCode !== 200) {
       return [get_inventory_response, null];
     } else if (!get_inventory_response.object) {
-      return [
-        new ServerErrorResponse(`Could not find book with qr: ${qr_code}`, 500),
-        null,
-      ];
+      return [new ServerErrorResponse(`Could not find book with qr: ${qr_code}`, 500), null];
     }
 
     const book_id = get_inventory_response.object.book_id;
 
     //checkout/remove book from inventory
-    const inventory_response = await this.inventoryDao.checkout(
-      qr_code,
-      campus_response.object.id
-    );
+    const inventory_response = await this.inventoryDao.checkout(qr_code, campus_response.object.id);
     if (inventory_response.statusCode !== 200) {
       return [inventory_response, null];
     }
@@ -126,10 +105,7 @@ export default class CheckoutService extends Service {
     if (book_response.statusCode !== 200) {
       return [book_response, null];
     } else if (!book_response.object) {
-      return [
-        new ServerErrorResponse(`Could not find book with id: ${book_id}`, 500),
-        null,
-      ];
+      return [new ServerErrorResponse(`Could not find book with id: ${book_id}`, 500), null];
     }
 
     return [checkout_response, book_response.object];

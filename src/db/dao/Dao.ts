@@ -1,8 +1,8 @@
 import { Kysely, Transaction } from "kysely";
 import Database from "../schema/Database";
-import Response from "../response/Response";
-import ServerErrorResponse from "../response/ServerErrorResponse";
-import SuccessResponse from "../response/SuccessResponse";
+import Response from "../../response/Response";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
+import SuccessResponse from "../../response/SuccessResponse";
 
 // E is the entity, K is the key
 abstract class Dao<E, K extends number | string> {
@@ -102,10 +102,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async getByPrimaryKey(
-    key: K,
-    transaction?: Transaction<Database>
-  ): Promise<Response<E>> {
+  public async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -115,6 +112,10 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(this.keyName as any, "=", key)
           .executeTakeFirst();
+
+        if (!result) {
+          return new SuccessResponse(`No ${this.entityName} found with ${this.keyName} ${key}`);
+        }
 
         return new SuccessResponse<E>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
@@ -239,10 +240,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async delete(
-    key: K,
-    transaction?: Transaction<Database>
-  ): Promise<Response<any>> {
+  public async delete(key: K, transaction?: Transaction<Database>): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {

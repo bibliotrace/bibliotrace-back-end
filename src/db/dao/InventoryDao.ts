@@ -2,9 +2,9 @@ import { Kysely, Transaction } from "kysely";
 import Database from "../schema/Database";
 import { Inventory } from "../schema/Inventory";
 import Dao from "./Dao";
-import Response from "../response/Response";
-import ServerErrorResponse from "../response/ServerErrorResponse";
-import SuccessResponse from "../response/SuccessResponse";
+import Response from "../../response/Response";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
+import SuccessResponse from "../../response/SuccessResponse";
 import { Checkout } from "../schema/Checkout";
 
 class InventoryDao extends Dao<Inventory, string> {

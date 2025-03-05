@@ -1,5 +1,6 @@
 import express from "express";
-import { Config, sendResponse, validateUserType } from "../config";
+import { Config } from "../config";
+import { sendResponse, validateUserType } from "../utils/utils";
 
 export const inventoryRouter = express.Router();
 
@@ -11,10 +12,9 @@ inventoryRouter.put("/insert", async (req, res) => {
 
 inventoryRouter.get("/get/:isbn", async (req, res) => {
   if (validateUserType(req, res, "Admin")) {
-    const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(
-      req.params
-    );
+    const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(req.params);
     if (inventoryResponse.statusCode === 200 && inventoryResponse.object) {
+      // return current information for book in inventory
       sendResponse(res, inventoryResponse);
     } else {
       console.log("ISBN not found in inventory, searching ISBNdb...");
@@ -29,13 +29,11 @@ inventoryRouter.get("/get/:isbn", async (req, res) => {
 });
 
 inventoryRouter.post("/checkout", async (req: any, res) => {
-  const response = await Config.dependencies.checkoutHandler.checkout(req.body, req.auth);
-  sendResponse(res, response);
+  sendResponse(res, await Config.dependencies.checkoutHandler.checkout(req.body, req.auth));
 });
 
 inventoryRouter.post("/checkin", async (req: any, res) => {
-  const response = await Config.dependencies.checkoutHandler.checkin(req.body, req.auth);
-  sendResponse(res, response);
+  sendResponse(res, await Config.dependencies.checkoutHandler.checkin(req.body, req.auth));
 });
 
 // TODO: write set book location endpoint

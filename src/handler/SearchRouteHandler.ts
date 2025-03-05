@@ -1,9 +1,10 @@
 import IsbnService from "../service/IsbnService";
 import { DynamoDb } from "../db/dao/DynamoDb";
 import SearchDataService from "../service/SearchDataService";
-import Response from "../db/response/Response";
+import Response from "../response/Response";
 import { Book } from "../db/schema/Book";
-import RequestErrorResponse from "../db/response/RequestErrorResponse";
+import RequestErrorResponse from "../response/RequestErrorResponse";
+import { isValidISBN, sanitizeISBN } from "../utils/utils";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
@@ -19,11 +20,12 @@ export default class SearchRouteHandler {
   public async retrieveMetadataForIsbn(params): Promise<Response<Book | unknown>> {
     if (!params.isbn) {
       return new RequestErrorResponse("ISBN is required to get a book", 400);
-    } else if (!this.isValidISBN(params.isbn)) {
-      return new RequestErrorResponse(`Invalid ISBN ${params.isbn} provided`, 400);
+    } else if (!isValidISBN(params.isbn)) {
+      // isbn not included in response message as it can overflow the error modal lol
+      return new RequestErrorResponse(`Invalid ISBN provided`, 400);
     }
 
-    return await this.isbn.retrieveMetadata(this.sanitizeISBN(params.isbn));
+    return await this.isbn.retrieveMetadata(sanitizeISBN(params.isbn));
   }
 
   async conductSearch(inputQuery: string, campus: string): Promise<ResultRow[]> {
@@ -38,7 +40,7 @@ export default class SearchRouteHandler {
       // First, get the target list of isbn numbers from the querystring.
       const queryCacheResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
       if (queryCacheResult != null && queryCacheResult.statusCode === 200) {
-        isbnResult = queryCacheResult.object
+        isbnResult = queryCacheResult.object;
       }
       if (isbnResult == null) {
         console.log(`Submitting Query to ISBN: ${extractedQuery}`);
@@ -46,7 +48,7 @@ export default class SearchRouteHandler {
         if (isbnDbCallResponse.object != null) {
           isbnResult = isbnDbCallResponse.object;
 
-          console.log(isbnResult)
+          console.log(isbnResult);
 
           await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
         } else {
@@ -87,35 +89,6 @@ export default class SearchRouteHandler {
     return result;
   }
 
-  private isValidISBN(isbn: string): boolean {
-    const isbnClean = isbn.replace(/[-\s]/g, ""); // Remove hyphens and spaces
-
-    // Check if ISBN is ISBN-10
-    if (isbnClean.length === 10) {
-      const checkSum = isbnClean.split("").reduce((sum, char, index) => {
-        // ISBN10 numbers sometimes contain an X, which stands for 10
-        const digit = char === "X" ? 10 : parseInt(char, 10);
-        return sum + digit * (10 - index);
-      }, 0);
-      return checkSum % 11 === 0;
-    }
-
-    // Check if ISBN is ISBN-13
-    if (isbnClean.length === 13) {
-      const checkSum = isbnClean.split("").reduce((sum, char, index) => {
-        const digit = parseInt(char, 10);
-        return sum + (index % 2 === 0 ? digit : digit * 3);
-      }, 0);
-      return checkSum % 10 === 0;
-    }
-
-    return false; // Not a valid ISBN length
-  }
-
-  private sanitizeISBN(isbn: string): string {
-    return isbn.replace(/[-\s]/g, "");
-  }
-
   // ---------- Helper functions for string query parsing ----------
 
   // Extraction schema is ||Key:Value||||Key:Value||{...}||Key:Value||Search%20Query
@@ -134,10 +107,7 @@ export default class SearchRouteHandler {
       );
       queryList.push({ queryKey, queryValue });
 
-      inputQuery = inputQuery.slice(
-        queryIndexes.secondDelimiterIndex + 2,
-        inputQuery.length
-      );
+      inputQuery = inputQuery.slice(queryIndexes.secondDelimiterIndex + 2, inputQuery.length);
       queryIndexes = this.findIndexes(inputQuery);
     }
 
@@ -171,11 +141,7 @@ export default class SearchRouteHandler {
       }
     }
 
-    if (
-      firstDelimiterIndex !== -1 &&
-      secondDelimiterIndex !== -1 &&
-      separatorIndex !== -1
-    ) {
+    if (firstDelimiterIndex !== -1 && secondDelimiterIndex !== -1 && separatorIndex !== -1) {
       return {
         firstDelimiterIndex,
         separatorIndex: separatorIndex,
