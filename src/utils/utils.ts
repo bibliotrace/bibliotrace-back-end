@@ -3,7 +3,9 @@ import Response from "../response/Response";
 
 export function validateUserType(req, res, type: string): boolean {
   if (req.auth.userRole.roleType !== type) {
-    res.status(401).send({ message: `Improper Caller RoleType, required type is ${type}` });
+    if (res != null) {
+      res.status(401).send({ message: `Improper Caller RoleType, required type is ${type}` });
+    }
     return false;
   }
   return true;
