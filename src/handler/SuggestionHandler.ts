@@ -2,6 +2,7 @@ import RequestErrorResponse from "../response/RequestErrorResponse";
 import SuggestionService from "../service/SuggestionService";
 import { Transporter } from "nodemailer";
 import ServerErrorResponse from "../response/ServerErrorResponse";
+import { parseRequiredFields } from "../utils/utils";
 
 export class SuggestionHandler {
   private suggestionService: SuggestionService;
@@ -11,12 +12,9 @@ export class SuggestionHandler {
   }
 
   public async addSuggestion(body) {
-    if (!body.campus) {
-      return new RequestErrorResponse("Campus is required", 400);
-    }
-    if (!body.suggestion) {
-      return new RequestErrorResponse("Suggestion is required", 400);
-    }
+    const requiredFields = ["campus", "suggestion"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
 
     return this.suggestionService.addSuggestion(body.campus, body.suggestion);
   }

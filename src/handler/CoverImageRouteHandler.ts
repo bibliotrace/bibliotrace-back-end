@@ -1,7 +1,16 @@
+import RequestErrorResponse from "../response/RequestErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
+
 export class CoverImageRouteHandler {
   constructor() {}
 
-  async relayImage(isbn: string): Promise<Buffer | null> {
+  async relayImage(params: any): Promise<Buffer | RequestErrorResponse> {
+    // This is a success response because it's not an error, just a lack of data
+    if (!params.isbn) {
+      return new SuccessResponse("No ISBN provided to cover image endpoint");
+    }
+    const isbn = params.isbn;
+
     if (isbn.includes(".jpg")) {
       const result = await this.fetchImage(`https://images.isbndb.com/covers/${isbn}`);
       return result;

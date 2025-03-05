@@ -1,6 +1,7 @@
 import Response from "../response/Response";
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import { AuthService } from "../service/AuthService";
+import { parseRequiredFields } from "../utils/utils";
 
 export class AuthHandler {
   private authService: AuthService;
@@ -10,32 +11,17 @@ export class AuthHandler {
   }
 
   public async login(body): Promise<Response<string>> {
-    if (!body.username) {
-      return new RequestErrorResponse("Username is required", 400);
-    }
-    if (!body.password) {
-      return new RequestErrorResponse("Password is required", 400);
-    }
+    const requiredFields = ["username", "password"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
 
     return this.authService.login(body.username, body.password);
   }
 
   public async createUser(body) {
-    if (!body.username) {
-      return new RequestErrorResponse("Username is required", 400);
-    }
-    if (!body.password) {
-      return new RequestErrorResponse("Password is required", 400);
-    }
-    if (!body.email) {
-      return new RequestErrorResponse("Email is required", 400);
-    }
-    if (!body.roleType) {
-      return new RequestErrorResponse("Role Type is required", 400);
-    }
-    if (!body.campus) {
-      return new RequestErrorResponse("Campus is required", 400);
-    }
+    const requiredFields = ["username", "password", "email", "roleType", "campus"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
 
     return this.authService.createUser(body.username, body.password, {
       campus: body.campus,
@@ -45,9 +31,9 @@ export class AuthHandler {
   }
 
   public async updateUser(body): Promise<Response<string | number>> {
-    if (!body.username) {
-      return new RequestErrorResponse("Username is required", 400);
-    }
+    const requiredFields = ["username"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
 
     return this.authService.updateUser(
       body.username,
@@ -59,9 +45,9 @@ export class AuthHandler {
   }
 
   public async deleteUser(params): Promise<Response<string>> {
-    if (!params.username) {
-      return new RequestErrorResponse("Username is required", 400);
-    }
+    const requiredFields = ["username"];
+    const requiredFieldsResponse = parseRequiredFields(params, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
 
     return this.authService.deleteUser(params.username);
   }

@@ -1,6 +1,7 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import SuccessResponse from "../response/SuccessResponse";
 import CheckoutService from "../service/CheckoutService";
+import { parseRequiredFields } from "../utils/utils";
 
 export class CheckoutHandler {
   checkoutService: CheckoutService;
@@ -32,11 +33,9 @@ export class CheckoutHandler {
   }
 
   public async checkin(body, authData) {
-    if (!body.qr_code) {
-      return new RequestErrorResponse("QR code is required", 400);
-    } else if (!body.location_id) {
-      return new RequestErrorResponse("Location is required", 400);
-    }
+    const requiredFields = ["qr_code", "location_id"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
 
     const campus = authData.userRole.campus;
     if (campus == null) {
