@@ -1,7 +1,7 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import SuccessResponse from "../response/SuccessResponse";
 import CheckoutService from "../service/CheckoutService";
-import { parseRequiredFields } from "../utils/utils";
+import { parseQr, parseRequiredFields } from "../utils/utils";
 
 export class CheckoutHandler {
   checkoutService: CheckoutService;
@@ -14,6 +14,9 @@ export class CheckoutHandler {
     const requiredFields = ["qr_code"];
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
     if (requiredFieldsResponse) return requiredFieldsResponse;
+
+    const qrResponse = parseQr(body.qr_code);
+    if (qrResponse) return qrResponse;
 
     const campus = authData.userRole.campus;
 
@@ -37,6 +40,9 @@ export class CheckoutHandler {
     const requiredFields = ["qr_code", "location_id"];
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
     if (requiredFieldsResponse) return requiredFieldsResponse;
+
+    const qrResponse = parseQr(body.qr_code);
+    if (qrResponse) return qrResponse;
 
     const campus = authData.userRole.campus;
     if (campus == null) {

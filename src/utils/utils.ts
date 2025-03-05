@@ -50,23 +50,23 @@ export function parseQr(qr: string) {
   if (
     !qr ||
     qr.length !== 6 ||
-    !this.isAlphanumeric(qr) ||
-    !this.isAlpha(qr.substring(0, 2)) ||
-    !this.isNumeric(qr.substring(2))
+    !isAlphanumeric(qr) ||
+    !isAlpha(qr.substring(0, 2)) ||
+    !isNumeric(qr.substring(2))
   ) {
     return new RequestErrorResponse("Invalid QR code provided", 400);
   }
 }
 
-export function isAlphanumeric(str: string): boolean {
+function isAlphanumeric(str: string): boolean {
   return /^[a-zA-Z0-9]+$/.test(str);
 }
 
-export function isAlpha(str: string): boolean {
+function isAlpha(str: string): boolean {
   return /^[a-zA-Z]+$/.test(str);
 }
 
-export function isNumeric(str: string): boolean {
+function isNumeric(str: string): boolean {
   return /^[0-9]+$/.test(str);
 }
 
