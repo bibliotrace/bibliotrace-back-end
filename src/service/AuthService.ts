@@ -35,7 +35,10 @@ export class AuthService extends Service {
       return new SuccessResponse("Token generated successfully", await this.buildJWT(role));
     } else {
       console.log("Password Is Wrong");
-      return new RequestErrorResponse("Incorrect username or password", 401);
+      return new RequestErrorResponse(
+        "Incorrect username or password. Please modify your username and/or password.",
+        401
+      );
     }
   }
 
