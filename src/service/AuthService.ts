@@ -20,13 +20,12 @@ export class AuthService extends Service {
     const userResponse = await this.userDao.getByPrimaryKey(username);
 
     if (userResponse.statusCode !== 200) {
-      return new RequestErrorResponse(userResponse.message, 404); // change type from server error to request error
-    }
-    if (!userResponse.object) {
+      return new RequestErrorResponse(userResponse.message, 400); // change type from server error to request error
+    } else if (!userResponse.object) {
       console.log("Username Doesn't Exist");
       return new RequestErrorResponse(
         "Incorrect username or password. Please modify your username and/or password.",
-        401
+        401 // technically should be a 404 but we don't want the user to know whether the username or password fails
       );
     }
 
@@ -53,6 +52,7 @@ export class AuthService extends Service {
 
     // Next grab whether there's another user with the username provided
     const userResponse = await this.userDao.getByPrimaryKey(username);
+    // this could just check on userResponse.object as no error contains an object
     if (userResponse.statusCode === 200 && userResponse.object != null) {
       return new RequestErrorResponse(`User with username ${username} already exists`, 400);
     }
@@ -142,6 +142,7 @@ export class AuthService extends Service {
     return await this.userDao.delete(username);
   }
 
+  // this is not used as input verification is done in the handler
   public checkForUserBody(body): boolean {
     return (
       body.username != null &&
@@ -167,6 +168,7 @@ export class AuthService extends Service {
     return token;
   }
 
+  // TODO: return ServerErrorResponses if the dao calls fail
   private async getUserRole(userData: User): Promise<UserJWTData> {
     const campus = await this.campusDao.getByPrimaryKey(userData.campus_id);
     const roleType = await this.userRoleDao.getByPrimaryKey(userData.role_id);
