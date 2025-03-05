@@ -113,6 +113,10 @@ abstract class Dao<E, K extends number | string> {
           .where(this.keyName as any, "=", key)
           .executeTakeFirst();
 
+        if (!result) {
+          return new SuccessResponse(`No ${this.entityName} found with ${this.keyName} ${key}`);
+        }
+
         return new SuccessResponse<E>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E

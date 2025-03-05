@@ -1,4 +1,3 @@
-import RequestErrorResponse from "../response/RequestErrorResponse";
 import SuggestionService from "../service/SuggestionService";
 import { Transporter } from "nodemailer";
 import ServerErrorResponse from "../response/ServerErrorResponse";

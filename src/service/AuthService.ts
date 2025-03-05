@@ -22,6 +22,9 @@ export class AuthService extends Service {
     if (userResponse.statusCode !== 200) {
       return new RequestErrorResponse(userResponse.message, 404); // change type from server error to request error
     }
+    if (!userResponse.object) {
+      return new RequestErrorResponse("Incorrect username or password", 401);
+    }
 
     const realHash = await argon2.verify(userResponse.object.password_hash, password);
     if (realHash) {

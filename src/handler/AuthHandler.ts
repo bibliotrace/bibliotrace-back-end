@@ -1,5 +1,4 @@
 import Response from "../response/Response";
-import RequestErrorResponse from "../response/RequestErrorResponse";
 import { AuthService } from "../service/AuthService";
 import { parseRequiredFields } from "../utils/utils";
 
