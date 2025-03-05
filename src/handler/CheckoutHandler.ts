@@ -11,9 +11,10 @@ export class CheckoutHandler {
   }
 
   public async checkout(body, authData) {
-    if (!body.qr_code) {
-      return new RequestErrorResponse("QR code is required", 400);
-    }
+    const requiredFields = ["qr_code"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
+
     const campus = authData.userRole.campus;
 
     if (campus == null) {
