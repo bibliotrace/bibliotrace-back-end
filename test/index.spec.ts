@@ -1,9 +1,5 @@
-
-
-describe('Dummy testing suite', () => {
-
-
-    test('index works', () => {
-        expect(1).toEqual(1)
-    })
-})
+describe("Index testing suite", () => {
+  test("Index tests not implemented yet", () => {
+    expect(1).toEqual(1);
+  });
+});
