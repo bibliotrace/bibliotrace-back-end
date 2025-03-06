@@ -130,3 +130,22 @@ CREATE TABLE users (
   FOREIGN KEY (role_id) REFERENCES user_roles(id),
   FOREIGN KEY (campus_id) REFERENCES campus(id)
 );
+
+CREATE TABLE shopping_list (
+  book_id INT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  author VARCHAR(255) NOT NULL,
+  campus_id INT NOT NULL,
+  FOREIGN KEY (campus_id) REFERENCES campus(id),
+  FOREIGN KEY (book_id) REFERENCES books(id)
+);
+
+CREATE TABLE restock_list (
+  book_id INT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  author VARCHAR(255) NOT NULL,
+  campus_id INT NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (campus_id) REFERENCES campus(id),
+  FOREIGN KEY (book_id) REFERENCES books(id)
+);

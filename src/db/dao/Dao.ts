@@ -261,6 +261,31 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
+  public async deleteByKeyAndValue(
+    key: string,
+    value: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .deleteFrom(this.tableName as keyof Database)
+          .where(key as any, "=", value)
+          .execute();
+        return new SuccessResponse(
+          `${result.length} ${this.capitalizeFirstLetter(this.entityName)}(s) deleted successfully`
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to delete ${this.entityName} with error ${error.message}`,
+          500
+        );
+      }
+    }
+  }
+
   capitalizeFirstLetter(str: string): string {
     if (str.length === 0) return str;
     return str.charAt(0).toUpperCase() + str.slice(1);

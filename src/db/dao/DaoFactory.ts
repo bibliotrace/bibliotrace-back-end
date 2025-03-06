@@ -15,6 +15,8 @@ import TagDao from "./TagDao";
 import UserDao from "./UserDao";
 import UserRoleDao from "./UserRoleDao";
 import LocationDao from "./LocationDao";
+import RestockListDao from "./RestockListDao";
+import ShoppingListDao from "./ShoppingListDao";
 
 class DaoFactory {
   audienceDao: AudienceDao;
@@ -27,7 +29,9 @@ class DaoFactory {
   genreTypeDao: GenreTypeDao;
   inventoryDao: InventoryDao;
   locationDao: LocationDao;
+  restockListDao: RestockListDao;
   seriesDao: SeriesDao;
+  shoppingListDao: ShoppingListDao;
   suggestionDao: SuggestionDao;
   tagDao: TagDao;
   userDao: UserDao;
@@ -44,7 +48,9 @@ class DaoFactory {
     this.genreTypeDao = new GenreTypeDao(db);
     this.inventoryDao = new InventoryDao(db);
     this.locationDao = new LocationDao(db);
+    this.restockListDao = new RestockListDao(db);
     this.seriesDao = new SeriesDao(db);
+    this.shoppingListDao = new ShoppingListDao(db);
     this.suggestionDao = new SuggestionDao(db);
     this.tagDao = new TagDao(db);
     this.userDao = new UserDao(db);
@@ -91,8 +97,16 @@ class DaoFactory {
     return this.locationDao;
   }
 
+  getRestockListDao(): RestockListDao {
+    return this.restockListDao;
+  }
+
   getSeriesDao(): SeriesDao {
     return this.seriesDao;
+  }
+
+  getShoppingListDao(): ShoppingListDao {
+    return this.shoppingListDao;
   }
 
   getSuggestionDao(): SuggestionDao {
