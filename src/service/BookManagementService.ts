@@ -19,6 +19,10 @@ export default class BookManagementService extends Service {
     return this.bookDao.getBookByIsbn(isbn);
   }
 
+  public async getTagsByIsbn(isbn: string): Promise<Response<any>> {
+    return this.bookDao.getBookTagsByIsbn(isbn);
+  }
+
   private async updateBookCorrespondingToIsbn(request: BookInsertRequest) {
     const isbn = this.parseIsbnList(request.isbn)[0]; // we only need one ISBN to update
     const bookResponse = await this.getByIsbn(isbn);

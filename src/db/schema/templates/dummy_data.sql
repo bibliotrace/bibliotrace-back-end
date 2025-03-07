@@ -77,3 +77,18 @@ VALUES
 ('ab0028', 13, 1, 2, '123456789'),
 ('ab0029', 14, 1, 2, '123456789'),
 ('ab0030', 15, 1, 2, '123456789');
+
+insert into tags (book_id, tag)
+values (1, 'Harry Potter'),
+       (1, 'Not Scary Yet'),
+       (1, 'Hogwartz'),
+       (1, 'First In Series'),
+       (2, 'Harry Potter'),
+       (2, 'A Little Creepy'),
+       (2, 'Hogwartz'),
+       (2, 'Snakes'),
+       (3, 'Harry Potter'),
+       (3, 'Hogwartz'),
+       (3, 'More Creepy'),
+       (10, 'Shot in the dark'),
+       (10, 'I Dont know what book is');
