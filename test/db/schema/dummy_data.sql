@@ -1,5 +1,6 @@
-USE bibliotrace_v3;
+USE bibliotrace_v3_test;
 
+-- Modify data as needed for tests, this will be run at initialization of bibliotrace service
 INSERT INTO genre_types (genre_name)
 VALUES ('Action-Adventure/Suspense'), ('Activity Book'), ('Board Book'), ('Dystopian'), ('Fantasy'), ('Fiction'), ('Graphic Novel'), 
 ('Historical Fiction'), ('Leveled Reader'), ('Non-Fiction'), ('Paranormal'), ('Picture Book'), ('Romance'), ('Science Fiction'), 
@@ -41,9 +42,9 @@ VALUES
 ('Mockingjay', '9780439023511|9780439023528', 'Suzanne Collins', 4, 5, 390, 2010, 'Katniss becomes the symbol of the rebellion against the Capitol.', 'English', NULL);
 
 INSERT INTO location (campus_id, location_name) VALUES 
-(1, 'Storage'),
-(1, 'Shelf'),
-(1, 'Downstairs');
+(1, 'storage'),
+(1, 'shelf'),
+(1, 'downstairs');
 
 INSERT INTO inventory (qr, book_id, location_id, campus_id, ttl)
 VALUES
@@ -77,18 +78,3 @@ VALUES
 ('ab0028', 13, 1, 2, '123456789'),
 ('ab0029', 14, 1, 2, '123456789'),
 ('ab0030', 15, 1, 2, '123456789');
-
-insert into tags (book_id, tag)
-values (1, 'Harry Potter'),
-       (1, 'Not Scary Yet'),
-       (1, 'Hogwartz'),
-       (1, 'First In Series'),
-       (2, 'Harry Potter'),
-       (2, 'A Little Creepy'),
-       (2, 'Hogwartz'),
-       (2, 'Snakes'),
-       (3, 'Harry Potter'),
-       (3, 'Hogwartz'),
-       (3, 'More Creepy'),
-       (10, 'Shot in the dark'),
-       (10, 'I Dont know what book is');

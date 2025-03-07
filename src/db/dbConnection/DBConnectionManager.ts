@@ -5,8 +5,8 @@ import fs from "fs";
 import path from "path";
 
 export default class DBConnectionManager {
-  private readonly pool: Pool
-  kyselyDB: Kysely<Database>
+  private readonly pool: Pool;
+  kyselyDB: Kysely<Database>;
 
   constructor() {
     this.pool = createPool({
@@ -18,9 +18,9 @@ export default class DBConnectionManager {
 
     this.kyselyDB = new Kysely<Database>({
       dialect: new MysqlDialect({
-        pool: this.pool
-      })
-    })
+        pool: this.pool,
+      }),
+    });
   }
 
   async testConnection(): Promise<void> {
@@ -41,7 +41,7 @@ export default class DBConnectionManager {
         .split(/;\s*$/gm)
         .map((stmt) => stmt.trim())
         .filter((stmt) => stmt.length > 0);
-  
+
       // Get a connection from the pool using a Promise
       connection = await new Promise<PoolConnection>((resolve, reject) => {
         this.pool.getConnection((err, conn) => {
@@ -49,7 +49,7 @@ export default class DBConnectionManager {
           else resolve(conn);
         });
       });
-  
+
       // Execute each statement sequentially using async/await
       for (const statement of statements) {
         await new Promise<void>((resolve, reject) => {
@@ -62,7 +62,7 @@ export default class DBConnectionManager {
           });
         });
       }
-  
+
       console.log("SQL file executed successfully");
     } catch (error) {
       console.error("Error executing SQL file:", error);
@@ -73,12 +73,12 @@ export default class DBConnectionManager {
       }
     }
   }
-  
+
   async runCreateSQL() {
-    await this.runSQLFile('./src/db/schema/templates/empty_schema.sql');
+    await this.runSQLFile("./src/db/schema/templates/empty_schema.sql");
   }
-  
+
   async runAddDummyData() {
-    await this.runSQLFile('./src/db/schema/templates/dummy_data.sql');
+    await this.runSQLFile("./src/db/schema/templates/dummy_data.sql");
   }
 }
