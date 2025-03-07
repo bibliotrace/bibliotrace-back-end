@@ -132,19 +132,19 @@ CREATE TABLE users (
 );
 
 CREATE TABLE shopping_list (
-  book_id INT PRIMARY KEY,
+  book_id INT UNSIGNED PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   author VARCHAR(255) NOT NULL,
-  campus_id INT NOT NULL,
+  campus_id TINYINT UNSIGNED NOT NULL,
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (book_id) REFERENCES books(id)
 );
 
 CREATE TABLE restock_list (
-  book_id INT PRIMARY KEY,
+  book_id INT UNSIGNED PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   author VARCHAR(255) NOT NULL,
-  campus_id INT NOT NULL,
+  campus_id TINYINT UNSIGNED NOT NULL,
   quantity INT NOT NULL,
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (book_id) REFERENCES books(id)
