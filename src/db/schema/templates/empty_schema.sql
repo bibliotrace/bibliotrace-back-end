@@ -1,6 +1,6 @@
 USE bibliotrace_v3;
 
-DROP TABLE IF EXISTS location, audiences, audit, audit_states, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;
+DROP TABLE IF EXISTS shopping_list, restock_list, location, audiences, audit, audit_states, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -129,4 +129,23 @@ CREATE TABLE users (
   campus_id TINYINT UNSIGNED NOT NULL,
   FOREIGN KEY (role_id) REFERENCES user_roles(id),
   FOREIGN KEY (campus_id) REFERENCES campus(id)
+);
+
+CREATE TABLE shopping_list (
+  book_id INT UNSIGNED PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  author VARCHAR(255) NOT NULL,
+  campus_id TINYINT UNSIGNED NOT NULL,
+  FOREIGN KEY (campus_id) REFERENCES campus(id),
+  FOREIGN KEY (book_id) REFERENCES books(id)
+);
+
+CREATE TABLE restock_list (
+  book_id INT UNSIGNED PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  author VARCHAR(255) NOT NULL,
+  campus_id TINYINT UNSIGNED NOT NULL,
+  quantity INT NOT NULL,
+  FOREIGN KEY (campus_id) REFERENCES campus(id),
+  FOREIGN KEY (book_id) REFERENCES books(id)
 );

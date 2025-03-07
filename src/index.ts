@@ -10,7 +10,7 @@ import { authRouter } from "./routes/authRouter.js";
 import { searchRouter } from "./routes/searchRouter";
 import { inventoryRouter } from "./routes/inventoryRouter";
 import { suggestRouter } from "./routes/suggestRouter";
-import { reportsRouter } from "./routes/reportsRouter";
+import { reportRouter } from "./routes/reportRouter";
 import { metadataRouter } from "./routes/metadataRouter";
 
 const server = express();
@@ -44,7 +44,7 @@ apiRouter.use("/auth", authRouter);
 apiRouter.use("/search", searchRouter);
 apiRouter.use("/inventory", inventoryRouter);
 apiRouter.use("/metadata", metadataRouter);
-apiRouter.use("/reports", reportsRouter);
+apiRouter.use("/report", reportRouter);
 apiRouter.use("/suggest", suggestRouter);
 
 server.get("/dummy", (req, res) => {
