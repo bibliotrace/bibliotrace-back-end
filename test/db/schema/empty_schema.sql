@@ -1,5 +1,4 @@
 -- NOTE: Any changes to the production database schema should also be reflected in this file to ensure that the tests run correctly.
-CREATE DATABASE IF NOT EXISTS bibliotrace_v3_test;
 USE bibliotrace_v3_test;
 
 DROP TABLE IF EXISTS location, audiences, audit, audit_states, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;

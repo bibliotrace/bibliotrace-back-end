@@ -75,8 +75,6 @@ export class Config {
     if (process.env.NODE_ENV === "local") {
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
-      await dbConnectionManager.runAddDummyTestData();
-      await dbConnectionManager.runCreateTestSQL();
     }
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);

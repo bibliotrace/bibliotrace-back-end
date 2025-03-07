@@ -8,4 +8,9 @@ module.exports = {
   transform: {
     "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.json" }],
   },
+  collectCoverage: true,
+  collectCoverageFrom: ["src/**/*.ts"],
+  coverageDirectory: "coverage",
+  globalSetup: "<rootDir>/test/setup.ts",
+  globalTeardown: "<rootDir>/test/teardown.ts",
 };

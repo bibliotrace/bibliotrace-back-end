@@ -81,12 +81,4 @@ export default class DBConnectionManager {
   async runAddDummyData() {
     await this.runSQLFile("./src/db/schema/templates/dummy_data.sql");
   }
-
-  async runCreateTestSQL() {
-    await this.runSQLFile("./test/db/schema/empty_schema.sql");
-  }
-
-  async runAddDummyTestData() {
-    await this.runSQLFile("./test/db/schema/dummy_data.sql");
-  }
 }
