@@ -17,10 +17,7 @@ export default class ReportHandler {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
-    const shopping_response = await this.reportService.getShoppingListForCampus(
-      authData.userRole?.campus
-    );
-    return shopping_response;
+    return await this.reportService.getShoppingListForCampus(authData.userRole?.campus);
   }
 
   public async deleteShoppingListItem(body, authData): Promise<Response<Campus | ShoppingList>> {
@@ -31,11 +28,7 @@ export default class ReportHandler {
       return new RequestErrorResponse("Request is missing book_id", 400);
     }
 
-    const delete_response = await this.reportService.deleteShoppingListItem(
-      body.book_id,
-      authData.userRole?.campus
-    );
-    return delete_response;
+    return await this.reportService.deleteShoppingListItem(body.book_id, authData.userRole?.campus);
   }
 
   public async moveShoppingItemToRestock(
@@ -49,21 +42,17 @@ export default class ReportHandler {
       return new RequestErrorResponse("Request is missing book_id", 400);
     }
 
-    const response = await this.reportService.moveShoppingItemToRestock(
+    return await this.reportService.moveShoppingItemToRestock(
       body.book_id,
       authData.userRole?.campus
     );
-    return response;
   }
 
   public async getRestockList(authData): Promise<Response<Campus | RestockList[]>> {
     if (!authData.userRole?.campus) {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
-    const restock_response = await this.reportService.getRestockListForCampus(
-      authData.userRole?.campus
-    );
-    return restock_response;
+    return await this.reportService.getRestockListForCampus(authData.userRole?.campus);
   }
 
   public async deleteRestockListItem(body, authData): Promise<Response<Campus | RestockList>> {
@@ -74,10 +63,6 @@ export default class ReportHandler {
       return new RequestErrorResponse("Request is missing book_id", 400);
     }
 
-    const delete_response = await this.reportService.deleteRestockListItem(
-      body.book_id,
-      authData.userRole?.campus
-    );
-    return delete_response;
+    return await this.reportService.deleteRestockListItem(body.book_id, authData.userRole?.campus);
   }
 }

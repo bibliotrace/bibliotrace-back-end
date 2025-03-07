@@ -21,12 +21,10 @@ export default class ReportService extends Service {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
 
-    const shopping_response = await this.shoppingListDao.getAllByKeyAndValue(
+    return await this.shoppingListDao.getAllByKeyAndValue(
       "campus_id",
       campus_response.object.id.toString()
     );
-
-    return shopping_response;
   }
 
   public async deleteShoppingListItem(
@@ -40,12 +38,7 @@ export default class ReportService extends Service {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
 
-    const delete_response = await this.shoppingListDao.deleteShoppingListItem(
-      book_id,
-      campus_response.object.id
-    );
-
-    return delete_response;
+    return await this.shoppingListDao.deleteShoppingListItem(book_id, campus_response.object.id);
   }
 
   public async moveShoppingItemToRestock(
@@ -86,9 +79,8 @@ export default class ReportService extends Service {
       campus_id: campus_response.object.id,
       quantity: 0,
     };
-    const restock_response = await this.restockListDao.addRestockListItem(restock_item);
 
-    return restock_response;
+    return await this.restockListDao.addRestockListItem(restock_item);
   }
 
   public async getRestockListForCampus(
@@ -101,12 +93,10 @@ export default class ReportService extends Service {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
 
-    const restock_response = await this.restockListDao.getAllByKeyAndValue(
+    return await this.restockListDao.getAllByKeyAndValue(
       "campus_id",
       campus_response.object.id.toString()
     );
-
-    return restock_response;
   }
 
   public async deleteRestockListItem(
@@ -120,11 +110,6 @@ export default class ReportService extends Service {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
 
-    const delete_response = await this.restockListDao.deleteRestockListItem(
-      book_id,
-      campus_response.object.id
-    );
-
-    return delete_response;
+    return await this.restockListDao.deleteRestockListItem(book_id, campus_response.object.id);
   }
 }
