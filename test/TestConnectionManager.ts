@@ -8,7 +8,7 @@ class TestConnectionManager {
   private pool: Pool;
   kyselyDB: Kysely<Database>;
 
-  // this function acts as a constructor that can have awaits in it
+  // this function acts like a constructor that can have awaits in it
   public async initialize() {
     if (process.env.NODE_ENV !== "test") {
       return; // no need to set up a new database connection if we're not running in test
@@ -123,7 +123,7 @@ class TestConnectionManager {
   }
 
   async runCreateTestSQL() {
-    await this.runSQLFile("./test/db/schema/empty_schema.sql");
+    await this.runSQLFile("./src/db/schema/templates/empty_schema.sql");
   }
 
   async runAddDummyTestData() {
