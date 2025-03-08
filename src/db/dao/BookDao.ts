@@ -17,10 +17,30 @@ class BookDao extends Dao<Book, number> {
   // TODO: optimize to use index on isbn_list
   public async getBookByIsbn(isbn: string): Promise<Response<Book>> {
     try {
+      console.log("Fetching Book By ISBN", isbn);
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
-        .selectAll()
-        .innerJoin('audiences', 'audiences.id', 'books.audience_id')
+        .select([
+          "books.id as id",
+          "books.book_title as book_title",
+          "books.isbn_list as isbn_list",
+          "books.author as author",
+          "books.primary_genre_id as primary_genre_id",
+          "books.audience_id as audience_id",
+          "books.pages as pages",
+          "books.series_id as series_id",
+          "books.series_number as series_number",
+          "books.publish_date as publish_date",
+          "books.short_description as short_description",
+          "books.language as language",
+          "books.img_callback as img_callback",
+          "audiences.audience_name as audience_name",
+          "genre_types.genre_name as genre_name",
+          "series.series_name as series_name"
+        ])
+        .leftJoin("audiences", "audiences.id", "books.audience_id")
+        .leftJoin("genre_types", "genre_types.id", "books.primary_genre_id")
+        .leftJoin("series", "series.id", "books.series_id")
         .where("isbn_list", "like", `%${isbn}%` as any)
         .executeTakeFirst(); // isbn should be unique, thus we just take the first row containing the isbn
       if (!book) {
@@ -39,8 +59,8 @@ class BookDao extends Dao<Book, number> {
     try {
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
-        .select('tags.tag')
-        .innerJoin('tags', 'tags.book_id', 'books.id')
+        .select("tags.tag")
+        .innerJoin("tags", "tags.book_id", "books.id")
         .where("isbn_list", "like", `%${isbn}%` as any)
         .execute();
       if (!book) {
@@ -64,7 +84,7 @@ class BookDao extends Dao<Book, number> {
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
         .selectAll()
-        .where("book_title", "like", `%${name}%` as any)
+        .where("book_title", "=", `${name}` as any)
         .executeTakeFirst(); // not necessarily unique but pretty close to it
       // TODO: if not unique, return a list of books matching the provided name
       if (!book) {
