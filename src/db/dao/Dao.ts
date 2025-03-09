@@ -15,18 +15,19 @@ abstract class Dao<E, K extends number | string> {
     this.db = db;
   }
 
-  public async create(entity: E, transaction?: Transaction<Database>) {
+  public async create(entity: E, transaction?: Transaction<Database>): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
       try {
-        await this.db
+        console.log('entity being created' , entity)
+        const result = await this.db
           .insertInto(this.tableName as keyof Database)
           .values(entity)
-          .execute();
+          .executeTakeFirst();
         return new SuccessResponse(
           `${this.capitalizeFirstLetter(this.entityName)} created successfully`,
-          entity
+          {id: result.insertId, ...entity}
         );
       } catch (error) {
         if (error.message.includes("Duplicate entry")) {
@@ -62,6 +63,9 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(key as any, "=", value)
           .executeTakeFirst();
+        if (!result) {
+          return new SuccessResponse<null>(`Item Not Found`);
+        }
         return new SuccessResponse<E>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E
@@ -102,7 +106,10 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
+  public async getByPrimaryKey(
+    key: K,
+    transaction?: Transaction<Database>
+  ): Promise<Response<E>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -114,7 +121,9 @@ abstract class Dao<E, K extends number | string> {
           .executeTakeFirst();
 
         if (!result) {
-          return new SuccessResponse(`No ${this.entityName} found with ${this.keyName} ${key}`);
+          return new SuccessResponse(
+            `No ${this.entityName} found with ${this.keyName} ${key}`
+          );
         }
 
         return new SuccessResponse<E>(
@@ -240,7 +249,10 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async delete(key: K, transaction?: Transaction<Database>): Promise<Response<any>> {
+  public async delete(
+    key: K,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -275,7 +287,9 @@ abstract class Dao<E, K extends number | string> {
           .where(key as any, "=", value)
           .execute();
         return new SuccessResponse(
-          `${result.length} ${this.capitalizeFirstLetter(this.entityName)}(s) deleted successfully`
+          `${result.length} ${this.capitalizeFirstLetter(
+            this.entityName
+          )}(s) deleted successfully`
         );
       } catch (error) {
         return new ServerErrorResponse(

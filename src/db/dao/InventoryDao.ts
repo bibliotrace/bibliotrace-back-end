@@ -38,6 +38,10 @@ class InventoryDao extends Dao<Inventory, string> {
       }
     }
   }
+
+  public async updateInventory () {
+    console.log('hello!')
+  }
 }
 
 export default InventoryDao;
