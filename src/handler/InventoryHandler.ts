@@ -1,4 +1,6 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
+import Response from "../response/Response";
+import SuccessResponse from "../response/SuccessResponse";
 import BookManagementService, { BookInsertRequest } from "../service/BookManagementService";
 import { isValidISBN, sanitizeISBN, parseQr, parseRequiredFields } from "../utils/utils";
 
@@ -37,6 +39,17 @@ export class InventoryHandler {
     }
 
     return this.bookManagementService.getTagsByIsbn(params.isbn)
+  }
+
+  public async setLocation (body, auth): Promise<Response<any>> {
+    console.log(body, auth)
+
+    const targetBook = await this.bookManagementService.getByQr(body.qr_code)
+    if (auth.userRole.roleType === 'Admin') {
+      return new SuccessResponse((await this.bookManagementService.setLocationByQr(body.qr_code, body.location_id))._message, targetBook)
+    }
+
+    return new SuccessResponse('Completed', targetBook);
   }
 
   private parseInsertRequest(body): RequestErrorResponse | BookInsertRequest {

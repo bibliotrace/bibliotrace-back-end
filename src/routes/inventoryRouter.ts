@@ -28,21 +28,23 @@ inventoryRouter.get("/get/:isbn", async (req, res) => {
         await Config.dependencies.searchRouteHandler.retrieveMetadataForIsbn(req.params)
       );
     } else {
-      sendResponse(res, new SuccessResponse('No Books Found', { }))
+      sendResponse(res, new SuccessResponse("No Books Found", {}));
     }
   }
 });
 
 inventoryRouter.get("/get/tags/:isbn", async (req, res) => {
-  const tagsResponse = await Config.dependencies.inventoryHandler.getTagsByIsbn(req?.params)
+  const tagsResponse = await Config.dependencies.inventoryHandler.getTagsByIsbn(
+    req?.params
+  );
 
   if (tagsResponse.statusCode === 200 && tagsResponse.object) {
     sendResponse(res, tagsResponse);
     return;
   } else {
-    sendResponse(res, new RequestErrorResponse('Book Not Found', 404))
+    sendResponse(res, new RequestErrorResponse("Book Not Found", 404));
   }
-})
+});
 
 inventoryRouter.post("/checkout", async (req: any, res) => {
   sendResponse(
@@ -58,6 +60,11 @@ inventoryRouter.post("/checkin", async (req: any, res) => {
   );
 });
 
-// TODO: write set book location endpoint
+inventoryRouter.post("/setLocation", async (req: any, res) => {
+  sendResponse(
+    res, 
+    await Config.dependencies.inventoryHandler.setLocation(req.body, req.auth) 
+  );
+});
 
 module.exports = { inventoryRouter };
