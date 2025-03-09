@@ -15,7 +15,10 @@ abstract class Dao<E, K extends number | string> {
     this.db = db;
   }
 
-  public async create(entity: E, transaction?: Transaction<Database>): Promise<Response<any>> {
+  public async create(
+    entity: E,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions not supported yet", 500);
     } else {
@@ -25,10 +28,7 @@ abstract class Dao<E, K extends number | string> {
           .insertInto(this.tableName as keyof Database)
           .values(entity)
           .executeTakeFirst();
-        return new SuccessResponse(
-          `${this.capitalizeFirstLetter(this.entityName)} created successfully`,
-          {id: result.insertId, ...entity}
-        );
+        return new SuccessResponse(`New Entity created successfully`, {...entity, id: Number(result.insertId)});
       } catch (error) {
         if (error.message.includes("Duplicate entry")) {
           return this.parseDuplicateKeyError(error.message);
