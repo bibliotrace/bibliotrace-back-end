@@ -7,7 +7,7 @@
     "dev": "docker compose up --build",
     "local": "tsc && node dist/src/index.js",
     "test": "jest --verbose --coverage",
-    "lint": "eslint .",
+    "lint": "rm -rf coverage && eslint .",
     "lint-fix": "eslint . --fix",
     "build": "npm run compile",
     "compile": "npm run clean && tsc",
