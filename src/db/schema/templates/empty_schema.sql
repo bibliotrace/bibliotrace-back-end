@@ -1,6 +1,6 @@
 USE bibliotrace_v3;
 
-DROP TABLE IF EXISTS shopping_list, restock_list, location, audiences, audit, audit_states, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;
+DROP TABLE IF EXISTS book_genre, book_tag, shopping_list, restock_list, location, audiences, audit, audit_states, books, campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles;
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -10,11 +10,6 @@ CREATE TABLE audiences (
 CREATE TABLE audit_states (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   audit_state_name VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE genre_types (
-  id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  genre_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE series (
@@ -46,7 +41,7 @@ CREATE TABLE books (
   book_title VARCHAR(255) NOT NULL,
   isbn_list VARCHAR(255) NOT NULL,
   author VARCHAR(255) NOT NULL,
-  primary_genre_id TINYINT UNSIGNED NOT NULL,
+  primary_genre_id INT UNSIGNED NOT NULL,
   audience_id TINYINT UNSIGNED NOT NULL,
   pages SMALLINT,
   series_id TINYINT UNSIGNED,
@@ -55,7 +50,7 @@ CREATE TABLE books (
   short_description TEXT,
   language VARCHAR(31),
   img_callback VARCHAR(255),
-  FOREIGN KEY (primary_genre_id) REFERENCES genre_types(id),
+  FOREIGN KEY (primary_genre_id) REFERENCES genre(id),
   FOREIGN KEY (audience_id) REFERENCES audiences(id),
   FOREIGN KEY (series_id) REFERENCES series(id)
 );
@@ -95,24 +90,35 @@ CREATE TABLE checkout (
 CREATE INDEX idx_qr ON checkout(qr);
 CREATE INDEX idx_book_id ON checkout(book_id);
 
-CREATE TABLE genres (
-  book_id INT UNSIGNED PRIMARY KEY,
-  genre_id_1 TINYINT UNSIGNED NOT NULL,
-  genre_id_2 TINYINT UNSIGNED,
-  genre_id_3 TINYINT UNSIGNED,
-  FOREIGN KEY (book_id) REFERENCES books(id),
-  FOREIGN KEY (genre_id_1) REFERENCES genre_types(id),
-  FOREIGN KEY (genre_id_2) REFERENCES genre_types(id),
-  FOREIGN KEY (genre_id_3) REFERENCES genre_types(id)
+CREATE TABLE genre (
+  id INT UNSIGNED PRIMARY KEY AUTOINCREMENT,
+  genre_name VARCHAR(255) NOT NULL,
+  campus_id TINYINT UNSIGNED,
+  FOREIGN KEY (campus_id) REFERENCES campus(id)
 );
 
-CREATE TABLE tags (
-  id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  book_id INT UNSIGNED NOT NULL,
-  tag VARCHAR(31) NOT NULL,
-  FOREIGN KEY (book_id) REFERENCES books(id)
+CREATE TABLE tag (
+  id INT UNSIGNED PRIMARY KEY AUTOINCREMENT,
+  tag_name VARCHAR(255) NOT NULL,
+  campus_id TINYINT UNSIGNED,
+  FOREIGN KEY (campus_id) REFERENCES campus(id)
 );
-CREATE INDEX idx_tag ON tags(tag);
+
+CREATE TABLE book_genre (
+  id INT UNSIGNED PRIMARY KEY AUTOINCREMENT,
+  book_id INT UNSIGNED NOT NULL,
+  genre_id INT UNSIGNED NOT NULL,
+  FOREIGN KEY (book_id) REFERENCES books(id),
+  FOREIGN KEY (genre_id) REFERENCES genre(id)
+);
+
+CREATE TABLE book_tag (
+  id INT UNSIGNED PRIMARY KEY AUTOINCREMENT,
+  book_id INT UNSIGNED NOT NULL,
+  tag_id INT UNSIGNED NOT NULL,
+  FOREIGN KEY (book_id) REFERENCES books(id),
+  FOREIGN KEY (tag_id) REFERENCES tag(id)
+);
 
 CREATE TABLE suggestions (
   timestamp TIMESTAMP PRIMARY KEY,

@@ -6,7 +6,7 @@ import Dao from "./Dao";
 class TagDao extends Dao<Tag, number> {
   constructor(db: Kysely<Database>) {
     super(db);
-    this.tableName = "tags";
+    this.tableName = "tag";
     this.keyName = "id";
     this.entityName = "tag";
   }

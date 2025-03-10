@@ -1,7 +1,7 @@
 interface Tag {
-  id?: number;
-  book_id: number;
-  tag: string;
+  id: number;
+  tag_name: string;
+  campus_id?: number | null;
 }
 
 export type { Tag };

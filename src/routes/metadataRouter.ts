@@ -18,10 +18,10 @@ metadataRouter.get("/genres", async (req, res) => {
 
 metadataRouter.get("/audiences", async (req, res) => {
   try {
-    const genres = await Config.dependencies.filterTypeRoutesHandler.getAudiences();
+    const audiences = await Config.dependencies.filterTypeRoutesHandler.getAudiences();
 
-    if (genres != null && genres.length > 0) {
-      res.send({ results: genres });
+    if (audiences != null && audiences.length > 0) {
+      res.send({ results: audiences });
     }
   } catch (error) {
     res.status(500).send({ error: error.message });

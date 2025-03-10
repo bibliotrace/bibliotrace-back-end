@@ -20,7 +20,7 @@ class BookDao extends Dao<Book, number> {
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
         .selectAll()
-        .innerJoin('audiences', 'audiences.id', 'books.audience_id')
+        .innerJoin("audiences", "audiences.id", "books.audience_id")
         .where("isbn_list", "like", `%${isbn}%` as any)
         .executeTakeFirst(); // isbn should be unique, thus we just take the first row containing the isbn
       if (!book) {
@@ -39,8 +39,9 @@ class BookDao extends Dao<Book, number> {
     try {
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
-        .select('tags.tag')
-        .innerJoin('tags', 'tags.book_id', 'books.id')
+        .select("tag.tag_name")
+        .innerJoin("book_tag", "book_tag.book_id", "books.id")
+        .innerJoin("tag", "tag.id", "book_tag.tag_id")
         .where("isbn_list", "like", `%${isbn}%` as any)
         .execute();
       if (!book) {

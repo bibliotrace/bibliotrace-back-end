@@ -6,8 +6,7 @@ import AuditStateDao from "./AuditStateDao";
 import BookDao from "./BookDao";
 import CampusDao from "./CampusDao";
 import CheckoutDao from "./CheckoutDao";
-import GenresDao from "./GenresDao";
-import GenreTypeDao from "./GenreTypeDao";
+import GenreDao from "./GenreDao";
 import InventoryDao from "./InventoryDao";
 import SeriesDao from "./SeriesDao";
 import SuggestionDao from "./SuggestionDao";
@@ -25,8 +24,7 @@ class DaoFactory {
   bookDao: BookDao;
   campusDao: CampusDao;
   checkoutDao: CheckoutDao;
-  genresDao: GenresDao;
-  genreTypeDao: GenreTypeDao;
+  genreDao: GenreDao;
   inventoryDao: InventoryDao;
   locationDao: LocationDao;
   restockListDao: RestockListDao;
@@ -44,8 +42,7 @@ class DaoFactory {
     this.bookDao = new BookDao(db);
     this.campusDao = new CampusDao(db);
     this.checkoutDao = new CheckoutDao(db);
-    this.genresDao = new GenresDao(db);
-    this.genreTypeDao = new GenreTypeDao(db);
+    this.genreDao = new GenreDao(db);
     this.inventoryDao = new InventoryDao(db);
     this.locationDao = new LocationDao(db);
     this.restockListDao = new RestockListDao(db);
@@ -81,12 +78,8 @@ class DaoFactory {
     return this.checkoutDao;
   }
 
-  getGenresDao(): GenresDao {
-    return this.genresDao;
-  }
-
-  getGenreTypeDao(): GenreTypeDao {
-    return this.genreTypeDao;
+  getGenreDao(): GenreDao {
+    return this.genreDao;
   }
 
   getInventoryDao(): InventoryDao {

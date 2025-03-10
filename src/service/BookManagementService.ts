@@ -105,7 +105,7 @@ export default class BookManagementService extends Service {
   }
 
   private async parseBook(bookRequest: BookInsertRequest) {
-    const genreIdResponse = await this.genreTypeDao.getAllMatchingOnIndex(
+    const genreIdResponse = await this.genreDao.getAllMatchingOnIndex(
       "genre_name",
       bookRequest.primary_genre
     );

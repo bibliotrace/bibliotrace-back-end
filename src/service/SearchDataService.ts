@@ -1,33 +1,29 @@
 import CampusDao from "../db/dao/CampusDao";
-import GenreTypeDao from "../db/dao/GenreTypeDao";
 import { Kysely } from "kysely";
 import Database from "../db/schema/Database";
 import { ResultRow } from "../handler/SearchRouteHandler";
 import DaoFactory from "../db/dao/DaoFactory";
+import GenreDao from "../db/dao/GenreDao";
 
 export default class SearchDataService {
   db: Kysely<Database>;
   campusDao: CampusDao;
-  genreTypeDao: GenreTypeDao;
+  genreDao: GenreDao;
 
   constructor(db: Kysely<Database>, daoFactory: DaoFactory) {
     this.db = db;
     this.campusDao = daoFactory.getCampusDao();
-    this.genreTypeDao = daoFactory.getGenreTypeDao();
+    this.genreDao = daoFactory.getGenreDao();
   }
 
-  async retrieveMetadata(
-    filterQueryList,
-    isbn: string,
-    campus: string
-  ): Promise<ResultRow> {
+  async retrieveMetadata(filterQueryList, isbn: string, campus: string): Promise<ResultRow> {
     const splitIsbn = isbn.split("||");
 
     try {
       let dbQuery = this.db
         .selectFrom("books")
         .innerJoin("inventory", "inventory.book_id", "books.id")
-        .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
+        .leftJoin("genre", "books.primary_genre_id", "genre.id")
         .leftJoin("audiences", "audiences.id", "books.audience_id")
         .leftJoin("series", "series.id", "books.series_id")
         .leftJoin("campus", "campus.id", "inventory.campus_id")
@@ -35,7 +31,7 @@ export default class SearchDataService {
           "books.id",
           "books.book_title",
           "books.author",
-          "genre_types.genre_name",
+          "genre.genre_name",
           "series.series_name",
         ])
         .where("campus.campus_name", "=", campus)
@@ -80,7 +76,7 @@ export default class SearchDataService {
         .distinct()
         .select("isbn_list")
         .innerJoin("inventory", "inventory.book_id", "books.id")
-        .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
+        .leftJoin("genre", "books.primary_genre_id", "genre.id")
         .leftJoin("audiences", "audiences.id", "books.audience_id")
         .leftJoin("campus", "campus.id", "inventory.campus_id")
         .where("campus.campus_name", "=", campus);

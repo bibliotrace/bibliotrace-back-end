@@ -1,4 +1,4 @@
-INSERT INTO genre_types (genre_name)
+INSERT INTO genre (genre_name)
 VALUES ('Action-Adventure/Suspense'), ('Activity Book'), ('Board Book'), ('Dystopian'), ('Fantasy'), ('Fiction'), ('Graphic Novel'), 
 ('Historical Fiction'), ('Leveled Reader'), ('Non-Fiction'), ('Paranormal'), ('Picture Book'), ('Romance'), ('Science Fiction'), 
 ('Spanish'), ('Young Chapter Book');
@@ -76,17 +76,28 @@ VALUES
 ('ab0029', 14, 1, 2, '123456789'),
 ('ab0030', 15, 1, 2, '123456789');
 
-insert into tags (book_id, tag)
-values (1, 'Harry Potter'),
-       (1, 'Not Scary Yet'),
-       (1, 'Hogwartz'),
-       (1, 'First In Series'),
-       (2, 'Harry Potter'),
-       (2, 'A Little Creepy'),
-       (2, 'Hogwartz'),
-       (2, 'Snakes'),
-       (3, 'Harry Potter'),
-       (3, 'Hogwartz'),
-       (3, 'More Creepy'),
-       (10, 'Shot in the dark'),
-       (10, 'I Dont know what book is');
+insert into tag (tag_name)
+values ('Harry Potter'),
+       ('Not Scary Yet'),
+       ('First In Series'),
+       ('A Little Creepy'),
+       ('Snakes'),
+       ('Hogwartz'),
+       ('More Creepy'),
+       ('Shot in the dark'),
+       ('I Dont know what book is');
+
+insert into book_tag (book_id, tag_id)
+values (1, 1),
+       (1, 2),
+       (1, 6),
+       (1, 3),
+       (2, 1),
+       (2, 4),
+       (2, 6),
+       (2, 5),
+       (3, 1),
+       (3, 6),
+       (3, 7),
+       (10, 8),
+       (10, 9);

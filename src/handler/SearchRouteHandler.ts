@@ -162,7 +162,7 @@ export default class SearchRouteHandler {
           const genreStrings = targetVal.split(",");
           console.log("Genre Strings: ", genreStrings);
 
-          output.push({ key: "genre_types.genre_name", value: genreStrings });
+          output.push({ key: "genre.genre_name", value: genreStrings });
         }
         if (targetKey == "Audience") {
           const audienceStrings = targetVal.split(",");

@@ -1,22 +1,21 @@
-import GenreTypeDao from "../db/dao/GenreTypeDao";
 import AudienceDao from "../db/dao/AudienceDao";
 import DaoFactory from "../db/dao/DaoFactory";
+import GenreDao from "../db/dao/GenreDao";
 
 export default class FilterTypeRoutesHandler {
-  private readonly genretypeDao: GenreTypeDao;
+  private readonly genreDao: GenreDao;
   private readonly audienceDao: AudienceDao;
 
   constructor(daoFactory: DaoFactory) {
     this.audienceDao = daoFactory.getAudienceDao();
-    this.genretypeDao = daoFactory.getGenreTypeDao();
   }
 
   async getGenres(): Promise<string[]> {
-    const result = await this.genretypeDao.getAll();
+    const result = await this.genreDao.getAll();
 
     if (result.statusCode != 200 || result.object == null) {
       throw new Error(
-        `Error retrieving data from the Genres table: ${result.statusCode}: ${result.message}`
+        `Error retrieving data from the Genre table: ${result.statusCode}: ${result.message}`
       );
     }
 
@@ -32,7 +31,7 @@ export default class FilterTypeRoutesHandler {
 
     if (result.statusCode != 200 || result.object == null) {
       throw new Error(
-        `Error retrieving data from the Genres table: ${result.statusCode}: ${result.message}`
+        `Error retrieving data from the Audience table: ${result.statusCode}: ${result.message}`
       );
     }
 
