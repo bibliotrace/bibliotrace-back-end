@@ -92,3 +92,9 @@ values (1, 'Harry Potter'),
        (3, 'More Creepy'),
        (10, 'Shot in the dark'),
        (10, 'I Dont know what book is');
+
+INSERT INTO shopping_list (book_id, title, author, campus_id)
+values 
+(1, 'Harry Potter and the Sorcerer''s Stone', 'J.K. Rowling', 1),
+(3, 'Harry Potter and the Prisoner of Azkaban', 'J.K. Rowling', 1),
+(15, 'Mockingjay', 'Suzanne Collins', 1);
