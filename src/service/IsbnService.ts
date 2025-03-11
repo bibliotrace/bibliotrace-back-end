@@ -43,6 +43,7 @@ class IsbnService {
   async retrieveMetadata(
     isbn: string
   ): Promise<SuccessResponse<Book | unknown> | RequestErrorResponse> {
+    console.log('FIRING OFF CALL TO ISBN FOR BOOK DATA')
     const result = await fetch(`${process.env.ISBN_HOST}/book/${isbn}`, {
       method: "GET",
       headers: {
@@ -76,11 +77,11 @@ class IsbnService {
       isbn_list = `${book.isbn}||${book.isbn13}`;
     }
     const author: string = book.authors ? book.authors.join(", ") : "Unknown author";
-    const primary_genre_id: number = -1; // unknown from just ISBN
-    const audience_id: number = -1; // unknown from just ISBN
+    const primary_genre_id: number = undefined; // unknown from just ISBN
+    const audience_id: number = undefined; // unknown from just ISBN
     const pages: number = book.pages ?? -1;
-    const series_id: number = -1; // unknown from just ISBN
-    const series_number: number = -1; // unknown from just ISBN
+    const series_id: number = undefined; // unknown from just ISBN
+    const series_number: number = undefined; // unknown from just ISBN
     const publish_date: number = book.date_published
       ? new Date(book.date_published).getFullYear()
       : -1;
