@@ -109,17 +109,20 @@ class IsbnService {
   }
 
   private parseLanguage(language: string): string {
-    if (language == "en") return "English";
-    if (language == "es") return "Spanish";
-    if (language == "fr") return "French";
-    if (language == "de") return "German";
-    if (language == "it") return "Italian";
-    if (language == "pt") return "Portuguese";
-    if (language == "nl") return "Dutch";
-    if (language == "ja") return "Japanese";
-    if (language == "zh") return "Chinese";
-    // add more languages as needed
-    return "Unknown language";
+    const languages = {
+      en: "English",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      pt: "Portuguese",
+      nl: "Dutch",
+      ja: "Japanese",
+      zh: "Chinese",
+    }
+
+    const outputLanguage = languages[language]
+    return outputLanguage ?? "Unknown Language"
   }
 }
 
