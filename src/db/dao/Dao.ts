@@ -72,9 +72,11 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(key as any, "=", value)
           .executeTakeFirst();
+
         if (!result) {
-          return new SuccessResponse<null>(`Item Not Found`);
+          return new SuccessResponse(`No ${this.entityName} found with ${key} ${value}`);
         }
+
         return new SuccessResponse<E>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E
@@ -148,37 +150,6 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async getAllOnIndex(
-    index: string,
-    transaction?: Transaction<Database>
-  ): Promise<Response<E[]>> {
-    if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
-    } else {
-      try {
-        const result = await this.db
-          .selectFrom(this.tableName as keyof Database)
-          .selectAll()
-          .where(index as any, "=", true)
-          .execute();
-
-        if (!result || result.length === 0) {
-          return new SuccessResponse(`No ${this.entityName}s found on ${index}`);
-        }
-
-        return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(this.entityName)}s retrieved successfully`,
-          result as E[]
-        );
-      } catch (error) {
-        return new ServerErrorResponse(
-          `Failed to retrieve all ${this.entityName}s on ${index} with error ${error.message}`,
-          500
-        );
-      }
-    }
-  }
-
   public async getAllMatchingOnIndex(
     index: string,
     match: string,
@@ -194,12 +165,10 @@ abstract class Dao<E, K extends number | string> {
           .where(index as any, "like", `%${match}%` as any)
           .execute();
         if (!result || result.length === 0) {
-          return new SuccessResponse<E[]>(
-            `No ${this.entityName}s found matching ${match} on ${index}`
-          );
+          return new SuccessResponse(`No ${this.entityName}s found matching ${match} on ${index}`);
         }
         return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)}s retrieved successfully`,
           result as E[]
         );
       } catch (error) {
