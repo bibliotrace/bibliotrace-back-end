@@ -57,15 +57,18 @@ export default class SearchRouteHandler {
 
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
-      const metadata = await this.searchService.retrieveBasicMetadata(
+      const metadataResult = await this.searchService.retrieveBasicMetadata(
         filterQueryList,
         isbnResult[i],
         campus
       );
-      if (metadata != null && !bookSet.has(metadata.id)) {
-        // If metadata comes back non-null, add it to the result list and the bookSet
-        bookDataResult.push(metadata);
-        bookSet.add(metadata.id);
+      if (metadataResult.statusCode === 200 && metadataResult.object != null) {
+        const metadata = metadataResult.object;
+        if (!bookSet.has(metadata.id)) {
+          // If metadata comes back non-null, add it to the result list and the bookSet
+          bookDataResult.push(metadata);
+          bookSet.add(metadata.id);
+        }
       }
     }
 

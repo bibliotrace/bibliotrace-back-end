@@ -61,12 +61,7 @@ class IsbnService {
       );
     }
     const resultJson = await result.json();
-    if (resultJson.error) {
-      return new RequestErrorResponse(
-        `Error in ISBNdb response: ${resultJson.error}`,
-        result.status
-      );
-    }
+    console.log(resultJson)
 
     const book = resultJson.book;
     console.log(book);
@@ -95,7 +90,7 @@ class IsbnService {
         allowedAttributes: {},
       }) ?? "No short description found";
     const language: string = book.language ? this.parseLanguage(book.language) : "Unknown language";
-    const img_callback: string = book.image ?? "No image found"; // this just returns the raw URL to the image, which unfortunately has CORS problems when rendered from the frontend
+    const img_callback: string = book.image ?? "No image found"; 
 
     return new SuccessResponse(`Metadata retrieved for ISBN ${isbn}`, {
       book_title,

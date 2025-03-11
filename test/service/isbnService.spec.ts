@@ -15,11 +15,14 @@ describe("ISBN service testing suite", () => {
     global.fetch = jest.fn(async (targetUrl, options) => {
       if (options.headers.Authorization != "testKey") {
         return {
+          json: async () => {
+            return { error: "Auth Missing" };
+          },
           text: async () => {
-            return JSON.stringify({ error: "Auth Missing" });
+            return '{ "error": "Auth Missing" }'
           },
           ok: false,
-          status: 401
+          status: 401,
         };
       }
 
@@ -55,6 +58,77 @@ describe("ISBN service testing suite", () => {
                 binding: "Kindle Edition",
                 isbn: "1781100519",
                 isbn10: "1781100519",
+              },
+            };
+          },
+          ok: true,
+        };
+      } else if (targetUrl === "test.host/book/987654321") {
+        return {
+          json: async () => {
+            return {
+              book: {
+                publisher: "Pottermore Publishing",
+                synopsis:
+                  "'welcome To The Knight Bus, Emergency Transport For The Stranded Witch Or Wizard. Just Stick Out Your Wand Hand, Step On Board And We Can Take You Anywhere You Want To Go.' When The Knight Bus Crashes Through The Darkness And Screeches To A Halt In Front Of Him, It's The Start Of Another Far From Ordinary Year At Hogwarts For Harry Potter. Sirius Black, Escaped Mass-murderer And Follower Of Lord Voldemort, Is On The Run - And They Say He Is Coming After Harry. In His First Ever Divination Class, Professor Trelawney Sees An Omen Of Death In Harry's Tea Leaves... But Perhaps Most Terrifying Of All Are The Dementors Patrolling The School Grounds, With Their Soul-sucking Kiss...",
+                language: "en",
+                image: "https://images.isbndb.com/covers/3705783482822.jpg",
+                title_long: "Harry Potter and the Prisoner of Azkaban",
+                pages: 180,
+                date_published: "2015",
+                subjects: [
+                  "Literature & Fiction",
+                  "Action & Adventure",
+                  "Fantasy",
+                  "Science Fiction & Fantasy",
+                  "Paranormal & Urban",
+                  "Teen & Young Adult",
+                  "Social & Family Issues",
+                  "Kindle Store",
+                  "Categories",
+                  "Kindle eBooks",
+                ],
+                authors: ["J.K. Rowling"],
+                title: "Harry Potter and the Prisoner of Azkaban",
+                msrp: "0.00",
+                binding: "Kindle Edition",
+                isbn: "1781100519",
+                isbn10: "1781100519",
+              },
+            };
+          },
+          ok: true,
+        };
+      } else if (targetUrl === "test.host/book/918273645") {
+        return {
+          json: async () => {
+            return {
+              book: {
+                publisher: "Pottermore Publishing",
+                synopsis:
+                  "'welcome To The Knight Bus, Emergency Transport For The Stranded Witch Or Wizard. Just Stick Out Your Wand Hand, Step On Board And We Can Take You Anywhere You Want To Go.' When The Knight Bus Crashes Through The Darkness And Screeches To A Halt In Front Of Him, It's The Start Of Another Far From Ordinary Year At Hogwarts For Harry Potter. Sirius Black, Escaped Mass-murderer And Follower Of Lord Voldemort, Is On The Run - And They Say He Is Coming After Harry. In His First Ever Divination Class, Professor Trelawney Sees An Omen Of Death In Harry's Tea Leaves... But Perhaps Most Terrifying Of All Are The Dementors Patrolling The School Grounds, With Their Soul-sucking Kiss...",
+                language: "en",
+                image: "https://images.isbndb.com/covers/3705783482822.jpg",
+                title_long: "Harry Potter and the Prisoner of Azkaban",
+                pages: 180,
+                date_published: "2015",
+                subjects: [
+                  "Literature & Fiction",
+                  "Action & Adventure",
+                  "Fantasy",
+                  "Science Fiction & Fantasy",
+                  "Paranormal & Urban",
+                  "Teen & Young Adult",
+                  "Social & Family Issues",
+                  "Kindle Store",
+                  "Categories",
+                  "Kindle eBooks",
+                ],
+                authors: ["J.K. Rowling"],
+                isbn13: "9781781100516",
+                title: "Harry Potter and the Prisoner of Azkaban",
+                msrp: "0.00",
+                binding: "Kindle Edition",
               },
             };
           },
@@ -190,6 +264,20 @@ describe("ISBN service testing suite", () => {
     });
   });
 
+  test("retrieve metadata for valid book, testing limited isbn availability", async () => {
+    // Missing isbn13
+    const response = await isbnService.retrieveMetadata("987654321") as any;
+
+    expect(response.statusCode).toBe(200);
+    expect(response.object.isbn_list).toEqual('1781100519');
+
+    // Missing isbn10/isbn
+    const response2 = await isbnService.retrieveMetadata("918273645") as any;
+
+    expect(response2.statusCode).toBe(200);
+    expect(response2.object.isbn_list).toEqual('9781781100516');
+  });
+
   test("retrieve metadata for invalid book", async () => {
     const response = await isbnService.retrieveMetadata("unknown");
 
@@ -220,6 +308,6 @@ describe("ISBN service testing suite", () => {
     const response = await isbnService.conductSearch("Nothing");
 
     expect(response.statusCode).toBe(401);
-    expect(response.message).toBe('Call to ISBNdb Not Ok, status: 401, body: {"error":"Auth Missing"}')
+    expect(response.message).toBe('Call to ISBNdb Not Ok, status: 401, body: { "error": "Auth Missing" }')
   });
 });

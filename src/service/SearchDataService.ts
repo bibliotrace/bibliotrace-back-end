@@ -1,5 +1,8 @@
 import { ResultRow } from "../handler/SearchRouteHandler";
+import Response from "../response/Response";
 import DaoFactory from "../db/dao/DaoFactory";
+import SuccessResponse from "../response/SuccessResponse";
+import ServerErrorResponse from "../response/ServerErrorResponse";
 
 export default class SearchDataService {
   private readonly daoFactory: DaoFactory;
@@ -9,20 +12,24 @@ export default class SearchDataService {
   }
 
   // This function is designed to take in a list of filters, an isbn number, and a campus.
-  // It will then return basic metadata from various tables assuming the filters and campus 
+  // It will then return basic metadata from various tables assuming the filters and campus
   // lockdowns let it through.
   async retrieveBasicMetadata(
     filterQueryList, // Expected to be in the format { key: 'genre', value: 'Dystopian' }
     isbn: string, // Expected to be in the format "ISBN||CoverURL"
     campus: string
-  ): Promise<ResultRow> {
+  ): Promise<Response<ResultRow>> {
     const splitIsbn = isbn.split("||");
 
     try {
-      const sqlResult = await this.daoFactory.bookDao.getBasicBookByFilter(filterQueryList, splitIsbn[0], campus)
-      const dbResult = sqlResult.object
+      const sqlResult = await this.daoFactory.bookDao.getBasicBookByFilter(
+        filterQueryList,
+        splitIsbn[0],
+        campus
+      );
+      const dbResult = sqlResult.object;
 
-      if (dbResult != null) {
+      if (dbResult != null && sqlResult.statusCode === 200) {
         const output = {
           id: String(dbResult.id),
           title: dbResult.book_title,
@@ -37,29 +44,45 @@ export default class SearchDataService {
           const chunksOfUrl = coverUrl.split("/");
           output.coverImageId = chunksOfUrl[chunksOfUrl.length - 1];
         }
-        return output;
+        return new SuccessResponse("Successfully grabbed book info", output);
+      } else if (sqlResult.statusCode === 200) {
+        return new SuccessResponse("No Book Found");
       } else {
-        return null;
+        return sqlResult;
       }
     } catch (error) {
-      throw new Error(`Error trying to retrieve metadata for book: ${error.message}`);
+      return new ServerErrorResponse(
+        `Error trying to retrieve metadata for book: ${error.message}`,
+        500
+      );
     }
   }
 
-  async retrieveAllISBNs(filterQueryList, campus: string): Promise<string[]> {
+  async retrieveAllISBNs(filterQueryList, campus: string): Promise<Response<string[]>> {
     try {
-      const dbResult = (await this.daoFactory.bookDao.getAllISBNs(filterQueryList, campus)).object
-
-      if (dbResult != null) {
-        return dbResult.flatMap((input) => {
+      const daoResponse = await this.daoFactory.bookDao.getAllISBNs(
+        filterQueryList,
+        campus
+      );
+      if (daoResponse.statusCode !== 200) {
+        return daoResponse;
+      }
+      
+      const dbResult = daoResponse.object
+      if (dbResult != null && dbResult.length > 0) {
+        const resultList = dbResult.flatMap((input) => {
           const result = input.isbn_list;
           return result.split("|")[0];
         });
+        return new SuccessResponse("Successfully parsed all ISBNs", resultList);
       } else {
-        throw new Error("dbResult was null for some reason!");
+        return new ServerErrorResponse("dbResult was null for some reason!", 404);
       }
     } catch (error) {
-      throw new Error(`Error trying to retreive all ISBN's: ${error.message}`);
+      return new ServerErrorResponse(
+        `Error trying to retreive all ISBN's: ${error.message}`,
+        500
+      );
     }
   }
 }
