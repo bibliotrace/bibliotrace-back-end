@@ -23,6 +23,8 @@ abstract class Dao<E, K extends number | string> {
         console.log('entity being created' , entity)
         const result = await this.db
           .insertInto(this.tableName as keyof Database)
+          // .ignore() could be used here to ensure duplicate key errors don't return an error
+          // but I think I prefer to let the error bubble up to the service layer
           .values(entity)
           .executeTakeFirst();
         return new SuccessResponse(
@@ -42,6 +44,10 @@ abstract class Dao<E, K extends number | string> {
   }
 
   private parseDuplicateKeyError(error: string): ServerErrorResponse {
+    // TODO: BookDao has a unique index on book_title, which means that duplicate titles would also trigger this error.
+    // however, the text of this error assumes that error was based on the primary key instead of the title
+    // insertion (currently) already checks if the title exists in the book db,
+    // but in the case where bookDao.create() is called without checking if the title exists first this could be misleading
     const key = error.split("entry '")[1].split("'")[0];
     return new ServerErrorResponse(
       `${this.keyName} ${key} already exists in ${this.entityName} table. Please submit another request with a unique ${this.keyName}.`,
@@ -93,13 +99,18 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(key as any, "=", value)
           .execute();
+
+        if (!result || result.length === 0) {
+          return new SuccessResponse(`No ${this.entityName}s found with ${this.keyName}`);
+        }
+
         return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)}s retrieved successfully`,
           result as E[]
         );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to retrieve ${this.entityName} with error ${error}`,
+          `Failed to retrieve ${this.entityName}s with error ${error}`,
           500
         );
       }
@@ -152,8 +163,13 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(index as any, "=", true)
           .execute();
+
+        if (!result || result.length === 0) {
+          return new SuccessResponse(`No ${this.entityName}s found on ${index}`);
+        }
+
         return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)}s retrieved successfully`,
           result as E[]
         );
       } catch (error) {

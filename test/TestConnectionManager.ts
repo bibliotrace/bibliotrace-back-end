@@ -49,6 +49,12 @@ class TestConnectionManager {
           else resolve();
         });
       });
+      await new Promise<void>((resolve, reject) => {
+        connection.query(`USE bibliotrace_v3_test`, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
     } catch (error) {
       console.error("Error ensuring test database exists:", error);
       throw error;
@@ -86,8 +92,6 @@ class TestConnectionManager {
           });
         });
       }
-
-      console.log(`SQL file ${path.basename(filepath)} executed successfully`);
     } catch (error) {
       console.error(`Error executing SQL file ${path.basename(filepath)}:`, error);
       throw error; // Propagate the error to the caller
