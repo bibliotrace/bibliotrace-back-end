@@ -17,7 +17,7 @@ export default class SearchRouteHandler {
     this.searchService = searchService;
   }
 
-  public async retrieveMetadataForIsbn(params): Promise<Response<Book | unknown>> {
+  async retrieveMetadataForIsbn(params): Promise<Response<Book | unknown>> {
     if (!params.isbn) {
       return new RequestErrorResponse("ISBN is required to get a book", 400);
     } else if (!isValidISBN(params.isbn)) {
@@ -74,7 +74,7 @@ export default class SearchRouteHandler {
 
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
-      const metadata = await this.searchService.retrieveMetadata(
+      const metadata = await this.searchService.retrieveBasicMetadata(
         filterQueryList,
         isbnResult[i],
         campus

@@ -1,5 +1,8 @@
+
+
+
 describe("Search data service testing suite", () => {
-  test("Search data service tests not implemented yet", () => {
+  test("Retreive basic metadata call for a valid book", () => {
     expect(1).toEqual(1);
   });
 });

@@ -4,7 +4,6 @@ import ServerErrorResponse from "../response/ServerErrorResponse";
 import { Campus } from "../db/schema/Campus";
 import { Location } from "../db/schema/Location";
 import Service from "./Service";
-import SuccessResponse from "../response/SuccessResponse";
 
 export default class LocationService extends Service {
   constructor(daoFactory: DaoFactory) {
@@ -33,7 +32,7 @@ export default class LocationService extends Service {
     }
 
     try {
-      return await this.locationDao.create({
+      await this.locationDao.create({
         campus_id: campus_response.object.id,
         location_name: newLocationName,
       });

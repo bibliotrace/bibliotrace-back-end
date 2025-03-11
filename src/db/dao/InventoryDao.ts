@@ -60,35 +60,38 @@ class InventoryDao extends Dao<Inventory, string> {
           "series.series_name as series_name",
           "books.primary_genre_id as primary_genre_id",
           "genre_types.genre_name as primary_genre_name",
-          "books.isbn_list as isbn_list"
+          "books.isbn_list as isbn_list",
         ])
         .innerJoin("books", "books.id", "inventory.book_id")
         .leftJoin("location", "location.id", "inventory.location_id")
         .leftJoin("campus", "campus.id", "inventory.campus_id")
         .leftJoin("series", "series.id", "books.series_id")
         .leftJoin("genre_types", "genre_types.id", "books.primary_genre_id")
-        .where('inventory.qr', '=', qr)
+        .where("inventory.qr", "=", qr)
         .executeTakeFirst();
-      console.log(result, 'HEREs THE RESULTS');
+      console.log(result, "HEREs THE RESULTS");
       return new SuccessResponse("Successful Retrieval from QR", result);
     } catch (error) {
-      return new ServerErrorResponse(`Failed to get book data for QR ${qr}`, 500);
+      return new ServerErrorResponse(`Failed to get book data for QR ${qr} with error ${error}`, 500);
     }
   }
 
   public async setLocation(qr: string, location: string) {
     try {
       await this.db
-                      .updateTable(this.tableName as keyof Database)
-                      .set({
-                        location_id: location
-                      })
-                      .where('qr', '=', qr)
-                      .execute();
-      return new SuccessResponse('Set location for qr successfully');
+        .updateTable(this.tableName as keyof Database)
+        .set({
+          location_id: location,
+        })
+        .where("qr", "=", qr)
+        .execute();
+      return new SuccessResponse("Set location for qr successfully");
     } catch (error) {
       console.error(error);
-      return new ServerErrorResponse(`Error occurred during set location query: ${error.message}`, 500)
+      return new ServerErrorResponse(
+        `Error occurred during set location query: ${error.message}`,
+        500
+      );
     }
   }
 }

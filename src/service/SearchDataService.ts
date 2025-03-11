@@ -16,14 +16,19 @@ export default class SearchDataService {
     this.genreTypeDao = daoFactory.getGenreTypeDao();
   }
 
-  async retrieveMetadata(
-    filterQueryList,
-    isbn: string,
+  // This function is designed to take in a list of filters, an isbn number, and a campus.
+  // It will then return basic metadata from various tables assuming the filters and campus 
+  // lockdowns let it through.
+  async retrieveBasicMetadata(
+    filterQueryList, // Expected to be in the format { key: 'genre', value: 'Dystopian' }
+    isbn: string, // Expected to be in the format "ISBN||CoverURL"
     campus: string
   ): Promise<ResultRow> {
     const splitIsbn = isbn.split("||");
 
     try {
+
+      // Run SQL stuff
       let dbQuery = this.db
         .selectFrom("books")
         .innerJoin("inventory", "inventory.book_id", "books.id")
@@ -48,6 +53,7 @@ export default class SearchDataService {
       }
 
       const dbResult = await dbQuery.executeTakeFirst();
+
 
       if (dbResult != null) {
         const output = {

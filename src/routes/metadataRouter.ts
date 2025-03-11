@@ -1,7 +1,6 @@
 import express from "express";
 import { Config } from "../config";
 import { sendResponse } from "../utils/utils";
-import SuccessResponse from "../response/SuccessResponse";
 
 export const metadataRouter = express.Router();
 
