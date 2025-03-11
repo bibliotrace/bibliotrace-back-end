@@ -247,7 +247,7 @@ describe("ISBN service testing suite", () => {
     const response = await isbnService.retrieveMetadata("123456789");
 
     expect(response.statusCode).toBe(200);
-    expect(response.object).toEqual({
+    expect(response.object).toStrictEqual({
       audience_id: undefined,
       author: "J.K. Rowling",
       book_title: "Harry Potter and the Prisoner of Azkaban",
@@ -256,7 +256,7 @@ describe("ISBN service testing suite", () => {
       language: "English",
       pages: 180,
       primary_genre_id: undefined,
-      publish_date: 2014,
+      publish_date: "2015",
       series_id: undefined,
       series_number: undefined,
       short_description:

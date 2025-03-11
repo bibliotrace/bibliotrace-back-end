@@ -61,10 +61,7 @@ class IsbnService {
       );
     }
     const resultJson = await result.json();
-    console.log(resultJson)
-
     const book = resultJson.book;
-    console.log(book);
 
     const book_title: string = book.title ?? book.title_long ?? "Unknown title";
     let isbn_list: string = ""; // this should always exist given that we're querying by isbn here lol
@@ -81,9 +78,7 @@ class IsbnService {
     const pages: number = book.pages ?? -1;
     const series_id: number = undefined; // unknown from just ISBN
     const series_number: number = undefined; // unknown from just ISBN
-    const publish_date: number = book.date_published
-      ? new Date(book.date_published).getFullYear()
-      : -1;
+    const publish_date: number = (book.date_published.length > 4) ? new Date(book.date_published).getFullYear() : book.date_published;
     const short_description: string =
       sanitizeHtml(book.synopsis, {
         allowedTags: [],
