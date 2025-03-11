@@ -61,7 +61,7 @@ CREATE UNIQUE INDEX idx_name ON books(book_title);
 
 CREATE TABLE audit (
   book_id INT UNSIGNED PRIMARY KEY,
-  last_audit_date DATE,
+  last_audit_date DATE DEFAULT (CURRENT_DATE),
   state_id TINYINT UNSIGNED NOT NULL,
   expected_amount SMALLINT,
   actual_amount SMALLINT,
@@ -84,7 +84,8 @@ CREATE INDEX idx_campus_id ON campus(id);
 CREATE INDEX idx_ttl ON inventory(ttl);
 
 CREATE TABLE checkout (
-  timestamp TIMESTAMP PRIMARY KEY,
+  checkout_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   qr VARCHAR(15) NOT NULL,
   book_id INT UNSIGNED NOT NULL,
   state ENUM('First', 'In', 'Out') NOT NULL,
@@ -113,7 +114,8 @@ CREATE TABLE tags (
 CREATE INDEX idx_tag ON tags(tag);
 
 CREATE TABLE suggestions (
-  timestamp TIMESTAMP PRIMARY KEY,
+  suggestion_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   content TEXT NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
   FOREIGN KEY (campus_id) REFERENCES campus(id)
