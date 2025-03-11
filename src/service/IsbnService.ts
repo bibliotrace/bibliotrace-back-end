@@ -36,7 +36,10 @@ class IsbnService {
     resultJson.books.map((result) => {
       if (result.isbn10 != null) isbnList.push(`${result.isbn10}||${result.image}`);
       if (result.isbn13 != null) isbnList.push(`${result.isbn13}||${result.image}`);
+
     });
+
+    console.log(isbnList)
 
     return new SuccessResponse("Successfully Pulled in ISBNs", isbnList);
   }

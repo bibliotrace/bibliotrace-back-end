@@ -1,10 +1,6 @@
 import IsbnService from "../service/IsbnService";
 import { DynamoDb } from "../db/dao/DynamoDb";
 import SearchDataService from "../service/SearchDataService";
-import Response from "../response/Response";
-import { Book } from "../db/schema/Book";
-import RequestErrorResponse from "../response/RequestErrorResponse";
-import { isValidISBN, sanitizeISBN } from "../utils/utils";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
@@ -15,17 +11,6 @@ export default class SearchRouteHandler {
     this.isbn = isbn;
     this.dynamoDb = dynamoDb;
     this.searchService = searchService;
-  }
-
-  async retrieveMetadataForIsbn(params): Promise<Response<Book | unknown>> {
-    if (!params.isbn) {
-      return new RequestErrorResponse("ISBN is required to get a book", 400);
-    } else if (!isValidISBN(params.isbn)) {
-      // isbn not included in response message as it can overflow the error modal lol
-      return new RequestErrorResponse(`Invalid ISBN provided`, 400);
-    }
-
-    return await this.isbn.retrieveMetadata(sanitizeISBN(params.isbn));
   }
 
   async conductSearch(inputQuery: string, campus: string): Promise<ResultRow[]> {
@@ -48,8 +33,6 @@ export default class SearchRouteHandler {
         if (isbnDbCallResponse.object != null) {
           isbnResult = isbnDbCallResponse.object;
 
-          console.log(isbnResult);
-
           await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
         } else {
           console.log("Nothing came back from search to ISBN");
@@ -63,10 +46,10 @@ export default class SearchRouteHandler {
     }
 
     // Turn the query list into actionable db query data
-    const filterQueryList = await this.addFiltersToQuery(extractedFilters);
+    const filterQueryList = await this.convertFilterStringToList(extractedFilters);
 
     // If isbnResult is null, pull all books from the db matching our filters
-    const result = [];
+    const bookDataResult = [];
     const bookSet = new Set<string>();
     if (isbnResult == null) {
       isbnResult = await this.searchService.retrieveAllISBNs(filterQueryList, campus);
@@ -81,12 +64,12 @@ export default class SearchRouteHandler {
       );
       if (metadata != null && !bookSet.has(metadata.id)) {
         // If metadata comes back non-null, add it to the result list and the bookSet
-        result.push(metadata);
+        bookDataResult.push(metadata);
         bookSet.add(metadata.id);
       }
     }
 
-    return result;
+    return bookDataResult;
   }
 
   // ---------- Helper functions for string query parsing ----------
@@ -150,7 +133,8 @@ export default class SearchRouteHandler {
     }
   }
 
-  private async addFiltersToQuery(filters) {
+  // This function converts a filter string into a list of objects with the shape [{key, value}]
+  private async convertFilterStringToList(filters) {
     const output = [];
 
     if (filters != null) {

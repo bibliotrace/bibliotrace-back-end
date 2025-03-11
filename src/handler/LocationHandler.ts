@@ -4,12 +4,15 @@ import { Campus } from "../db/schema/Campus";
 import { Location } from "../db/schema/Location";
 import LocationService from "../service/LocationService";
 import SuccessResponse from "../response/SuccessResponse";
+import BookManagementService from "../service/BookManagementService";
 
 export default class LocationHandler {
   locationService: LocationService;
+  bookManagementService: BookManagementService;
 
-  constructor(locationService: LocationService) {
+  constructor(locationService: LocationService, bookManagementService: BookManagementService) {
     this.locationService = locationService;
+    this.bookManagementService = bookManagementService;
   }
 
   public async getLocationsForCampus(authData): Promise<Response<Campus | Location[]| string>> {
@@ -38,8 +41,23 @@ export default class LocationHandler {
       newLocationName,
       authData.userRole.campus
     );
-    return locationResponse;
+    
+    return locationResponse
+  }
 
-    return new SuccessResponse(newLocationName)
+  public async setBookLocationInInventory(body, auth): Promise<Response<any>> {
+    console.log(body, auth);
+
+    const targetBook = await this.bookManagementService.getByQr(body.qr_code);
+    if (auth.userRole.roleType === "Admin") {
+      return new SuccessResponse(
+        (
+          await this.bookManagementService.setLocationByQr(body.qr_code, body.location_id)
+        )._message,
+        targetBook
+      );
+    }
+
+    return new SuccessResponse("Completed", targetBook);
   }
 }

@@ -1,19 +1,11 @@
-import CampusDao from "../db/dao/CampusDao";
-import GenreTypeDao from "../db/dao/GenreTypeDao";
-import { Kysely } from "kysely";
-import Database from "../db/schema/Database";
 import { ResultRow } from "../handler/SearchRouteHandler";
 import DaoFactory from "../db/dao/DaoFactory";
 
 export default class SearchDataService {
-  db: Kysely<Database>;
-  campusDao: CampusDao;
-  genreTypeDao: GenreTypeDao;
+  private readonly daoFactory: DaoFactory;
 
-  constructor(db: Kysely<Database>, daoFactory: DaoFactory) {
-    this.db = db;
-    this.campusDao = daoFactory.getCampusDao();
-    this.genreTypeDao = daoFactory.getGenreTypeDao();
+  constructor(daoFactory: DaoFactory) {
+    this.daoFactory = daoFactory;
   }
 
   // This function is designed to take in a list of filters, an isbn number, and a campus.
@@ -27,33 +19,8 @@ export default class SearchDataService {
     const splitIsbn = isbn.split("||");
 
     try {
-
-      // Run SQL stuff
-      let dbQuery = this.db
-        .selectFrom("books")
-        .innerJoin("inventory", "inventory.book_id", "books.id")
-        .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
-        .leftJoin("audiences", "audiences.id", "books.audience_id")
-        .leftJoin("series", "series.id", "books.series_id")
-        .leftJoin("campus", "campus.id", "inventory.campus_id")
-        .select([
-          "books.id",
-          "books.book_title",
-          "books.author",
-          "genre_types.genre_name",
-          "series.series_name",
-        ])
-        .where("campus.campus_name", "=", campus)
-        .where("books.isbn_list", "like", `%${splitIsbn[0]}%`);
-
-      if (filterQueryList.length > 0) {
-        for (const filter of filterQueryList) {
-          dbQuery = dbQuery.where(filter.key, "in", filter.value);
-        }
-      }
-
-      const dbResult = await dbQuery.executeTakeFirst();
-
+      const sqlResult = await this.daoFactory.bookDao.getBasicBookByFilter(filterQueryList, splitIsbn[0], campus)
+      const dbResult = sqlResult.object
 
       if (dbResult != null) {
         const output = {
@@ -81,23 +48,7 @@ export default class SearchDataService {
 
   async retrieveAllISBNs(filterQueryList, campus: string): Promise<string[]> {
     try {
-      let dbQuery = this.db
-        .selectFrom("books")
-        .distinct()
-        .select("isbn_list")
-        .innerJoin("inventory", "inventory.book_id", "books.id")
-        .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
-        .leftJoin("audiences", "audiences.id", "books.audience_id")
-        .leftJoin("campus", "campus.id", "inventory.campus_id")
-        .where("campus.campus_name", "=", campus);
-
-      if (filterQueryList.length > 0) {
-        for (const filter of filterQueryList) {
-          dbQuery = dbQuery.where(filter.key, "in", filter.value);
-        }
-      }
-
-      const dbResult = await dbQuery.execute();
+      const dbResult = (await this.daoFactory.bookDao.getAllISBNs(filterQueryList, campus)).object
 
       if (dbResult != null) {
         return dbResult.flatMap((input) => {

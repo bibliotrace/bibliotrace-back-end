@@ -1,14 +1,24 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
-import Response from "../response/Response";
 import SuccessResponse from "../response/SuccessResponse";
-import BookManagementService, { BookInsertRequest } from "../service/BookManagementService";
-import { isValidISBN, sanitizeISBN, parseQr, parseRequiredFields } from "../utils/utils";
+import BookManagementService, {
+  BookInsertRequest,
+} from "../service/BookManagementService";
+import IsbnService from "../service/IsbnService";
+import {
+  isValidISBN,
+  sanitizeISBN,
+  parseQr,
+  parseRequiredFields,
+  validateUserType,
+} from "../utils/utils";
 
 export class InventoryHandler {
   private bookManagementService: BookManagementService;
+  private isbnService: IsbnService;
 
-  constructor(bookManagementService: BookManagementService) {
+  constructor(bookManagementService: BookManagementService, isbnService: IsbnService) {
     this.bookManagementService = bookManagementService;
+    this.isbnService = isbnService;
   }
 
   public async insertBook(body) {
@@ -20,36 +30,53 @@ export class InventoryHandler {
     return this.bookManagementService.insertBook(request as BookInsertRequest);
   }
 
-  public async getByIsbn(params: any) {
-    if (!params.isbn) {
-      return new RequestErrorResponse("ISBN is required to search for book information", 400);
-    } else if (!isValidISBN(params.isbn)) {
+  // This function will create a new book from scratch
+  public async createBook() {
+    // TODO: split out and use the create portion of the insertBook function 
+  }
+
+  //This function will just update a books' metadata
+  public async updateBook() {
+    // TODO: split out and use the update portion of the insertBook function 
+  }
+
+  // This function will get all book metadata for a given book
+  // If the user is admin and we haven't seen the book before, look up the book's information in the Isbn Service
+  public async getByIsbn(isbnString: string, req) {
+    if (!isbnString) {
+      return new RequestErrorResponse(
+        "ISBN is required to search for book information",
+        400
+      );
+    } else if (!isValidISBN(isbnString)) {
       // isbn not included in response message as it can overflow the error modal lol
       return new RequestErrorResponse(`Invalid ISBN provided`, 400);
     }
 
-    return this.bookManagementService.getByIsbn(sanitizeISBN(params.isbn));
+    const localData = await this.bookManagementService.getByIsbn(
+      sanitizeISBN(isbnString)
+    );
+    if (localData == null || localData.statusCode !== 200 || localData.object == null) {
+      if (validateUserType(req, null, "Admin")) {
+        console.log("ISBN not found in inventory, searching ISBNdb...");
+        const isbnResult = await this.isbnService.retrieveMetadata(sanitizeISBN(isbnString));
+        return isbnResult
+      }
+    } else {
+      return localData
+    }
+
+    return new SuccessResponse('Book Not Found');
   }
 
   public async getTagsByIsbn(params: any) {
     if (!params.isbn) {
       return new RequestErrorResponse("ISBN is required to get its book tags", 400);
     } else if (!isValidISBN(params.isbn)) {
-      return new RequestErrorResponse('Invalid ISBN provided', 400)
+      return new RequestErrorResponse("Invalid ISBN provided", 400);
     }
 
-    return this.bookManagementService.getTagsByIsbn(params.isbn)
-  }
-
-  public async setLocation (body, auth): Promise<Response<any>> {
-    console.log(body, auth)
-
-    const targetBook = await this.bookManagementService.getByQr(body.qr_code)
-    if (auth.userRole.roleType === 'Admin') {
-      return new SuccessResponse((await this.bookManagementService.setLocationByQr(body.qr_code, body.location_id))._message, targetBook)
-    }
-
-    return new SuccessResponse('Completed', targetBook);
+    return this.bookManagementService.getTagsByIsbn(params.isbn);
   }
 
   private parseInsertRequest(body): RequestErrorResponse | BookInsertRequest {
