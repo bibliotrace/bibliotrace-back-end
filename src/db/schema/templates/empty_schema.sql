@@ -42,7 +42,7 @@ CREATE TABLE location (
 CREATE TABLE books (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_title VARCHAR(255) NOT NULL,
-  isbn_list VARCHAR(255) NOT NULL,
+  isbn_list VARCHAR(255), -- this unfortunately needs to be nullable because some books come in without an isbn
   author VARCHAR(255) NOT NULL,
   primary_genre_id TINYINT UNSIGNED NOT NULL,
   audience_id TINYINT UNSIGNED NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE inventory (
   book_id INT UNSIGNED NOT NULL,
   location_id INT UNSIGNED NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
-  ttl INT UNSIGNED NOT NULL,
+  ttl INT UNSIGNED,
   FOREIGN KEY (book_id) REFERENCES books(id),
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (location_id) REFERENCES location(id)

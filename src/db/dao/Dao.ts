@@ -27,12 +27,15 @@ abstract class Dao<E, K extends number | string> {
           // but we want to know if there are duplicates such that we can update (sometimes)
           .values(entity)
           .executeTakeFirst();
+
         return new SuccessResponse(
           `${this.capitalizeFirstLetter(this.entityName)} created successfully`,
           // returned id is the primary key of entities with numerical keys, which saves a query in some instances
-          // this ternary has the side effect of casting the insertId from a bigint to a number,
-          // which is actually a good thing because some json serializers don't know what to do with a bigint
-          typeof this.keyName === "number" ? { [this.keyName]: result.insertId, ...entity } : entity
+          // this ternary specifically casts the insertId from a bigint to a number,
+          // which is needed because some json serializers don't know what to do with a bigint
+          typeof result.insertId === "bigint" || typeof result.insertId === "number"
+            ? { [this.keyName]: Number(result.insertId), ...entity }
+            : entity
         );
       } catch (error) {
         if (error.message.includes("Duplicate entry")) {
@@ -189,6 +192,10 @@ abstract class Dao<E, K extends number | string> {
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
           .execute();
+
+        if (!result || result.length === 0) {
+          return new SuccessResponse(`No ${this.entityName}s found in the ${this.tableName} table`);
+        }
 
         return new SuccessResponse<E[]>(
           `All rows from the ${this.capitalizeFirstLetter(
