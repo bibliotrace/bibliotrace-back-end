@@ -21,6 +21,14 @@ export default class BookManagementService extends Service {
     return await this.bookDao.getBookByIsbn(isbn)
   }
 
+  public async getByQr(qr: string): Promise<Response<any>> {
+    return await this.inventoryDao.getBookDataFromQr(qr)
+  }
+
+  public async setLocationByQr(qr: string, location: string): Promise<Response<any>> {
+    return await this.inventoryDao.setLocation(qr, location);
+  }
+
   public async getByTitle(title: string): Promise<Response<Book>> {
     return await this.bookDao.getBookByName(title);
   }

@@ -43,6 +43,13 @@ metadataRouter.get("/campuses", async (req: any, res) => {
 
 metadataRouter.get("/locations", async (req: any, res) => {
   const response = await Config.dependencies.locationHandler.getLocationsForCampus(req.auth);
+  console.log(response)
   sendResponse(res, response);
 });
+
+metadataRouter.post('/locations', async (req: any, res) => {
+  console.log(req.body)
+  const response = await Config.dependencies.locationHandler.addNewLocation(req.auth, req.body.newLocationName);
+  sendResponse(res, response);
+})
 

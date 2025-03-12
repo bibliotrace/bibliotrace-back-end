@@ -92,14 +92,14 @@ export class Config {
     this.auditService = new AuditService(daoFactory);
     this.bookManagementService = new BookManagementService(daoFactory);
     this.checkoutService = new CheckoutService(daoFactory);
-    this.searchDataService = new SearchDataService(dbConnectionManager.kyselyDB, daoFactory);
+    this.searchDataService = new SearchDataService(daoFactory);
     this.authService = new AuthService(daoFactory);
     this.locationService = new LocationService(daoFactory);
     this.reportService = new ReportService(daoFactory);
 
     // Route Handlers
     this.dependencies.authHandler = new AuthHandler(this.authService);
-    this.dependencies.inventoryHandler = new InventoryHandler(this.bookManagementService);
+    this.dependencies.inventoryHandler = new InventoryHandler(this.bookManagementService, this.isbnService);
     this.dependencies.suggestionHandler = new SuggestionHandler(this.suggestionService);
     this.dependencies.searchRouteHandler = new SearchRouteHandler(
       this.isbnService,
@@ -109,7 +109,7 @@ export class Config {
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);
     this.dependencies.checkoutHandler = new CheckoutHandler(this.checkoutService);
-    this.dependencies.locationHandler = new LocationHandler(this.locationService);
+    this.dependencies.locationHandler = new LocationHandler(this.locationService, this.bookManagementService);
     this.dependencies.reportHandler = new ReportHandler(this.reportService);
 
     console.log("Dependencies Instantiated");
