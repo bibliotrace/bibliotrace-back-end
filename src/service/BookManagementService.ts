@@ -7,7 +7,7 @@ import SuccessResponse from "../response/SuccessResponse";
 import Service from "./Service";
 import DaoFactory from "../db/dao/DaoFactory";
 import ServerErrorResponse from "../response/ServerErrorResponse";
-import { GenreType } from "../db/schema/GenreType";
+import { Genre } from "../db/schema/Genre";
 import { Audience } from "../db/schema/Audience";
 
 const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
@@ -125,7 +125,7 @@ export default class BookManagementService extends Service {
 
   private async parseBook(
     bookRequest: BookInsertRequest
-  ): Promise<Response<Book | GenreType[] | Audience[]>> {
+  ): Promise<Response<Book | Genre[] | Audience[]>> {
     console.log(bookRequest, "Book Request about to be parsed...");
     const genreIdResponse = await this.genreDao.getAllMatchingOnIndex(
       "genre_name",

@@ -7,8 +7,7 @@ import CampusDao from "../../../src/db/dao/CampusDao";
 import CheckoutDao from "../../../src/db/dao/CheckoutDao";
 import Dao from "../../../src/db/dao/Dao";
 import DaoFactory from "../../../src/db/dao/DaoFactory";
-import GenresDao from "../../../src/db/dao/GenresDao";
-import GenreTypeDao from "../../../src/db/dao/GenreTypeDao";
+import GenreDao from "../../../src/db/dao/GenreDao";
 import InventoryDao from "../../../src/db/dao/InventoryDao";
 import LocationDao from "../../../src/db/dao/LocationDao";
 import RestockListDao from "../../../src/db/dao/RestockListDao";
@@ -24,8 +23,7 @@ import { AuditState } from "../../../src/db/schema/AuditState";
 import { Book } from "../../../src/db/schema/Book";
 import { Campus } from "../../../src/db/schema/Campus";
 import { Checkout } from "../../../src/db/schema/Checkout";
-import { Genres } from "../../../src/db/schema/Genres";
-import { GenreType } from "../../../src/db/schema/GenreType";
+import { Genre } from "../../../src/db/schema/Genre";
 import { Inventory } from "../../../src/db/schema/Inventory";
 import { Location } from "../../../src/db/schema/Location";
 import { RestockList } from "../../../src/db/schema/RestockList";
@@ -51,8 +49,7 @@ describe("DAO testing suite", () => {
   let bookDao: BookDao;
   let campusDao: CampusDao;
   let checkoutDao: CheckoutDao;
-  let genresDao: GenresDao;
-  let genreTypeDao: GenreTypeDao;
+  let genreDao: GenreDao;
   let inventoryDao: InventoryDao;
   let locationDao: LocationDao;
   let restockListDao: RestockListDao;
@@ -91,17 +88,17 @@ describe("DAO testing suite", () => {
   let dummyCheckout2: Checkout;
   let dummyCheckoutNullable: Checkout;
 
-  let dummyGenres: Genres;
-  let dummyGenres2: Genres;
-  let dummyGenresNullable: Genres;
+  let dummyGenres: Genre;
+  let dummyGenres2: Genre;
+  let dummyGenresNullable: Genre;
 
-  let dummyGenreType: GenreType;
-  let dummyGenreType2: GenreType;
-  let dummyGenreType3: GenreType;
-  let dummyGenreType4: GenreType;
-  let dummyGenreType5: GenreType;
-  let dummyGenreType6: GenreType;
-  let dummyGenreTypeNullable: GenreType;
+  let dummyGenreType: Genre;
+  let dummyGenreType2: Genre;
+  let dummyGenreType3: Genre;
+  let dummyGenreType4: Genre;
+  let dummyGenreType5: Genre;
+  let dummyGenreType6: Genre;
+  let dummyGenreTypeNullable: Genre;
 
   let dummyInventory: Inventory;
   let dummyInventory2: Inventory;
@@ -151,8 +148,7 @@ describe("DAO testing suite", () => {
     bookDao = daoFactory.getBookDao();
     campusDao = daoFactory.getCampusDao();
     checkoutDao = daoFactory.getCheckoutDao();
-    genresDao = daoFactory.getGenresDao();
-    genreTypeDao = daoFactory.getGenreTypeDao();
+    genreDao = daoFactory.getGenreDao();
     inventoryDao = daoFactory.getInventoryDao();
     locationDao = daoFactory.getLocationDao();
     restockListDao = daoFactory.getRestockListDao();
