@@ -18,6 +18,7 @@ const localPort = 8080;
 
 Config.setup();
 
+
 if (process.env.FRONT_END_ORIGIN) {
   server.use(cors({ origin: process.env.FRONT_END_ORIGIN })); //TODO: set this as our production front-end url when we do deployment
 } else {
