@@ -11,6 +11,4 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: ["src/**/*.ts"],
   coverageDirectory: "coverage",
-  globalSetup: "<rootDir>/test/setup.ts",
-  globalTeardown: "<rootDir>/test/teardown.ts",
 };

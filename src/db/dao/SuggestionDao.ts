@@ -10,7 +10,7 @@ class SuggestionDao extends Dao<Suggestion, string> {
   constructor(db: Kysely<Database>) {
     super(db);
     this.tableName = "suggestions";
-    this.keyName = "timestamp";
+    this.keyName = "suggestion_id";
     this.entityName = "suggestion";
   }
 

@@ -10,8 +10,8 @@ class RestockListDao extends Dao<RestockList, number> {
   constructor(db: Kysely<Database>) {
     super(db);
     this.tableName = "restock_list";
-    this.keyName = "id";
-    this.entityName = "restock_item";
+    this.keyName = "book_id";
+    this.entityName = "restock item";
   }
 
   public async addRestockListItem(entity: RestockList, transaction?: Transaction<Database>) {

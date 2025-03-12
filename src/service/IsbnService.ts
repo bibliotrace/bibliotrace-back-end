@@ -2,7 +2,6 @@ import { sanitizeUrl } from "@braintree/sanitize-url";
 import SuccessResponse from "../response/SuccessResponse";
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import { Book } from "../db/schema/Book";
-import sanitizeHtml from "sanitize-html";
 
 class IsbnService {
   async conductSearch(
@@ -80,10 +79,8 @@ class IsbnService {
     const series_number: number = undefined; // unknown from just ISBN
     const publish_date: number = (book.date_published.length > 4) ? new Date(book.date_published).getFullYear() : book.date_published;
     const short_description: string =
-      sanitizeHtml(book.synopsis, {
-        allowedTags: [],
-        allowedAttributes: {},
-      }) ?? "No short description found";
+      book.synopsis.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " ") ??
+      "No description found"; // sanitizeHtml does not replace self-closing tags
     const language: string = book.language ? this.parseLanguage(book.language) : "Unknown language";
     const img_callback: string = book.image ?? "No image found"; 
 

@@ -33,6 +33,30 @@ export default class DBConnectionManager {
     }
   }
 
+  async executeQuery(query: string): Promise<void> {
+    const connection = await new Promise<PoolConnection>((resolve, reject) => {
+      this.pool.getConnection((err, conn) => {
+        if (err) reject(err);
+        else resolve(conn);
+      });
+    });
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        connection.query(query, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      console.log(`Query ${query}; executed successfully`);
+    } catch (error) {
+      console.error(`Error executing query ${query}:`, error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
   async runSQLFile(filepath: string): Promise<void> {
     let connection: PoolConnection | undefined;
     try {
