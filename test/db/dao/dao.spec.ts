@@ -140,11 +140,9 @@ describe("DAO testing suite", () => {
   let dummyUserRoleNullable: UserRole;
 
   beforeAll(async () => {
-    console.log("Setting up test environment");
     await TestConnectionManager.initialize();
-    console.log("Test database connection established");
     await TestConnectionManager.runCreateTestSQL();
-    console.log("Creation of test database schema complete");
+    console.log("Test database initialized");
 
     daoFactory = new DaoFactory(TestConnectionManager.kyselyDB);
     audienceDao = daoFactory.getAudienceDao();
@@ -1104,7 +1102,6 @@ describe("DAO testing suite", () => {
     test("Failed retrieval of entities with invalid primary key", async () => {
       for (const [entityName, { entity, dao }] of entityDaoMap) {
         const response = await dao.getByPrimaryKey("invalid_key");
-        console.log(response);
         expect(response).toBeDefined();
         expect(response).toBeInstanceOf(SuccessResponse);
         expect(response.statusCode).toBe(200);
@@ -1120,7 +1117,6 @@ describe("DAO testing suite", () => {
 
       for (const [entityName, { entity, dao }] of entityDaoMap) {
         for (const currField of Object.keys(entity)) {
-          console.log(`Testing ${dao.entityName} retrieval on index ${currField}`);
           const response = await dao.getAllMatchingOnIndex(currField, entity[currField]);
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
@@ -1299,9 +1295,90 @@ describe("DAO testing suite", () => {
     // TODO: add tests for foreign key constraint errors
   });
 
-  describe("Delete tests", () => {});
+  describe("Delete tests", () => {
+    test("Successful deletion of entities", async () => {
+      // temporarily turn off foreign key checks because this test is just to see if you can delete an object by its key
+      await TestConnectionManager.executeQuery(`SET FOREIGN_KEY_CHECKS = 0`);
 
-  describe("Delete by key and value tests", () => {});
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const response = await dao.delete(entity[dao.keyName]);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(
+          `${capitalizeFirstLetter(dao.entityName)} deleted successfully`
+        );
+      }
+
+      await TestConnectionManager.executeQuery(`SET FOREIGN_KEY_CHECKS = 1`);
+    });
+
+    test("Deletion of entities with invalid key does not modify database", async () => {
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const response =
+          typeof entity[dao.keyName] === "string"
+            ? await dao.delete("invalid_key")
+            : await dao.delete(-1);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(`No ${dao.entityName} found with ${dao.keyName}`);
+      }
+    });
+
+    // TODO: add tests for foreign key constraint errors
+  });
+
+  describe("Delete by index and value tests", () => {
+    test("Successful deletion of entities by index and value", async () => {
+      // temporarily turn off foreign key checks because this test is just to see if you can delete an object by key and value
+      await TestConnectionManager.executeQuery(`SET FOREIGN_KEY_CHECKS = 0`);
+
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        // we're deleting on the key in this test because otherwise each test would need to be customized to check a non-key field
+        // which is way more lines of code than I want to write at the moment
+        const response = await dao.deleteOnIndexByValue(dao.keyName, entity[dao.keyName]);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(
+          `${capitalizeFirstLetter(dao.entityName)}(s) deleted successfully`
+        );
+      }
+
+      await TestConnectionManager.executeQuery(`SET FOREIGN_KEY_CHECKS = 1`);
+    });
+
+    test("Failed deletion of entities with invalid index", async () => {
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const response = await dao.deleteOnIndexByValue("invalid_index", entity[dao.keyName]);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(ServerErrorResponse);
+        expect(response.statusCode).toBe(500);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(`Unknown field invalid_index in ${dao.entityName}`);
+      }
+    });
+
+    test("Deletion of entities with invalid value does not modify database", async () => {
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const response =
+          typeof entity[dao.keyName] === "string"
+            ? await dao.deleteOnIndexByValue(dao.keyName, "invalid_value")
+            : await dao.deleteOnIndexByValue(dao.keyName, -1);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(`No ${dao.entityName} found with ${dao.keyName}`);
+      }
+    });
+
+    // TODO: add tests for foreign key constraint errors
+  });
 
   // technically this test should iterate over all methods in the abstract DAO to see if they fail on transactions
   // instead of just having separate for loops for each method
@@ -1363,7 +1440,7 @@ describe("DAO testing suite", () => {
     }
 
     for (const [entityName, { entity, dao }] of entityDaoMap) {
-      const response = await dao.deleteByKeyAndValue(
+      const response = await dao.deleteOnIndexByValue(
         dao.keyName,
         entity[dao.keyName],
         mockTransaction

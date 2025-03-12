@@ -3,7 +3,6 @@ import Database from "../schema/Database";
 import Response from "../../response/Response";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
-import { resourceLimits } from "worker_threads";
 
 // E is the entity, K is the key
 abstract class Dao<E, K extends number | string> {
@@ -262,10 +261,17 @@ abstract class Dao<E, K extends number | string> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        await this.db
+        const result = await this.db
           .deleteFrom(this.tableName as keyof Database)
           .where(this.keyName as any, "=", key)
           .execute();
+
+        if (result[0].numDeletedRows === 0n) {
+          return new SuccessResponse(
+            `No ${this.entityName} found with ${this.keyName} ${key} to delete`
+          );
+        }
+
         return new SuccessResponse(
           `${this.capitalizeFirstLetter(this.entityName)} deleted successfully`
         );
@@ -278,9 +284,9 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async deleteByKeyAndValue(
-    key: string,
-    value: string,
+  public async deleteOnIndexByValue(
+    indexName: string,
+    value: any,
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
@@ -289,18 +295,36 @@ abstract class Dao<E, K extends number | string> {
       try {
         const result = await this.db
           .deleteFrom(this.tableName as keyof Database)
-          .where(key as any, "=", value)
+          .where(indexName as any, "=", value)
           .execute();
+
+        if (result[0].numDeletedRows === 0n) {
+          return new SuccessResponse(
+            `No ${this.entityName} found with ${indexName} ${value} to delete`
+          );
+        }
+
         return new SuccessResponse(
           `${result.length} ${this.capitalizeFirstLetter(this.entityName)}(s) deleted successfully`
         );
       } catch (error) {
+        if (error.message.includes("Unknown column")) {
+          return this.parseUnknownFieldErrorOnDelete(error.message);
+        }
+
         return new ServerErrorResponse(
           `Failed to delete ${this.entityName} with error ${error.message}`,
           500
         );
       }
     }
+  }
+
+  private parseUnknownFieldErrorOnDelete(error: string): ServerErrorResponse {
+    const field = error.split("Unknown column '")[1].split("'")[0];
+    return new ServerErrorResponse(
+      `Unknown field ${field} in ${this.entityName}. Please submit another deletion request with a valid ${this.entityName}`
+    );
   }
 
   public capitalizeFirstLetter(str: string): string {

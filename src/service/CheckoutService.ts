@@ -58,10 +58,7 @@ export default class CheckoutService extends Service {
     }
 
     //remove book if in shopping_list because quantity is now > 0
-    const shopping_list_response = await this.shoppingListDao.deleteByKeyAndValue(
-      "book_id",
-      book_id.toString()
-    );
+    const shopping_list_response = await this.shoppingListDao.delete(book_id);
     if (shopping_list_response.statusCode !== 200) {
       return [shopping_list_response, null];
     }
@@ -130,10 +127,7 @@ export default class CheckoutService extends Service {
     const quantity = quantity_response.object.length;
     if (quantity <= 0) {
       //delete from restock if in restock list
-      const delete_restock_response = await this.restockListDao.deleteByKeyAndValue(
-        "book_id",
-        book_id.toString()
-      );
+      const delete_restock_response = await this.restockListDao.delete(book_id);
       if (delete_restock_response.statusCode !== 200) {
         return [delete_restock_response, null];
       }

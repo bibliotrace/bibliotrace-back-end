@@ -117,7 +117,7 @@ class TestConnectionManager {
           else resolve();
         });
       });
-      console.log(`Query ${query}; executed successfully`);
+      //  console.log(`Query ${query}; executed successfully`);
     } catch (error) {
       console.error(`Error executing query ${query}:`, error);
       throw error;
