@@ -3,6 +3,7 @@ import Database from "../schema/Database";
 import Response from "../../response/Response";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
+import { resourceLimits } from "worker_threads";
 
 // E is the entity, K is the key
 abstract class Dao<E, K extends number | string> {
@@ -222,21 +223,38 @@ abstract class Dao<E, K extends number | string> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        await this.db
+        const result = await this.db
           .updateTable(this.tableName as keyof Database)
           .set(entity)
           .where(this.keyName as any, "=", key)
           .execute();
+
+        if (result[0].numUpdatedRows === 0n) {
+          return new SuccessResponse(
+            `No ${this.entityName} found with ${this.keyName} ${key} to update`
+          );
+        }
+
         return new SuccessResponse(
-          `${this.capitalizeFirstLetter(this.entityName)} updated successfully`
+          `${this.capitalizeFirstLetter(this.entityName)} updated successfully` // TODO: add the updated entity to the response
         );
       } catch (error) {
+        if (error.message.includes("Unknown column") && error.message.includes("in 'field list'")) {
+          return this.parseUnknownFieldError(error.message);
+        }
         return new ServerErrorResponse(
           `Failed to update ${this.entityName} with error ${error.message}`,
           500
         );
       }
     }
+  }
+
+  public parseUnknownFieldError(error: string): ServerErrorResponse {
+    const field = error.split("Unknown column '")[1].split("'")[0];
+    return new ServerErrorResponse(
+      `Unknown field ${field} in ${this.entityName}. Please submit another request with a valid ${this.entityName}`
+    );
   }
 
   public async delete(key: K, transaction?: Transaction<Database>): Promise<Response<any>> {

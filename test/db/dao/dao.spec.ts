@@ -567,6 +567,8 @@ describe("DAO testing suite", () => {
       ["Audience", { entity: dummyAudienceNullable, dao: audienceDao }],
       ["Audit_state", { entity: dummyAuditStateNullable, dao: auditStateDao }],
       ["Genre_type", { entity: dummyGenreTypeNullable, dao: genreTypeDao }],
+      ["Genre_type_2", { entity: dummyGenreTypeNullable, dao: genreTypeDao }],
+      ["Genre_type_3", { entity: dummyGenreTypeNullable, dao: genreTypeDao }],
       ["Series", { entity: dummySeriesNullable, dao: seriesDao }],
       ["User_role", { entity: dummyUserRoleNullable, dao: userRoleDao }],
       ["Campus", { entity: dummyCampusNullable, dao: campusDao }],
@@ -1210,6 +1212,7 @@ describe("DAO testing suite", () => {
 
     test("Failed retrieval of all entities with invalid table name", async () => {
       for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const tableName = dao.tableName;
         dao.tableName = "invalid_table";
         const response = await dao.getAll();
         expect(response).toBeDefined();
@@ -1219,11 +1222,82 @@ describe("DAO testing suite", () => {
         expect(response.message).toContain(
           `Failed to retrieve all data from the ${capitalizeFirstLetter(dao.tableName)}`
         );
+        dao.tableName = tableName;
       }
     });
   });
 
-  describe("Update tests", () => {});
+  describe("Update tests", () => {
+    test("Successful update of complete entities", async () => {
+      // we turn off foreign key checks for this test as the purpose of the test is to verify whether an entity has been updated,
+      // not whether the entity has been updated with valid foreign keys
+      await TestConnectionManager.executeQuery(`SET FOREIGN_KEY_CHECKS = 0`);
+
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const response = await dao.update(
+          entity[dao.keyName],
+          entityDaoMap2.get(entityName).entity
+        );
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(
+          `${capitalizeFirstLetter(dao.entityName)} updated successfully`
+        );
+      }
+
+      await TestConnectionManager.executeQuery(`SET FOREIGN_KEY_CHECKS = 1`);
+    });
+
+    test("Successful update of entities with nulled fields", async () => {
+      await TestConnectionManager.executeQuery(`SET FOREIGN_KEY_CHECKS = 0`);
+
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const response = await dao.update(
+          entity[dao.keyName],
+          entityDaoMapNullable.get(entityName).entity
+        );
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(
+          `${capitalizeFirstLetter(dao.entityName)} updated successfully`
+        );
+      }
+
+      await TestConnectionManager.executeQuery(`SET FOREIGN_KEY_CHECKS = 1`);
+    });
+
+    test("Update with invalid key does not change database", async () => {
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const response =
+          typeof entity[dao.keyName] === "string"
+            ? await dao.update("invalid_key", entity)
+            : await dao.update(-1, entity);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(`No ${dao.entityName} found with ${dao.keyName}`);
+      }
+    });
+
+    test("Failed update with unknown field", async () => {
+      for (const [entityName, { entity, dao }] of entityDaoMap) {
+        const invalidUpdate = { ...entity, badField: "Avada Kedavra" };
+        const response = await dao.update(entity[dao.keyName], invalidUpdate);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(ServerErrorResponse);
+        expect(response.statusCode).toBe(500);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(`Unknown field badField in ${dao.entityName}`);
+      }
+    });
+
+    // TODO: add tests for foreign key constraint errors
+  });
 
   describe("Delete tests", () => {});
 
