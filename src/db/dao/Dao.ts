@@ -17,7 +17,7 @@ abstract class Dao<E, K extends number | string> {
 
   public async create(entity: E, transaction?: Transaction<Database>): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         // console.log("entity being created", entity);
@@ -67,7 +67,7 @@ abstract class Dao<E, K extends number | string> {
     transaction?: Transaction<Database>
   ): Promise<Response<E>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -99,7 +99,7 @@ abstract class Dao<E, K extends number | string> {
     transaction?: Transaction<Database>
   ): Promise<Response<E[]>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -127,7 +127,7 @@ abstract class Dao<E, K extends number | string> {
 
   public async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -159,7 +159,7 @@ abstract class Dao<E, K extends number | string> {
     transaction?: Transaction<Database>
   ): Promise<Response<E[]>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -219,7 +219,7 @@ abstract class Dao<E, K extends number | string> {
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         await this.db
@@ -241,7 +241,7 @@ abstract class Dao<E, K extends number | string> {
 
   public async delete(key: K, transaction?: Transaction<Database>): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         await this.db
@@ -266,7 +266,7 @@ abstract class Dao<E, K extends number | string> {
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -285,7 +285,7 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  capitalizeFirstLetter(str: string): string {
+  public capitalizeFirstLetter(str: string): string {
     if (str.length === 0) return str;
     return str.charAt(0).toUpperCase() + str.slice(1);
   }

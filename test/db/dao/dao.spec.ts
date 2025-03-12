@@ -1,3 +1,4 @@
+import { Transaction } from "kysely";
 import AudienceDao from "../../../src/db/dao/AudienceDao";
 import AuditDao from "../../../src/db/dao/AuditDao";
 import AuditStateDao from "../../../src/db/dao/AuditStateDao";
@@ -38,6 +39,7 @@ import Response from "../../../src/response/Response";
 import ServerErrorResponse from "../../../src/response/ServerErrorResponse";
 import SuccessResponse from "../../../src/response/SuccessResponse";
 import TestConnectionManager from "../../TestConnectionManager";
+import Database from "../../../src/db/schema/Database";
 
 // NOTE: This testing suite assumes that data already comes in with the right fields, which should largely be parsed/checked in the handlers
 
@@ -787,6 +789,14 @@ describe("DAO testing suite", () => {
     }
   }
 
+  function expectTransactionFailure(response: Response<any>) {
+    expect(response).toBeDefined();
+    expect(response).toBeInstanceOf(ServerErrorResponse);
+    expect(response.statusCode).toBe(500);
+    expect(response.object).toBeUndefined();
+    expect(response.message).toContain("Transactions are not supported yet");
+  }
+
   describe("Create tests", () => {
     test("Successful creation of new entities", async () => {
       for (const [entityName, { entity, dao }] of entityDaoMap2) {
@@ -1207,37 +1217,102 @@ describe("DAO testing suite", () => {
         expect(response.statusCode).toBe(500);
         expect(response.object).toBeUndefined();
         expect(response.message).toContain(
-          `Failed to retrieve all data from the ${dao.capitalizeFirstLetter(dao.tableName)}`
+          `Failed to retrieve all data from the ${capitalizeFirstLetter(dao.tableName)}`
         );
       }
     });
   });
 
-  // update tests
+  describe("Update tests", () => {});
 
-  // delete tests
+  describe("Delete tests", () => {});
 
-  // deleteByKeyAndValue tests
+  describe("Delete by key and value tests", () => {});
 
-  // capitalizeFirstLetter tests for line coverage lol
+  // technically this test should iterate over all methods in the abstract DAO to see if they fail on transactions
+  // instead of just having separate for loops for each method
+  // this would ensure that new DAO methods would include the ServerErrorResponse logic
+  // however, this requires reflection voodoo and is well beyond the scope of this project
+  test("Transaction present in any DAO method returns a ServerErrorResponse", async () => {
+    const mockTransaction = jest.fn() as unknown as Transaction<Database>;
 
-  // TODO: add a test for the transaction logic thingy that just runs through all the daos and methods
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.create(entity, mockTransaction);
+      expectTransactionFailure(response);
+    }
 
-  // DAO specific tests (aka tests specific to certain DAOs)
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.getByKeyAndValue(
+        dao.keyName,
+        entity[dao.keyName],
+        mockTransaction
+      );
+      expectTransactionFailure(response);
+    }
 
-  // BookDAO tests
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.getAllByKeyAndValue(
+        dao.keyName,
+        entity[dao.keyName],
+        mockTransaction
+      );
+      expectTransactionFailure(response);
+    }
 
-  // CampusDAO tests
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.getByPrimaryKey(entity[dao.keyName], mockTransaction);
+      expectTransactionFailure(response);
+    }
 
-  // CheckoutDAO tests
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.getAllMatchingOnIndex(
+        dao.keyName,
+        entity[dao.keyName],
+        mockTransaction
+      );
+      expectTransactionFailure(response);
+    }
 
-  // GenreTypeDAO tests
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.getAll(mockTransaction);
+      expectTransactionFailure(response);
+    }
 
-  // InventoryDAO tests
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.update(dao.keyName, entity[dao.keyName], mockTransaction);
+      expectTransactionFailure(response);
+    }
 
-  // RestockListDAO tests
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.delete(dao.keyName, mockTransaction);
+      expectTransactionFailure(response);
+    }
 
-  // ShoppingListDAO tests
+    for (const [entityName, { entity, dao }] of entityDaoMap) {
+      const response = await dao.deleteByKeyAndValue(
+        dao.keyName,
+        entity[dao.keyName],
+        mockTransaction
+      );
+      expectTransactionFailure(response);
+    }
+  });
 
-  // SuggestionDAO tests
+  describe("DAO-specific tests (for DAOs that have their own custom queries)", () => {
+    describe("BookDao tests", () => {});
+
+    describe("CampusDao tests", () => {});
+
+    describe("CheckoutDao tests", () => {});
+
+    describe("GenreTypeDao tests", () => {});
+
+    describe("InventoryDao tests", () => {});
+
+    describe("RestockListDao tests", () => {});
+
+    describe("ShoppingListDao tests", () => {});
+
+    describe("SuggestionDao tests", () => {});
+  });
 });
