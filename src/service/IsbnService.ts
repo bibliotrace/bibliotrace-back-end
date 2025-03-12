@@ -2,7 +2,6 @@ import { sanitizeUrl } from "@braintree/sanitize-url";
 import SuccessResponse from "../response/SuccessResponse";
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import { Book } from "../db/schema/Book";
-import sanitizeHtml from "sanitize-html";
 
 class IsbnService {
   async conductSearch(
@@ -44,6 +43,7 @@ class IsbnService {
   async retrieveMetadata(
     isbn: string
   ): Promise<SuccessResponse<Book | unknown> | RequestErrorResponse> {
+    console.log('FIRING OFF CALL TO ISBN FOR BOOK DATA')
     const result = await fetch(`${process.env.ISBN_HOST}/book/${isbn}`, {
       method: "GET",
       headers: {
@@ -77,19 +77,17 @@ class IsbnService {
       isbn_list = `${book.isbn}||${book.isbn13}`;
     }
     const author: string = book.authors ? book.authors.join(", ") : "Unknown author";
-    const primary_genre_id: number = -1; // unknown from just ISBN
-    const audience_id: number = -1; // unknown from just ISBN
+    const primary_genre_id: number = undefined; // unknown from just ISBN
+    const audience_id: number = undefined; // unknown from just ISBN
     const pages: number = book.pages ?? -1;
-    const series_id: number = -1; // unknown from just ISBN
-    const series_number: number = -1; // unknown from just ISBN
+    const series_id: number = undefined; // unknown from just ISBN
+    const series_number: number = undefined; // unknown from just ISBN
     const publish_date: number = book.date_published
       ? new Date(book.date_published).getFullYear()
       : -1;
     const short_description: string =
-      sanitizeHtml(book.synopsis, {
-        allowedTags: [],
-        allowedAttributes: {},
-      }) ?? "No short description found";
+      book.synopsis.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " ") ??
+      "No description found"; // sanitizeHtml does not replace self-closing tags
     const language: string = book.language ? this.parseLanguage(book.language) : "Unknown language";
     const img_callback: string = book.image ?? "No image found"; // this just returns the raw URL to the image, which unfortunately has CORS problems when rendered from the frontend
 

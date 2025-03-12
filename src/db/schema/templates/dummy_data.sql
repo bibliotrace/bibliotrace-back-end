@@ -1,4 +1,6 @@
-INSERT INTO genre (genre_name)
+USE bibliotrace_v3;
+
+INSERT INTO genre_types (genre_name)
 VALUES ('Action-Adventure/Suspense'), ('Activity Book'), ('Board Book'), ('Dystopian'), ('Fantasy'), ('Fiction'), ('Graphic Novel'), 
 ('Historical Fiction'), ('Leveled Reader'), ('Non-Fiction'), ('Paranormal'), ('Picture Book'), ('Romance'), ('Science Fiction'), 
 ('Spanish'), ('Young Chapter Book');
@@ -39,9 +41,9 @@ VALUES
 ('Mockingjay', '9780439023511|9780439023528', 'Suzanne Collins', 4, 5, 390, 2010, 'Katniss becomes the symbol of the rebellion against the Capitol.', 'English', NULL);
 
 INSERT INTO location (campus_id, location_name) VALUES 
-(1, 'storage'),
-(1, 'shelf'),
-(1, 'downstairs');
+(1, 'Storage'),
+(1, 'Shelf'),
+(1, 'Downstairs');
 
 INSERT INTO inventory (qr, book_id, location_id, campus_id, ttl)
 VALUES
@@ -101,3 +103,9 @@ values (1, 1),
        (3, 7),
        (10, 8),
        (10, 9);
+
+INSERT INTO shopping_list (book_id, title, author, campus_id)
+values 
+(1, 'Harry Potter and the Sorcerer''s Stone', 'J.K. Rowling', 1),
+(3, 'Harry Potter and the Prisoner of Azkaban', 'J.K. Rowling', 1),
+(15, 'Mockingjay', 'Suzanne Collins', 1);

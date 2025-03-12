@@ -9,7 +9,9 @@ import { Checkout } from "./Checkout";
 import { Genre } from "./Genre";
 import { Inventory } from "./Inventory";
 import { Location } from "./Location";
+import { RestockList } from "./RestockList";
 import { Series } from "./Series";
+import { ShoppingList } from "./ShoppingList";
 import { Suggestion } from "./Suggestion";
 import { Tag } from "./Tag";
 import { User } from "./User";
@@ -32,6 +34,8 @@ interface Database {
   tag: Tag;
   users: User;
   user_roles: UserRole;
+  shopping_list: ShoppingList;
+  restock_list: RestockList;
 }
 
 export default Database;

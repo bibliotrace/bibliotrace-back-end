@@ -15,18 +15,27 @@ abstract class Dao<E, K extends number | string> {
     this.db = db;
   }
 
-  public async create(entity: E, transaction?: Transaction<Database>) {
+  public async create(entity: E, transaction?: Transaction<Database>): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        await this.db
+        // console.log("entity being created", entity);
+        const result = await this.db
           .insertInto(this.tableName as keyof Database)
+          // .ignore() could be used here to ensure duplicate key errors don't return an error
+          // but we want to know if there are duplicates such that we can update (sometimes)
           .values(entity)
-          .execute();
+          .executeTakeFirst();
+
         return new SuccessResponse(
           `${this.capitalizeFirstLetter(this.entityName)} created successfully`,
-          entity
+          // returned id is the primary key of entities with numerical keys, which saves a query in some instances
+          // this ternary specifically casts the insertId from a bigint to a number,
+          // which is needed because some json serializers don't know what to do with a bigint
+          typeof result.insertId === "bigint" || typeof result.insertId === "number"
+            ? { [this.keyName]: Number(result.insertId), ...entity }
+            : entity
         );
       } catch (error) {
         if (error.message.includes("Duplicate entry")) {
@@ -41,6 +50,10 @@ abstract class Dao<E, K extends number | string> {
   }
 
   private parseDuplicateKeyError(error: string): ServerErrorResponse {
+    // TODO: BookDao has a unique index on book_title, which means that duplicate titles would also trigger this error.
+    // however, the text of this error assumes that error was based on the primary key instead of the title
+    // insertion (currently) already checks if the title exists in the book db,
+    // but in the case where bookDao.create() is called without checking if the title exists first this could be misleading
     const key = error.split("entry '")[1].split("'")[0];
     return new ServerErrorResponse(
       `${this.keyName} ${key} already exists in ${this.entityName} table. Please submit another request with a unique ${this.keyName}.`,
@@ -54,7 +67,7 @@ abstract class Dao<E, K extends number | string> {
     transaction?: Transaction<Database>
   ): Promise<Response<E>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -62,6 +75,11 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(key as any, "=", value)
           .executeTakeFirst();
+
+        if (!result) {
+          return new SuccessResponse(`No ${this.entityName} found with ${key} ${value}`);
+        }
+
         return new SuccessResponse<E>(
           `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
           result as E
@@ -81,7 +99,7 @@ abstract class Dao<E, K extends number | string> {
     transaction?: Transaction<Database>
   ): Promise<Response<E[]>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -89,13 +107,18 @@ abstract class Dao<E, K extends number | string> {
           .selectAll()
           .where(key as any, "=", value)
           .execute();
+
+        if (!result || result.length === 0) {
+          return new SuccessResponse(`No ${this.entityName}s found with ${this.keyName}`);
+        }
+
         return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)}s retrieved successfully`,
           result as E[]
         );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to retrieve ${this.entityName} with error ${error}`,
+          `Failed to retrieve ${this.entityName}s with error ${error}`,
           500
         );
       }
@@ -104,7 +127,7 @@ abstract class Dao<E, K extends number | string> {
 
   public async getByPrimaryKey(key: K, transaction?: Transaction<Database>): Promise<Response<E>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -130,39 +153,13 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async getAllOnIndex(
-    index: string,
-    transaction?: Transaction<Database>
-  ): Promise<Response<E[]>> {
-    if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
-    } else {
-      try {
-        const result = await this.db
-          .selectFrom(this.tableName as keyof Database)
-          .selectAll()
-          .where(index as any, "=", true)
-          .execute();
-        return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
-          result as E[]
-        );
-      } catch (error) {
-        return new ServerErrorResponse(
-          `Failed to retrieve all ${this.entityName}s on ${index} with error ${error.message}`,
-          500
-        );
-      }
-    }
-  }
-
   public async getAllMatchingOnIndex(
     index: string,
     match: string,
     transaction?: Transaction<Database>
   ): Promise<Response<E[]>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -171,12 +168,10 @@ abstract class Dao<E, K extends number | string> {
           .where(index as any, "like", `%${match}%` as any)
           .execute();
         if (!result || result.length === 0) {
-          return new SuccessResponse<E[]>(
-            `No ${this.entityName}s found matching ${match} on ${index}`
-          );
+          return new SuccessResponse(`No ${this.entityName}s found matching ${match} on ${index}`);
         }
         return new SuccessResponse<E[]>(
-          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)}s retrieved successfully`,
           result as E[]
         );
       } catch (error) {
@@ -197,6 +192,10 @@ abstract class Dao<E, K extends number | string> {
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
           .execute();
+
+        if (!result || result.length === 0) {
+          return new SuccessResponse(`No ${this.entityName}s found in the ${this.tableName} table`);
+        }
 
         return new SuccessResponse<E[]>(
           `All rows from the ${this.capitalizeFirstLetter(
@@ -220,18 +219,28 @@ abstract class Dao<E, K extends number | string> {
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        await this.db
+        const result = await this.db
           .updateTable(this.tableName as keyof Database)
           .set(entity)
           .where(this.keyName as any, "=", key)
           .execute();
+
+        if (result[0].numUpdatedRows === 0n) {
+          return new SuccessResponse(
+            `No ${this.entityName} found with ${this.keyName} ${key} to update`
+          );
+        }
+
         return new SuccessResponse(
-          `${this.capitalizeFirstLetter(this.entityName)} updated successfully`
+          `${this.capitalizeFirstLetter(this.entityName)} updated successfully` // TODO: add the updated entity to the response
         );
       } catch (error) {
+        if (error.message.includes("Unknown column") && error.message.includes("in 'field list'")) {
+          return this.parseUnknownFieldError(error.message);
+        }
         return new ServerErrorResponse(
           `Failed to update ${this.entityName} with error ${error.message}`,
           500
@@ -240,15 +249,29 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
+  public parseUnknownFieldError(error: string): ServerErrorResponse {
+    const field = error.split("Unknown column '")[1].split("'")[0];
+    return new ServerErrorResponse(
+      `Unknown field ${field} in ${this.entityName}. Please submit another request with a valid ${this.entityName}`
+    );
+  }
+
   public async delete(key: K, transaction?: Transaction<Database>): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        await this.db
+        const result = await this.db
           .deleteFrom(this.tableName as keyof Database)
           .where(this.keyName as any, "=", key)
           .execute();
+
+        if (result[0].numDeletedRows === 0n) {
+          return new SuccessResponse(
+            `No ${this.entityName} found with ${this.keyName} ${key} to delete`
+          );
+        }
+
         return new SuccessResponse(
           `${this.capitalizeFirstLetter(this.entityName)} deleted successfully`
         );
@@ -261,23 +284,34 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  public async deleteByKeyAndValue(
-    key: string,
-    value: string,
+  public async deleteOnIndexByValue(
+    indexName: string,
+    value: any,
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
           .deleteFrom(this.tableName as keyof Database)
-          .where(key as any, "=", value)
+          .where(indexName as any, "=", value)
           .execute();
+
+        if (result[0].numDeletedRows === 0n) {
+          return new SuccessResponse(
+            `No ${this.entityName} found with ${indexName} ${value} to delete`
+          );
+        }
+
         return new SuccessResponse(
           `${result.length} ${this.capitalizeFirstLetter(this.entityName)}(s) deleted successfully`
         );
       } catch (error) {
+        if (error.message.includes("Unknown column")) {
+          return this.parseUnknownFieldErrorOnDelete(error.message);
+        }
+
         return new ServerErrorResponse(
           `Failed to delete ${this.entityName} with error ${error.message}`,
           500
@@ -286,7 +320,14 @@ abstract class Dao<E, K extends number | string> {
     }
   }
 
-  capitalizeFirstLetter(str: string): string {
+  private parseUnknownFieldErrorOnDelete(error: string): ServerErrorResponse {
+    const field = error.split("Unknown column '")[1].split("'")[0];
+    return new ServerErrorResponse(
+      `Unknown field ${field} in ${this.entityName}. Please submit another deletion request with a valid ${this.entityName}`
+    );
+  }
+
+  public capitalizeFirstLetter(str: string): string {
     if (str.length === 0) return str;
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
