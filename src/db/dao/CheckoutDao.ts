@@ -10,7 +10,7 @@ class CheckoutDao extends Dao<Checkout, string> {
   constructor(db: Kysely<Database>) {
     super(db);
     this.tableName = "checkout";
-    this.keyName = "timestamp";
+    this.keyName = "checkout_id";
     this.entityName = "checkout";
   }
 
