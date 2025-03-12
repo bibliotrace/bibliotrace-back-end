@@ -1,5 +1,3 @@
-USE bibliotrace_v3;
-
 DROP TABLE IF EXISTS shopping_list, restock_list, location, audiences, audit, audit_states, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;
 
 CREATE TABLE audiences (
@@ -44,7 +42,7 @@ CREATE TABLE location (
 CREATE TABLE books (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_title VARCHAR(255) NOT NULL,
-  isbn_list VARCHAR(255) NOT NULL,
+  isbn_list VARCHAR(255), -- this unfortunately needs to be nullable because some books come in without an isbn
   author VARCHAR(255) NOT NULL,
   primary_genre_id TINYINT UNSIGNED NOT NULL,
   audience_id TINYINT UNSIGNED NOT NULL,
@@ -63,7 +61,7 @@ CREATE UNIQUE INDEX idx_name ON books(book_title);
 
 CREATE TABLE audit (
   book_id INT UNSIGNED PRIMARY KEY,
-  last_audit_date DATE,
+  last_audit_date DATE DEFAULT (CURRENT_DATE),
   state_id TINYINT UNSIGNED NOT NULL,
   expected_amount SMALLINT,
   actual_amount SMALLINT,
@@ -76,7 +74,7 @@ CREATE TABLE inventory (
   book_id INT UNSIGNED NOT NULL,
   location_id INT UNSIGNED NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
-  ttl INT UNSIGNED NOT NULL,
+  ttl INT UNSIGNED,
   FOREIGN KEY (book_id) REFERENCES books(id),
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (location_id) REFERENCES location(id)
@@ -86,7 +84,8 @@ CREATE INDEX idx_campus_id ON campus(id);
 CREATE INDEX idx_ttl ON inventory(ttl);
 
 CREATE TABLE checkout (
-  timestamp TIMESTAMP PRIMARY KEY,
+  checkout_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   qr VARCHAR(15) NOT NULL,
   book_id INT UNSIGNED NOT NULL,
   state ENUM('First', 'In', 'Out') NOT NULL,
@@ -115,7 +114,8 @@ CREATE TABLE tags (
 CREATE INDEX idx_tag ON tags(tag);
 
 CREATE TABLE suggestions (
-  timestamp TIMESTAMP PRIMARY KEY,
+  suggestion_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   content TEXT NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
   FOREIGN KEY (campus_id) REFERENCES campus(id)

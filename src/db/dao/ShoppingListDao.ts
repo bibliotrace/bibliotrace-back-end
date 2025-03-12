@@ -10,8 +10,8 @@ class ShoppingListDao extends Dao<ShoppingList, number> {
   constructor(db: Kysely<Database>) {
     super(db);
     this.tableName = "shopping_list";
-    this.keyName = "id";
-    this.entityName = "shopping_item";
+    this.keyName = "book_id";
+    this.entityName = "shopping item";
   }
 
   public async deleteShoppingListItem(

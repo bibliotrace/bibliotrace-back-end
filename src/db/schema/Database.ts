@@ -8,7 +8,9 @@ import { Genres } from "./Genres";
 import { GenreType } from "./GenreType";
 import { Inventory } from "./Inventory";
 import { Location } from "./Location";
+import { RestockList } from "./RestockList";
 import { Series } from "./Series";
+import { ShoppingList } from "./ShoppingList";
 import { Suggestion } from "./Suggestion";
 import { Tag } from "./Tag";
 import { User } from "./User";
@@ -30,6 +32,8 @@ interface Database {
   tags: Tag;
   users: User;
   user_roles: UserRole;
+  shopping_list: ShoppingList;
+  restock_list: RestockList;
 }
 
 export default Database;

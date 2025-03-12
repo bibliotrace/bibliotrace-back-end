@@ -1,5 +1,5 @@
 interface GenreType {
-  id: number;
+  id?: number;
   genre_name: string;
 }
 
