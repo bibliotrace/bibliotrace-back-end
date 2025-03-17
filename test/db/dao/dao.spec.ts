@@ -1536,8 +1536,6 @@ describe("DAO testing suite", () => {
       });
     });
 
-    describe("CampusDao tests", () => {});
-
     describe("CheckoutDao tests", () => {});
 
     describe("GenreTypeDao tests", () => {});
