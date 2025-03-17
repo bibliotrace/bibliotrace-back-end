@@ -1,7 +1,7 @@
-interface Book_Genre {
+interface BookGenre {
   id: number;
   book_id: number;
   genre_id: number;
 }
 
-export type { Book_Genre };
+export type { BookGenre };

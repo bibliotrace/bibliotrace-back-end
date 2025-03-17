@@ -1,7 +1,7 @@
-interface Book_Tag {
+interface BookTag {
   id: number;
   book_id: number;
   tag_id: number;
 }
 
-export type { Book_Tag };
+export type { BookTag };

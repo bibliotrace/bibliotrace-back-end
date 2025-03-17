@@ -16,12 +16,16 @@ import UserRoleDao from "./UserRoleDao";
 import LocationDao from "./LocationDao";
 import RestockListDao from "./RestockListDao";
 import ShoppingListDao from "./ShoppingListDao";
+import BookGenreDao from "./BookGenreDao";
+import BookTagDao from "./BookTagDao";
 
 class DaoFactory {
   audienceDao: AudienceDao;
   auditDao: AuditDao;
   auditStateDao: AuditStateDao;
   bookDao: BookDao;
+  bookGenreDao: BookGenreDao;
+  bookTagDao: BookTagDao;
   campusDao: CampusDao;
   checkoutDao: CheckoutDao;
   genreDao: GenreDao;
@@ -40,6 +44,8 @@ class DaoFactory {
     this.auditDao = new AuditDao(db);
     this.auditStateDao = new AuditStateDao(db);
     this.bookDao = new BookDao(db);
+    this.bookGenreDao = new BookGenreDao(db);
+    this.bookTagDao = new BookTagDao(db);
     this.campusDao = new CampusDao(db);
     this.checkoutDao = new CheckoutDao(db);
     this.genreDao = new GenreDao(db);
@@ -68,6 +74,14 @@ class DaoFactory {
 
   getBookDao(): BookDao {
     return this.bookDao;
+  }
+
+  getBookGenreDao(): BookGenreDao {
+    return this.bookGenreDao;
+  }
+
+  getBookTagDao(): BookTagDao {
+    return this.bookTagDao;
   }
 
   getCampusDao(): CampusDao {

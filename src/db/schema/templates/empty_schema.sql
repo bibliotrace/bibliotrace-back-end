@@ -1,6 +1,6 @@
 USE bibliotrace_v3;
 
-DROP TABLE IF EXISTS book_genre, book_tag, shopping_list, restock_list, location, audiences, audit, audit_states, books, campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles;
+DROP TABLE IF EXISTS book_genre, book_tag, shopping_list, restock_list, location, audiences, audit, audit_states,campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles,  books;
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -33,6 +33,13 @@ CREATE TABLE location (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   campus_id TINYINT UNSIGNED NOT NULL,
   location_name VARCHAR(255) NOT NULL,
+  FOREIGN KEY (campus_id) REFERENCES campus(id)
+);
+
+CREATE TABLE genre (
+  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  genre_name VARCHAR(255) NOT NULL,
+  campus_id TINYINT UNSIGNED,
   FOREIGN KEY (campus_id) REFERENCES campus(id)
 );
 
@@ -91,22 +98,16 @@ CREATE TABLE checkout (
 CREATE INDEX idx_qr ON checkout(qr);
 CREATE INDEX idx_book_id ON checkout(book_id);
 
-CREATE TABLE genre (
-  id INT UNSIGNED PRIMARY KEY AUTOINCREMENT,
-  genre_name VARCHAR(255) NOT NULL,
-  campus_id TINYINT UNSIGNED,
-  FOREIGN KEY (campus_id) REFERENCES campus(id)
-);
 
 CREATE TABLE tag (
-  id INT UNSIGNED PRIMARY KEY AUTOINCREMENT,
+  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   tag_name VARCHAR(255) NOT NULL,
   campus_id TINYINT UNSIGNED,
   FOREIGN KEY (campus_id) REFERENCES campus(id)
 );
 
 CREATE TABLE book_genre (
-  id INT UNSIGNED PRIMARY KEY AUTOINCREMENT,
+  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_id INT UNSIGNED NOT NULL,
   genre_id INT UNSIGNED NOT NULL,
   FOREIGN KEY (book_id) REFERENCES books(id),
@@ -114,7 +115,7 @@ CREATE TABLE book_genre (
 );
 
 CREATE TABLE book_tag (
-  id INT UNSIGNED PRIMARY KEY AUTOINCREMENT,
+  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_id INT UNSIGNED NOT NULL,
   tag_id INT UNSIGNED NOT NULL,
   FOREIGN KEY (book_id) REFERENCES books(id),
