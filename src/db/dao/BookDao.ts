@@ -17,7 +17,7 @@ class BookDao extends Dao<Book, number> {
   // TODO: optimize to use index on isbn_list
   public async getBookByIsbn(isbn: string): Promise<Response<Book>> {
     try {
-      console.log("Fetching Book By ISBN", isbn);
+      // console.log("Fetching Book By ISBN", isbn);
       const book = await this.db
         .selectFrom(this.tableName as keyof Database)
         .select([
@@ -36,7 +36,7 @@ class BookDao extends Dao<Book, number> {
           "books.img_callback as img_callback",
           "audiences.audience_name as audience_name",
           "genre_types.genre_name as genre_name",
-          "series.series_name as series_name"
+          "series.series_name as series_name",
         ])
         .leftJoin("audiences", "audiences.id", "books.audience_id")
         .leftJoin("genre_types", "genre_types.id", "books.primary_genre_id")
@@ -63,13 +63,13 @@ class BookDao extends Dao<Book, number> {
         .innerJoin("tags", "tags.book_id", "books.id")
         .where("isbn_list", "like", `%${isbn}%` as any)
         .execute();
-      if (!book) {
+      if (!book || book.length === 0) {
         return new SuccessResponse(`No book found with isbn ${isbn}`);
       }
 
-      console.log(book);
+      // console.log(book);
 
-      return new SuccessResponse(`Successfully retrieved book with isbn ${isbn}`, book);
+      return new SuccessResponse(`Successfully retrieved tags for book with isbn ${isbn}`, book);
     } catch (error) {
       return new ServerErrorResponse(
         `Failed to retrieve book with isbn ${isbn} with error ${error}`,
@@ -99,7 +99,7 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
-  private appendToIsbnList(book: Book, isbn: string): Book {
+  /*private appendToIsbnList(book: Book, isbn: string): Book {
     const delimiter = "|";
     if (book.isbn_list == null) {
       book.isbn_list = isbn;
@@ -107,7 +107,7 @@ class BookDao extends Dao<Book, number> {
       book.isbn_list += `${delimiter}${isbn}`;
     }
     return book;
-  }
+  }*/
 }
 
 export default BookDao;

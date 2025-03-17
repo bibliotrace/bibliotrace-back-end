@@ -1450,7 +1450,91 @@ describe("DAO testing suite", () => {
   });
 
   describe("DAO-specific tests (for DAOs that have their own custom queries)", () => {
-    describe("BookDao tests", () => {});
+    let customBook: any = {
+      audience_name: "Potterheads",
+      series_name: "Harry Potter",
+      genre_name: "Fantasy",
+    };
+
+    beforeEach(async () => {
+      // for some reason the spread operator doesn't work outside of a specific test context so this is a dumb workaround
+      customBook = {
+        ...customBook,
+        ...dummyBook,
+      };
+    });
+
+    describe("BookDao tests", () => {
+      describe("Get book by ISBN tests", () => {
+        test("Successful retrieval of book by ISBN", async () => {
+          const response = await bookDao.getBookByIsbn(customBook.isbn_list.split("|")[0]);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          parseObjectForEquality(response.object, customBook);
+          expect(response.message).toContain(
+            `Successfully retrieved book with isbn ${customBook.isbn_list.split("|")[0]}`
+          );
+        });
+
+        test("Retrieval of book with invalid ISBN is empty", async () => {
+          const response = await bookDao.getBookByIsbn("invalid_isbn");
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No book found with isbn invalid_isbn`);
+        });
+      });
+
+      describe("Get book tags by ISBN tests", () => {
+        test("Successful retrieval of book tags by ISBN", async () => {
+          const { book_id, id, ...extractedTag } = dummyTag;
+          const response = await bookDao.getBookTagsByIsbn(customBook.isbn_list.split("|")[0]);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          parseArrayForEquality(response, [extractedTag]);
+          expect(response.message).toContain(
+            `Successfully retrieved tags for book with isbn ${customBook.isbn_list.split("|")[0]}`
+          );
+        });
+
+        test("Retrieval of book tags with invalid ISBN is empty", async () => {
+          const response = await bookDao.getBookTagsByIsbn("invalid_isbn");
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No book found with isbn invalid_isbn`);
+        });
+      });
+
+      describe("Get book by name tests", () => {
+        test("Successful retrieval of book by name", async () => {
+          const response = await bookDao.getBookByName(dummyBook.book_title);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          parseObjectForEquality(response.object, dummyBook);
+          expect(response.message).toContain(
+            `Successfully retrieved book with name ${dummyBook.book_title}`
+          );
+        });
+
+        test("Retrieval of book with invalid name is empty", async () => {
+          const response = await bookDao.getBookByName("invalid_name");
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No book found with name invalid_name`);
+        });
+      });
+    });
 
     describe("CampusDao tests", () => {});
 
