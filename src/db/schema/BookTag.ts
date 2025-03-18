@@ -1,5 +1,5 @@
 interface BookTag {
-  id: number;
+  id?: number;
   book_id: number;
   tag_id: number;
 }
