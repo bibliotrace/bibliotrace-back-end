@@ -24,7 +24,6 @@ export default class GenreTagService extends Service {
 
     const genre_obj: Genre = {
       genre_name: genre_name,
-      campus_id: campus_response.object.id,
     };
 
     return await this.genreDao.create(genre_obj);
@@ -54,7 +53,6 @@ export default class GenreTagService extends Service {
 
     const tag: Tag = {
       tag_name: tag_name,
-      campus_id: campus_response.object.id,
     };
     return await this.tagDao.create(tag);
   }
