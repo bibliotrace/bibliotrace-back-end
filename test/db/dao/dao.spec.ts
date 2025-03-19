@@ -1537,61 +1537,146 @@ describe("DAO testing suite", () => {
     });
 
     describe("CheckoutDao tests", () => {
-      test("Successful deletion from checkout database on checkin", async () => {
-        const response = await checkoutDao.checkin(dummyCheckout.qr);
-        expect(response).toBeDefined();
-        expect(response).toBeInstanceOf(SuccessResponse);
-        expect(response.statusCode).toBe(200);
-        expect(response.object).toBeUndefined();
-        expect(response.message).toContain(
-          `${capitalizeFirstLetter(checkoutDao.entityName)} deleted successfully`
-        );
-      });
+      describe("Checkin tests", () => {
+        test("Successful deletion from checkout database on checkin", async () => {
+          const response = await checkoutDao.checkin(dummyCheckout.qr);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `${capitalizeFirstLetter(checkoutDao.entityName)} deleted successfully`
+          );
+        });
 
-      test("Checkout of nonexistent QR code does not modify database", async () => {
-        const response = await checkoutDao.checkin("invalid_qr");
-        expect(response).toBeDefined();
-        expect(response).toBeInstanceOf(SuccessResponse);
-        expect(response.statusCode).toBe(200);
-        expect(response.object).toBeUndefined();
-        expect(response.message).toContain(`No checkout found with qr code invalid_qr to remove`);
+        test("Checkout of nonexistent QR code does not modify database", async () => {
+          const response = await checkoutDao.checkin("invalid_qr");
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No checkout found with qr code invalid_qr to remove`);
+        });
       });
     });
 
     describe("InventoryDao tests", () => {
-      test("Successful deletion of inventory item on checkout", async () => {
-        const response = await inventoryDao.checkout(dummyInventory.qr, dummyInventory.campus_id);
-        expect(response).toBeDefined();
-        expect(response).toBeInstanceOf(SuccessResponse);
-        expect(response.statusCode).toBe(200);
-        expect(response.object).toBeUndefined();
-        expect(response.message).toContain(`${dummyInventory.qr} checked out successfully`);
-      });
+      describe("Checkout tests", () => {
+        test("Successful deletion of inventory item on checkout", async () => {
+          const response = await inventoryDao.checkout(dummyInventory.qr, dummyInventory.campus_id);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`${dummyInventory.qr} checked out successfully`);
+        });
 
-      test("Checkout of nonexistent QR code does not modify database", async () => {
-        const response = await inventoryDao.checkout("invalid_qr", dummyInventory.campus_id);
-        expect(response).toBeDefined();
-        expect(response).toBeInstanceOf(SuccessResponse);
-        expect(response.statusCode).toBe(200);
-        expect(response.object).toBeUndefined();
-        expect(response.message).toContain(
-          `Inventory with qr invalid_qr and campus id ${dummyInventory.campus_id} not found to check out`
-        );
-      });
+        test("Checkout of nonexistent QR code does not modify database", async () => {
+          const response = await inventoryDao.checkout("invalid_qr", dummyInventory.campus_id);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Inventory with qr invalid_qr and campus id ${dummyInventory.campus_id} not found to check out`
+          );
+        });
 
-      test("Checkout of nonexistent campus id does not modify database", async () => {
-        const response = await inventoryDao.checkout(dummyInventory.qr, 100);
-        expect(response).toBeDefined();
-        expect(response).toBeInstanceOf(SuccessResponse);
-        expect(response.statusCode).toBe(200);
-        expect(response.object).toBeUndefined();
-        expect(response.message).toContain(
-          `Inventory with qr ${dummyInventory.qr} and campus id 100 not found to check out`
-        );
+        test("Checkout of nonexistent campus id does not modify database", async () => {
+          const response = await inventoryDao.checkout(dummyInventory.qr, 100);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Inventory with qr ${dummyInventory.qr} and campus id 100 not found to check out`
+          );
+        });
       });
     });
 
-    describe("RestockListDao tests", () => {});
+    describe("RestockListDao tests", () => {
+      describe("Add restock list item tests", () => {
+        test("Successful addition of restock item to restock list", async () => {
+          const response = await restockListDao.addRestockListItem(dummyRestockList);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          expect(response.object).toEqual(dummyRestockList);
+          expect(response.message).toContain(
+            `${capitalizeFirstLetter(restockListDao.entityName)} created/updated successfully`
+          );
+        });
+
+        test("Duplicate book id updates entire row entry", async () => {
+          await restockListDao.addRestockListItem(dummyRestockList);
+          dummyRestockList2.book_id = dummyRestockList.book_id;
+          const response = await restockListDao.addRestockListItem(dummyRestockList2);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          expect(response.object).toEqual({
+            ...dummyRestockList2,
+          });
+          expect(response.message).toContain(
+            `${capitalizeFirstLetter(restockListDao.entityName)} created/updated successfully`
+          );
+
+          dummyRestockList2.book_id = 12;
+        });
+
+        // In the context that the addRestockListItem method is called there is already validation to see if the book id exists
+        // thus that is not tested here, especially because this method doesn't actually check if the book id exists
+      });
+
+      describe("Delete restock list item tests", () => {
+        test("Successful deletion of restock item from restock list", async () => {
+          await restockListDao.addRestockListItem(dummyRestockList);
+          const response = await restockListDao.deleteRestockListItem(
+            dummyRestockList.book_id,
+            dummyRestockList.campus_id
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Restock item with book id ${dummyRestockList.book_id} and campus id ${dummyRestockList.campus_id} removed successfully`
+          );
+        });
+
+        test("Deletion of nonexistent book id does not modify database", async () => {
+          const response = await restockListDao.deleteRestockListItem(
+            100,
+            dummyRestockList.campus_id
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Restock item with book id 100 and campus id ${dummyRestockList.campus_id} not found to remove`
+          );
+        });
+
+        test("Deletion of nonexistent campus id does not modify database", async () => {
+          await restockListDao.addRestockListItem(dummyRestockList);
+          const response = await restockListDao.deleteRestockListItem(
+            dummyRestockList.book_id,
+            100
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Restock item with book id ${dummyRestockList.book_id} and campus id 100 not found to remove`
+          );
+        });
+      });
+    });
 
     describe("ShoppingListDao tests", () => {});
 
