@@ -1670,7 +1670,6 @@ describe("DAO testing suite", () => {
           const invalidRestockList = { ...dummyRestockList };
           invalidRestockList.book_id = 100;
           const response = await restockListDao.addRestockListItem(invalidRestockList);
-          console.log(response);
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(ServerErrorResponse);
           expect(response.statusCode).toBe(500);
@@ -1678,11 +1677,10 @@ describe("DAO testing suite", () => {
           expect(response.message).toContain(`Failed to create restock item with error`);
         });
 
-        test.only("Failed add of restock item with invalid campus id", async () => {
+        test("Failed add of restock item with invalid campus id", async () => {
           const invalidRestockList = { ...dummyRestockList };
           invalidRestockList.campus_id = 100;
           const response = await restockListDao.addRestockListItem(invalidRestockList);
-          console.log(response);
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(ServerErrorResponse);
           expect(response.statusCode).toBe(500);
@@ -1715,7 +1713,7 @@ describe("DAO testing suite", () => {
           );
         });
 
-        test("Deletion of nonexistent book id does not modify database", async () => {
+        test("Deletion of restock list item with nonexistent book id does not modify database", async () => {
           const response = await restockListDao.deleteRestockListItem(
             100,
             dummyRestockList.campus_id
@@ -1729,7 +1727,7 @@ describe("DAO testing suite", () => {
           );
         });
 
-        test("Deletion of nonexistent campus id does not modify database", async () => {
+        test("Deletion of restock list item with nonexistent campus id does not modify database", async () => {
           await restockListDao.addRestockListItem(dummyRestockList);
           const response = await restockListDao.deleteRestockListItem(
             dummyRestockList.book_id,
@@ -1755,7 +1753,60 @@ describe("DAO testing suite", () => {
       });
     });
 
-    describe("ShoppingListDao tests", () => {});
+    describe("ShoppingListDao tests", () => {
+      describe("Delete shopping list item tests", () => {
+        test("Successful deletion of shopping item from shopping list", async () => {
+          const response = await shoppingListDao.deleteShoppingListItem(
+            dummyShoppingList.book_id,
+            dummyShoppingList.campus_id
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Shopping item with book id ${dummyShoppingList.book_id} and campus id ${dummyShoppingList.campus_id} removed successfully`
+          );
+        });
+
+        test("Deletion of shopping list item with nonexistent book id does not modify database", async () => {
+          const response = await shoppingListDao.deleteShoppingListItem(
+            100,
+            dummyShoppingList.campus_id
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Shopping item with book id 100 and campus id ${dummyShoppingList.campus_id} not found to remove`
+          );
+        });
+
+        test("Deletion of shopping list item with nonexistent campus id does not modify database", async () => {
+          const response = await shoppingListDao.deleteShoppingListItem(
+            dummyShoppingList.book_id,
+            100
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Shopping item with book id ${dummyShoppingList.book_id} and campus id 100 not found to remove`
+          );
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await shoppingListDao.deleteShoppingListItem(
+            dummyShoppingList.book_id,
+            dummyShoppingList.campus_id,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
+      });
+    });
 
     describe("SuggestionDao tests", () => {});
   });

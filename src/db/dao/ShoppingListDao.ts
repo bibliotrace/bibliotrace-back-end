@@ -20,7 +20,7 @@ class ShoppingListDao extends Dao<ShoppingList, number> {
     transaction?: Transaction<Database>
   ): Promise<Response<ShoppingList>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
@@ -28,8 +28,15 @@ class ShoppingListDao extends Dao<ShoppingList, number> {
           .where("book_id", "=", book_id)
           .where("campus_id", "=", campus_id)
           .execute();
+
+        if (result[0].numDeletedRows === 0n) {
+          return new SuccessResponse(
+            `Shopping item with book id ${book_id} and campus id ${campus_id} not found to remove`
+          );
+        }
+
         return new SuccessResponse(
-          `${result.length} ${this.capitalizeFirstLetter(this.entityName)}(s) deleted successfully`
+          `Shopping item with book id ${book_id} and campus id ${campus_id} removed successfully`
         );
       } catch (error) {
         return new ServerErrorResponse(
