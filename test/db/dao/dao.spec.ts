@@ -1807,7 +1807,5 @@ describe("DAO testing suite", () => {
         });
       });
     });
-
-    describe("SuggestionDao tests", () => {});
   });
 });

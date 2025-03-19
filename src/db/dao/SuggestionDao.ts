@@ -14,6 +14,8 @@ class SuggestionDao extends Dao<Suggestion, string> {
     this.entityName = "suggestion";
   }
 
+  // getAllByKeyAndValue is inherited from Dao, so we don't need to implement it again
+  /*
   public async getSuggestionsByCampus(
     campus_id: number,
     transaction?: Transaction<Database>
@@ -38,7 +40,7 @@ class SuggestionDao extends Dao<Suggestion, string> {
         );
       }
     }
-  }
+  }*/
 }
 
 export default SuggestionDao;

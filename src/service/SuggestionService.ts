@@ -39,7 +39,7 @@ class SuggestionService extends Service {
 
     for (const campus of campus_response.object) {
       const suggestion_response: Response<Suggestion[]> =
-        await this.suggestionDao.getSuggestionsByCampus(campus.id);
+        await this.suggestionDao.getAllByKeyAndValue("campus_id", campus.id);
 
       if (suggestion_response.statusCode !== 200) {
         return suggestion_response;
