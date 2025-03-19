@@ -15,7 +15,10 @@ abstract class Dao<E, K extends number | string> {
     this.db = db;
   }
 
-  public async create(entity: E, transaction?: Transaction<Database>): Promise<Response<any>> {
+  public async create(
+    entity: E,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {

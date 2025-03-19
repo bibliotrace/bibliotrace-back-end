@@ -35,7 +35,10 @@ class IsbnService {
     resultJson.books.map((result) => {
       if (result.isbn10 != null) isbnList.push(`${result.isbn10}||${result.image}`);
       if (result.isbn13 != null) isbnList.push(`${result.isbn13}||${result.image}`);
+
     });
+
+    console.log(isbnList)
 
     return new SuccessResponse("Successfully Pulled in ISBNs", isbnList);
   }
@@ -57,15 +60,7 @@ class IsbnService {
       );
     }
     const resultJson = await result.json();
-    if (resultJson.error) {
-      return new RequestErrorResponse(
-        `Error in ISBNdb response: ${resultJson.error}`,
-        result.status
-      );
-    }
-
     const book = resultJson.book;
-    console.log(book);
 
     const book_title: string = book.title ?? book.title_long ?? "Unknown title";
     let isbn_list: string = ""; // this should always exist given that we're querying by isbn here lol
@@ -82,14 +77,12 @@ class IsbnService {
     const pages: number = book.pages ?? -1;
     const series_id: number = undefined; // unknown from just ISBN
     const series_number: number = undefined; // unknown from just ISBN
-    const publish_date: number = book.date_published
-      ? new Date(book.date_published).getFullYear()
-      : -1;
+    const publish_date: number = (book.date_published.length > 4) ? new Date(book.date_published).getFullYear() : book.date_published;
     const short_description: string =
       book.synopsis.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " ") ??
       "No description found"; // sanitizeHtml does not replace self-closing tags
     const language: string = book.language ? this.parseLanguage(book.language) : "Unknown language";
-    const img_callback: string = book.image ?? "No image found"; // this just returns the raw URL to the image, which unfortunately has CORS problems when rendered from the frontend
+    const img_callback: string = book.image ?? "No image found"; 
 
     return new SuccessResponse(`Metadata retrieved for ISBN ${isbn}`, {
       book_title,
@@ -108,17 +101,20 @@ class IsbnService {
   }
 
   private parseLanguage(language: string): string {
-    if (language == "en") return "English";
-    if (language == "es") return "Spanish";
-    if (language == "fr") return "French";
-    if (language == "de") return "German";
-    if (language == "it") return "Italian";
-    if (language == "pt") return "Portuguese";
-    if (language == "nl") return "Dutch";
-    if (language == "ja") return "Japanese";
-    if (language == "zh") return "Chinese";
-    // add more languages as needed
-    return "Unknown language";
+    const languages = {
+      en: "English",
+      es: "Spanish",
+      fr: "French",
+      de: "German",
+      it: "Italian",
+      pt: "Portuguese",
+      nl: "Dutch",
+      ja: "Japanese",
+      zh: "Chinese",
+    }
+
+    const outputLanguage = languages[language]
+    return outputLanguage ?? "Unknown Language"
   }
 }
 

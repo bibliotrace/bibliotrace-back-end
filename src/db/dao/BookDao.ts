@@ -120,15 +120,69 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
-  /*private appendToIsbnList(book: Book, isbn: string): Book {
-    const delimiter = "|";
-    if (book.isbn_list == null) {
-      book.isbn_list = isbn;
-    } else {
-      book.isbn_list += `${delimiter}${isbn}`;
+  public async getBasicBookByFilter(filterQueryList, isbn, campus): Promise<Response<any>> {
+    try {
+      // Run SQL stuff
+      let dbQuery = this.db
+        .selectFrom("books")
+        .innerJoin("inventory", "inventory.book_id", "books.id")
+        .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
+        .leftJoin("audiences", "audiences.id", "books.audience_id")
+        .leftJoin("series", "series.id", "books.series_id")
+        .leftJoin("campus", "campus.id", "inventory.campus_id")
+        .select([
+          "books.id",
+          "books.book_title",
+          "books.author",
+          "genre_types.genre_name",
+          "series.series_name",
+        ])
+        .where("campus.campus_name", "=", campus)
+        .where("books.isbn_list", "like", `%${isbn}%`);
+
+      if (filterQueryList.length > 0) {
+        for (const filter of filterQueryList) {
+          dbQuery = dbQuery.where(filter.key, "in", filter.value);
+        }
+      }
+
+      const dbResult = await dbQuery.executeTakeFirst();
+      return new SuccessResponse("successfully grabbed book", dbResult);
+    } catch (error) {
+      return new ServerErrorResponse(
+        `Failed to retrieve book with filter queries: Error ${error.message}`,
+        500
+      );
     }
-    return book;
-  }*/
+  }
+
+  public async getAllISBNs(filterQueryList, campus): Promise<Response<any>> {
+    try {
+      let dbQuery = this.db
+        .selectFrom("books")
+        .distinct()
+        .select("isbn_list")
+        .innerJoin("inventory", "inventory.book_id", "books.id")
+        .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
+        .leftJoin("audiences", "audiences.id", "books.audience_id")
+        .leftJoin("campus", "campus.id", "inventory.campus_id")
+        .where("campus.campus_name", "=", campus);
+
+      if (filterQueryList.length > 0) {
+        for (const filter of filterQueryList) {
+          dbQuery = dbQuery.where(filter.key, "in", filter.value);
+        }
+      }
+
+      const dbResult = await dbQuery.execute();
+      return new SuccessResponse("successfully retrieved all isbns", dbResult);
+    } catch (error) {
+      return new ServerErrorResponse(
+        `Failed to retrieve all isbns with filter queries: Error ${error.message}`,
+        500
+      );
+    }
+  }
 }
 
 export default BookDao;
