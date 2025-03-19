@@ -1,51 +1,35 @@
-import CampusDao from "../db/dao/CampusDao";
-import { Kysely } from "kysely";
-import Database from "../db/schema/Database";
 import { ResultRow } from "../handler/SearchRouteHandler";
+import Response from "../response/Response";
 import DaoFactory from "../db/dao/DaoFactory";
-import GenreDao from "../db/dao/GenreDao";
+import SuccessResponse from "../response/SuccessResponse";
+import ServerErrorResponse from "../response/ServerErrorResponse";
 
 export default class SearchDataService {
-  db: Kysely<Database>;
-  campusDao: CampusDao;
-  genreDao: GenreDao;
+  private readonly daoFactory: DaoFactory;
 
-  constructor(db: Kysely<Database>, daoFactory: DaoFactory) {
-    this.db = db;
-    this.campusDao = daoFactory.getCampusDao();
-    this.genreDao = daoFactory.getGenreDao();
+  constructor(daoFactory: DaoFactory) {
+    this.daoFactory = daoFactory;
   }
 
-  async retrieveMetadata(filterQueryList, isbn: string, campus: string): Promise<ResultRow> {
+  // This function is designed to take in a list of filters, an isbn number, and a campus.
+  // It will then return basic metadata from various tables assuming the filters and campus
+  // lockdowns let it through.
+  async retrieveBasicMetadata(
+    filterQueryList, // Expected to be in the format { key: 'genre', value: 'Dystopian' }
+    isbn: string, // Expected to be in the format "ISBN||CoverURL"
+    campus: string
+  ): Promise<Response<ResultRow>> {
     const splitIsbn = isbn.split("||");
 
     try {
-      let dbQuery = this.db
-        .selectFrom("books")
-        .innerJoin("inventory", "inventory.book_id", "books.id")
-        .leftJoin("genre", "books.primary_genre_id", "genre.id")
-        .leftJoin("audiences", "audiences.id", "books.audience_id")
-        .leftJoin("series", "series.id", "books.series_id")
-        .leftJoin("campus", "campus.id", "inventory.campus_id")
-        .select([
-          "books.id",
-          "books.book_title",
-          "books.author",
-          "genre.genre_name",
-          "series.series_name",
-        ])
-        .where("campus.campus_name", "=", campus)
-        .where("books.isbn_list", "like", `%${splitIsbn[0]}%`);
+      const sqlResult = await this.daoFactory.bookDao.getBasicBookByFilter(
+        filterQueryList,
+        splitIsbn[0],
+        campus
+      );
+      const dbResult = sqlResult.object;
 
-      if (filterQueryList.length > 0) {
-        for (const filter of filterQueryList) {
-          dbQuery = dbQuery.where(filter.key, "in", filter.value);
-        }
-      }
-
-      const dbResult = await dbQuery.executeTakeFirst();
-
-      if (dbResult != null) {
+      if (dbResult != null && sqlResult.statusCode === 200) {
         const output = {
           id: String(dbResult.id),
           title: dbResult.book_title,
@@ -60,45 +44,39 @@ export default class SearchDataService {
           const chunksOfUrl = coverUrl.split("/");
           output.coverImageId = chunksOfUrl[chunksOfUrl.length - 1];
         }
-        return output;
+        return new SuccessResponse("Successfully grabbed book info", output);
+      } else if (sqlResult.statusCode === 200) {
+        return new SuccessResponse("No Book Found");
       } else {
-        return null;
+        return sqlResult;
       }
     } catch (error) {
-      throw new Error(`Error trying to retrieve metadata for book: ${error.message}`);
+      return new ServerErrorResponse(
+        `Error trying to retrieve metadata for book: ${error.message}`,
+        500
+      );
     }
   }
 
-  async retrieveAllISBNs(filterQueryList, campus: string): Promise<string[]> {
+  async retrieveAllISBNs(filterQueryList, campus: string): Promise<Response<string[]>> {
     try {
-      let dbQuery = this.db
-        .selectFrom("books")
-        .distinct()
-        .select("isbn_list")
-        .innerJoin("inventory", "inventory.book_id", "books.id")
-        .leftJoin("genre", "books.primary_genre_id", "genre.id")
-        .leftJoin("audiences", "audiences.id", "books.audience_id")
-        .leftJoin("campus", "campus.id", "inventory.campus_id")
-        .where("campus.campus_name", "=", campus);
-
-      if (filterQueryList.length > 0) {
-        for (const filter of filterQueryList) {
-          dbQuery = dbQuery.where(filter.key, "in", filter.value);
-        }
+      const daoResponse = await this.daoFactory.bookDao.getAllISBNs(filterQueryList, campus);
+      if (daoResponse.statusCode !== 200) {
+        return daoResponse;
       }
 
-      const dbResult = await dbQuery.execute();
-
-      if (dbResult != null) {
-        return dbResult.flatMap((input) => {
+      const dbResult = daoResponse.object;
+      if (dbResult != null && dbResult.length > 0) {
+        const resultList = dbResult.flatMap((input) => {
           const result = input.isbn_list;
           return result.split("|")[0];
         });
+        return new SuccessResponse("Successfully parsed all ISBNs", resultList);
       } else {
-        throw new Error("dbResult was null for some reason!");
+        return new ServerErrorResponse("dbResult was null for some reason!", 404);
       }
     } catch (error) {
-      throw new Error(`Error trying to retreive all ISBN's: ${error.message}`);
+      return new ServerErrorResponse(`Error trying to retreive all ISBN's: ${error.message}`, 500);
     }
   }
 }

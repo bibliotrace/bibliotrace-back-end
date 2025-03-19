@@ -13,21 +13,16 @@ inventoryRouter.put("/insert", async (req, res) => {
 });
 
 inventoryRouter.get("/get/:isbn", async (req, res) => {
-  const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(req.params);
+  const inventoryResponse = await Config.dependencies.inventoryHandler.getByIsbn(
+    req.params.isbn,
+    req
+  );
   if (inventoryResponse.statusCode === 200 && inventoryResponse.object) {
     // return current information for book in inventory
     sendResponse(res, inventoryResponse);
     return;
   } else {
-    if (validateUserType(req, null, "Admin")) {
-      console.log("ISBN not found in inventory, searching ISBNdb...");
-      sendResponse(
-        res,
-        await Config.dependencies.searchRouteHandler.retrieveMetadataForIsbn(req.params)
-      );
-    } else {
-      sendResponse(res, new SuccessResponse("No Books Found", {}));
-    }
+    sendResponse(res, new SuccessResponse("No Books Found", {}));
   }
 });
 
@@ -64,6 +59,13 @@ inventoryRouter.post("/tag", async (req: any, res) => {
 
 inventoryRouter.delete("/tag", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.genreTagHandler.removeTag(req.body, req.auth));
+});
+
+inventoryRouter.post("/setLocation", async (req: any, res) => {
+  sendResponse(
+    res,
+    await Config.dependencies.locationHandler.setBookLocationInInventory(req.body, req.auth)
+  );
 });
 
 module.exports = { inventoryRouter };
