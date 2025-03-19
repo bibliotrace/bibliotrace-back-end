@@ -5,6 +5,7 @@ import Database from "../schema/Database";
 import Dao from "./Dao";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import { Kysely, Transaction } from "kysely";
+import { FilterListItem } from "../../handler/SearchRouteHandler";
 
 class BookDao extends Dao<Book, number> {
   constructor(db: Kysely<Database>) {
@@ -120,67 +121,101 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
-  public async getBasicBookByFilter(filterQueryList, isbn, campus): Promise<Response<any>> {
-    try {
-      // Run SQL stuff
-      let dbQuery = this.db
-        .selectFrom("books")
-        .innerJoin("inventory", "inventory.book_id", "books.id")
-        .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
-        .leftJoin("audiences", "audiences.id", "books.audience_id")
-        .leftJoin("series", "series.id", "books.series_id")
-        .leftJoin("campus", "campus.id", "inventory.campus_id")
-        .select([
-          "books.id",
-          "books.book_title",
-          "books.author",
-          "genre_types.genre_name",
-          "series.series_name",
-        ])
-        .where("campus.campus_name", "=", campus)
-        .where("books.isbn_list", "like", `%${isbn}%`);
+  public async getBasicBookByFilter(
+    filterQueryList: FilterListItem[],
+    isbn: string,
+    campus: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        // Run SQL stuff
+        let dbQuery = this.db
+          .selectFrom("books")
+          .innerJoin("inventory", "inventory.book_id", "books.id")
+          .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
+          .leftJoin("audiences", "audiences.id", "books.audience_id")
+          .leftJoin("series", "series.id", "books.series_id")
+          .leftJoin("campus", "campus.id", "inventory.campus_id")
+          .select([
+            "books.id",
+            "books.book_title",
+            "books.author",
+            "genre_types.genre_name",
+            "series.series_name",
+          ])
+          .where("campus.campus_name", "=", campus)
+          .where("books.isbn_list", "like", `%${isbn}%`);
 
-      if (filterQueryList.length > 0) {
-        for (const filter of filterQueryList) {
-          dbQuery = dbQuery.where(filter.key, "in", filter.value);
+        if (filterQueryList.length > 0) {
+          for (const filter of filterQueryList) {
+            // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
+            dbQuery = dbQuery.where(filter.key as any, "=", filter.value as any);
+          }
         }
-      }
 
-      const dbResult = await dbQuery.executeTakeFirst();
-      return new SuccessResponse("successfully grabbed book", dbResult);
-    } catch (error) {
-      return new ServerErrorResponse(
-        `Failed to retrieve book with filter queries: Error ${error.message}`,
-        500
-      );
+        // console.log(dbQuery.compile().sql);
+        const dbResult = await dbQuery.executeTakeFirst();
+        if (!dbResult) {
+          return new SuccessResponse(
+            `No book found with isbn ${isbn} and campus ${campus} matching filters`
+          );
+        }
+        return new SuccessResponse(
+          `Successfully retrieved book with isbn ${isbn} and campus ${campus} matching filters`,
+          dbResult
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve book with filter queries: Error ${error.message}`
+        );
+      }
     }
   }
 
-  public async getAllISBNs(filterQueryList, campus): Promise<Response<any>> {
-    try {
-      let dbQuery = this.db
-        .selectFrom("books")
-        .distinct()
-        .select("isbn_list")
-        .innerJoin("inventory", "inventory.book_id", "books.id")
-        .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
-        .leftJoin("audiences", "audiences.id", "books.audience_id")
-        .leftJoin("campus", "campus.id", "inventory.campus_id")
-        .where("campus.campus_name", "=", campus);
+  public async getAllISBNs(
+    filterQueryList: FilterListItem[],
+    campus: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        let dbQuery = this.db
+          .selectFrom("books")
+          .distinct()
+          .select("isbn_list")
+          .innerJoin("inventory", "inventory.book_id", "books.id")
+          .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
+          .leftJoin("audiences", "audiences.id", "books.audience_id")
+          .leftJoin("campus", "campus.id", "inventory.campus_id")
+          .where("campus.campus_name", "=", campus);
 
-      if (filterQueryList.length > 0) {
-        for (const filter of filterQueryList) {
-          dbQuery = dbQuery.where(filter.key, "in", filter.value);
+        if (filterQueryList.length > 0) {
+          for (const filter of filterQueryList) {
+            // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
+            dbQuery = dbQuery.where(filter.key as any, "=", filter.value as any);
+          }
         }
-      }
 
-      const dbResult = await dbQuery.execute();
-      return new SuccessResponse("successfully retrieved all isbns", dbResult);
-    } catch (error) {
-      return new ServerErrorResponse(
-        `Failed to retrieve all isbns with filter queries: Error ${error.message}`,
-        500
-      );
+        const dbResult = await dbQuery.execute();
+        if (!dbResult || dbResult.length === 0) {
+          return new SuccessResponse(
+            `No isbns found on campus ${campus} matching provided filters`
+          );
+        }
+        return new SuccessResponse(
+          `Successfully retrieved all isbns on campus ${campus} matching filters`,
+          dbResult
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve all isbns with filter queries: Error ${error.message}`
+        );
+      }
     }
   }
 }

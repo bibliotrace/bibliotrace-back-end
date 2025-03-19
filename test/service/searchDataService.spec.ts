@@ -34,8 +34,8 @@ describe("Search data service testing suite", () => {
             { isbn_list: "987654321" },
             { isbn_list: "123456789|0987654321" },
           ]);
-        } else if (filter[0] != null && filter[0].value === 'chaos') {
-          return new ServerErrorResponse('ouch', 500);
+        } else if (filter[0] != null && filter[0].value === "chaos") {
+          return new ServerErrorResponse("ouch", 500);
         } else {
           return new SuccessResponse("We kinda did it", []);
         }
@@ -51,13 +51,23 @@ describe("Search data service testing suite", () => {
 
   test("Retreive basic metadata call for a valid book that matches filters", async () => {
     const result = await searchDataService.retrieveBasicMetadata(
-      [{}],
+      [
+        {
+          key: "",
+          value: "",
+        },
+      ],
       "12345||helloWorld",
       "Lehi"
     );
 
     expect(daoFactoryMock.bookDao.getBasicBookByFilter).toHaveBeenCalledWith(
-      [{}],
+      [
+        {
+          key: "",
+          value: "",
+        },
+      ],
       "12345",
       "Lehi"
     );
@@ -117,7 +127,7 @@ describe("Search data service testing suite", () => {
 
   test("Retrieve all ISBNs with valid everything, but nothing comes back", async () => {
     const result = await searchDataService.retrieveAllISBNs(
-    [{ key: "genre", value: "impossible" }],
+      [{ key: "genre", value: "impossible" }],
       "Salt Lake City"
     );
 
@@ -130,10 +140,13 @@ describe("Search data service testing suite", () => {
   });
 
   test("Retrieve all ISBNs with valid everything, but the db fails", async () => {
-    const result = await searchDataService.retrieveAllISBNs([{ key: 'hello', value: 'chaos' }], 'Salt Lake City')
+    const result = await searchDataService.retrieveAllISBNs(
+      [{ key: "hello", value: "chaos" }],
+      "Salt Lake City"
+    );
 
     expect(daoFactoryMock.bookDao.getAllISBNs).toHaveBeenCalledWith(
-    [{ key: "hello", value: "chaos" }],
+      [{ key: "hello", value: "chaos" }],
       "Salt Lake City"
     );
     expect(result.statusCode).toEqual(500);
