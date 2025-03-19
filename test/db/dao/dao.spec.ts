@@ -1558,7 +1558,38 @@ describe("DAO testing suite", () => {
       });
     });
 
-    describe("InventoryDao tests", () => {});
+    describe("InventoryDao tests", () => {
+      test("Successful deletion of inventory item on checkout", async () => {
+        const response = await inventoryDao.checkout(dummyInventory.qr, dummyInventory.campus_id);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(`${dummyInventory.qr} checked out successfully`);
+      });
+
+      test("Checkout of nonexistent QR code does not modify database", async () => {
+        const response = await inventoryDao.checkout("invalid_qr", dummyInventory.campus_id);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(
+          `Inventory with qr invalid_qr and campus id ${dummyInventory.campus_id} not found to check out`
+        );
+      });
+
+      test("Checkout of nonexistent campus id does not modify database", async () => {
+        const response = await inventoryDao.checkout(dummyInventory.qr, 100);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(
+          `Inventory with qr ${dummyInventory.qr} and campus id 100 not found to check out`
+        );
+      });
+    });
 
     describe("RestockListDao tests", () => {});
 
