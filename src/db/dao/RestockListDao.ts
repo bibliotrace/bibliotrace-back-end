@@ -16,7 +16,7 @@ class RestockListDao extends Dao<RestockList, number> {
 
   public async addRestockListItem(entity: RestockList, transaction?: Transaction<Database>) {
     if (transaction) {
-      return new ServerErrorResponse<RestockList>("Transactions not supported yet");
+      return new ServerErrorResponse<RestockList>("Transactions are not supported yet");
     } else {
       try {
         await this.db
@@ -42,7 +42,7 @@ class RestockListDao extends Dao<RestockList, number> {
     transaction?: Transaction<Database>
   ): Promise<Response<RestockList>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet");
     } else {
       try {
         const result = await this.db

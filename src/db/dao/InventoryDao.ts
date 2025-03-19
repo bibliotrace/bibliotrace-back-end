@@ -21,7 +21,7 @@ class InventoryDao extends Dao<Inventory, string> {
     transaction?: Transaction<Database>
   ): Promise<Response<Checkout>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db

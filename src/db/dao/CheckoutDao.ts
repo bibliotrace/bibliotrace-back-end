@@ -19,7 +19,7 @@ class CheckoutDao extends Dao<Checkout, string> {
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db

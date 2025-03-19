@@ -139,6 +139,8 @@ describe("DAO testing suite", () => {
   let dummyUserRole2: UserRole;
   let dummyUserRoleNullable: UserRole;
 
+  let mockTransaction: Transaction<Database>;
+
   beforeAll(async () => {
     await TestConnectionManager.initialize();
     await TestConnectionManager.runCreateTestSQL();
@@ -582,6 +584,8 @@ describe("DAO testing suite", () => {
       ["Shopping_list", { entity: dummyShoppingListNullable, dao: shoppingListDao }],
       ["Restock_list", { entity: dummyRestockListNullable, dao: restockListDao }],
     ]);
+
+    mockTransaction = jest.fn() as unknown as Transaction<Database>;
   });
 
   afterAll(async () => {
@@ -1385,7 +1389,7 @@ describe("DAO testing suite", () => {
   // this would ensure that new DAO methods would include the ServerErrorResponse logic
   // however, this requires reflection voodoo and is well beyond the scope of this project
   test("Transaction present in any DAO method returns a ServerErrorResponse", async () => {
-    const mockTransaction = jest.fn() as unknown as Transaction<Database>;
+    //const mockTransaction = jest.fn() as unknown as Transaction<Database>;
 
     for (const [entityName, { entity, dao }] of entityDaoMap) {
       const response = await dao.create(entity, mockTransaction);
@@ -1486,6 +1490,14 @@ describe("DAO testing suite", () => {
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(`No book found with isbn invalid_isbn`);
         });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await bookDao.getBookByIsbn(
+            customBook.isbn_list.split("|")[0],
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
       });
 
       describe("Get book tags by ISBN tests", () => {
@@ -1510,6 +1522,14 @@ describe("DAO testing suite", () => {
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(`No book found with isbn invalid_isbn`);
         });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await bookDao.getBookTagsByIsbn(
+            customBook.isbn_list.split("|")[0],
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
       });
 
       describe("Get book by name tests", () => {
@@ -1532,6 +1552,11 @@ describe("DAO testing suite", () => {
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(`No book found with name invalid_name`);
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await bookDao.getBookByName(dummyBook.book_title, mockTransaction);
+          expectTransactionFailure(response);
         });
       });
     });
@@ -1556,6 +1581,11 @@ describe("DAO testing suite", () => {
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(`No checkout found with qr code invalid_qr to remove`);
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await checkoutDao.checkin(dummyCheckout.qr, mockTransaction);
+          expectTransactionFailure(response);
         });
       });
     });
@@ -1592,6 +1622,15 @@ describe("DAO testing suite", () => {
             `Inventory with qr ${dummyInventory.qr} and campus id 100 not found to check out`
           );
         });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await inventoryDao.checkout(
+            dummyInventory.qr,
+            dummyInventory.campus_id,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
       });
     });
 
@@ -1625,6 +1664,14 @@ describe("DAO testing suite", () => {
           );
 
           dummyRestockList2.book_id = 12;
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await restockListDao.addRestockListItem(
+            dummyRestockList,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
         });
 
         // In the context that the addRestockListItem method is called there is already validation to see if the book id exists
@@ -1674,6 +1721,15 @@ describe("DAO testing suite", () => {
           expect(response.message).toContain(
             `Restock item with book id ${dummyRestockList.book_id} and campus id 100 not found to remove`
           );
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await restockListDao.deleteRestockListItem(
+            dummyRestockList.book_id,
+            dummyRestockList.campus_id,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
         });
       });
     });
