@@ -1558,8 +1558,6 @@ describe("DAO testing suite", () => {
       });
     });
 
-    describe("GenreTypeDao tests", () => {});
-
     describe("InventoryDao tests", () => {});
 
     describe("RestockListDao tests", () => {});
