@@ -19,6 +19,18 @@ class RestockListDao extends Dao<RestockList, number> {
       return new ServerErrorResponse<RestockList>("Transactions are not supported yet");
     } else {
       try {
+        const campusExists = await this.db
+          .selectFrom("campus") // Ensure this matches the actual campus table name
+          .select("id")
+          .where("id", "=", entity.campus_id)
+          .executeTakeFirst();
+
+        if (!campusExists) {
+          return new ServerErrorResponse<RestockList>(
+            `Invalid campus_id ${entity.campus_id}. Campus does not exist.`
+          );
+        }
+
         await this.db
           .insertInto(this.tableName as keyof Database)
           .onDuplicateKeyUpdate({ quantity: entity.quantity })

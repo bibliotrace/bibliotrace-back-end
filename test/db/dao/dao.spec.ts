@@ -1666,6 +1666,30 @@ describe("DAO testing suite", () => {
           dummyRestockList2.book_id = 12;
         });
 
+        test("Failed add of restock item with invalid book id", async () => {
+          const invalidRestockList = { ...dummyRestockList };
+          invalidRestockList.book_id = 100;
+          const response = await restockListDao.addRestockListItem(invalidRestockList);
+          console.log(response);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(ServerErrorResponse);
+          expect(response.statusCode).toBe(500);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`Failed to create restock item with error`);
+        });
+
+        test.only("Failed add of restock item with invalid campus id", async () => {
+          const invalidRestockList = { ...dummyRestockList };
+          invalidRestockList.campus_id = 100;
+          const response = await restockListDao.addRestockListItem(invalidRestockList);
+          console.log(response);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(ServerErrorResponse);
+          expect(response.statusCode).toBe(500);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`Invalid campus_id 100. Campus does not exist.`);
+        });
+
         test("Transaction returns a ServerErrorResponse", async () => {
           const response = await restockListDao.addRestockListItem(
             dummyRestockList,
@@ -1673,9 +1697,6 @@ describe("DAO testing suite", () => {
           );
           expectTransactionFailure(response);
         });
-
-        // In the context that the addRestockListItem method is called there is already validation to see if the book id exists
-        // thus that is not tested here, especially because this method doesn't actually check if the book id exists
       });
 
       describe("Delete restock list item tests", () => {
