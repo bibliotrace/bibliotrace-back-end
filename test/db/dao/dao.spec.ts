@@ -309,18 +309,15 @@ describe("DAO testing suite", () => {
     dummyGenre = {
       id: 10,
       genre_name: "Fantasy",
-      campus_id: null,
     };
 
     dummyGenre2 = {
       id: 12,
       genre_name: "Adventure",
-      campus_id: null,
     };
 
     dummyGenreNullable = {
       genre_name: "Sci-Fi",
-      campus_id: null,
     };
 
     dummyInventory = {
@@ -463,18 +460,15 @@ describe("DAO testing suite", () => {
     dummyTag = {
       id: 10,
       tag_name: "Hairy Porter",
-      campus_id: null,
     };
 
     dummyTag2 = {
       id: 12,
       tag_name: "Secrets of the Chamber",
-      campus_id: null,
     };
 
     dummyTagNullable = {
       tag_name: "Askaban's Prisoner",
-      campus_id: null,
     };
 
     dummyUser = {

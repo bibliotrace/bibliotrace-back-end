@@ -1,4 +1,4 @@
-USE bibliotrace_v3_test;
+USE bibliotrace_v3;
 
 -- Modify data as needed for tests, this will be run at initialization of bibliotrace service
 
@@ -50,38 +50,38 @@ VALUES
 
 
 INSERT INTO book_genre (book_id, genre_id) VALUES
-(1, 5), -- Harry Potter and the Sorcerer's Stone -> Fantasy
-(2, 5), -- Harry Potter and the Chamber of Secrets -> Fantasy
-(3, 5), -- Harry Potter and the Prisoner of Azkaban -> Fantasy
-(4, 5), -- Harry Potter and the Goblet of Fire -> Fantasy
-(5, 5), -- Harry Potter and the Order of the Phoenix -> Fantasy
-(6, 5), -- Harry Potter and the Half-Blood Prince -> Fantasy
-(7, 5), -- Harry Potter and the Deathly Hallows -> Fantasy
-(8, 5), -- Percy Jackson & The Olympians: The Lightning Thief -> Fantasy
-(9, 5), -- Percy Jackson & The Olympians: The Sea of Monsters -> Fantasy
-(10, 5), -- Percy Jackson & The Olympians: The Titan's Curse -> Fantasy
-(11, 5), -- Percy Jackson & The Olympians: The Battle of the Labyrinth -> Fantasy
-(12, 5), -- Percy Jackson & The Olympians: The Last Olympian -> Fantasy
-(13, 5), -- The Hunger Games -> Fantasy
-(14, 5), -- Catching Fire -> Fantasy
-(15, 5); -- Mockingjay -> Fantasy
+(1, 5), 
+(2, 5), 
+(3, 5), 
+(4, 5), 
+(5, 5), 
+(6, 5), 
+(7, 5), 
+(8, 5), 
+(9, 5), 
+(10, 5),
+(11, 5),
+(12, 5),
+(13, 5),
+(14, 5),
+(15, 5);
 
 INSERT INTO book_tag (book_id, tag_id) VALUES
-(1, 1), -- Harry Potter and the Sorcerer's Stone -> Adventure
-(2, 1), -- Harry Potter and the Chamber of Secrets -> Adventure
-(3, 1), -- Harry Potter and the Prisoner of Azkaban -> Adventure
-(4, 1), -- Harry Potter and the Goblet of Fire -> Adventure
-(5, 1), -- Harry Potter and the Order of the Phoenix -> Adventure
-(6, 1), -- Harry Potter and the Half-Blood Prince -> Adventure
-(7, 1), -- Harry Potter and the Deathly Hallows -> Adventure
-(8, 1), -- Percy Jackson & The Olympians: The Lightning Thief -> Mythology
-(9, 1), -- Percy Jackson & The Olympians: The Sea of Monsters -> Mythology
-(10, 1), -- Percy Jackson & The Olympians: The Titan's Curse -> Mythology
-(11, 1), -- Percy Jackson & The Olympians: The Battle of the Labyrinth -> Mythology
-(12, 1), -- Percy Jackson & The Olympians: The Last Olympian -> Mythology
-(13, 3), -- The Hunger Games -> Dystopia
-(14, 3), -- Catching Fire -> Dystopia
-(15, 3); -- Mockingjay -> Dystopia
+(1, 1), 
+(2, 1), 
+(3, 1), 
+(4, 1), 
+(5, 1), 
+(6, 1), 
+(7, 1), 
+(8, 1), 
+(9, 1), 
+(10, 1),
+(11, 1),
+(12, 1),
+(13, 3),
+(14, 3),
+(15, 3);
 
 INSERT INTO location (campus_id, location_name) VALUES 
 (1, 'storage'),
