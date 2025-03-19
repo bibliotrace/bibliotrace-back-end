@@ -2,9 +2,6 @@ import { Kysely } from "kysely";
 import Database from "../schema/Database";
 import { Campus } from "../schema/Campus";
 import Dao from "./Dao";
-import Response from "../../response/Response";
-import ServerErrorResponse from "../../response/ServerErrorResponse";
-import SuccessResponse from "../../response/SuccessResponse";
 
 class CampusDao extends Dao<Campus, number> {
   constructor(db: Kysely<Database>) {

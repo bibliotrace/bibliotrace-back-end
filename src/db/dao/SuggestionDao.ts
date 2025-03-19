@@ -1,10 +1,7 @@
-import { Kysely, Transaction } from "kysely";
+import { Kysely } from "kysely";
 import Database from "../schema/Database";
 import { Suggestion } from "../schema/Suggestion";
 import Dao from "./Dao";
-import Response from "../../response/Response";
-import ServerErrorResponse from "../../response/ServerErrorResponse";
-import SuccessResponse from "../../response/SuccessResponse";
 
 class SuggestionDao extends Dao<Suggestion, string> {
   constructor(db: Kysely<Database>) {
