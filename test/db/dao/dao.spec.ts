@@ -1651,7 +1651,9 @@ describe("DAO testing suite", () => {
         test("Duplicate book id updates entire row entry", async () => {
           await restockListDao.addRestockListItem(dummyRestockList);
           dummyRestockList2.book_id = dummyRestockList.book_id;
+          dummyRestockList2.campus_id = dummyRestockList.campus_id;
           const response = await restockListDao.addRestockListItem(dummyRestockList2);
+          console.log(response);
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
