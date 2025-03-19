@@ -1536,7 +1536,27 @@ describe("DAO testing suite", () => {
       });
     });
 
-    describe("CheckoutDao tests", () => {});
+    describe("CheckoutDao tests", () => {
+      test("Successful deletion from checkout database on checkin", async () => {
+        const response = await checkoutDao.checkin(dummyCheckout.qr);
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(
+          `${capitalizeFirstLetter(checkoutDao.entityName)} deleted successfully`
+        );
+      });
+
+      test("Checkout of nonexistent QR code does not modify database", async () => {
+        const response = await checkoutDao.checkin("invalid_qr");
+        expect(response).toBeDefined();
+        expect(response).toBeInstanceOf(SuccessResponse);
+        expect(response.statusCode).toBe(200);
+        expect(response.object).toBeUndefined();
+        expect(response.message).toContain(`No checkout found with qr code invalid_qr to remove`);
+      });
+    });
 
     describe("GenreTypeDao tests", () => {});
 
