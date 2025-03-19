@@ -104,12 +104,6 @@ class InventoryDao extends Dao<Inventory, string> {
       return new ServerErrorResponse("Transactions are not supported yet");
     } else {
       try {
-        const locationExists = await this.db
-          .selectFrom("location" as keyof Database)
-          .selectAll()
-          .where("id", "=", location)
-          .executeTakeFirst();
-
         const result = await this.db
           .updateTable(this.tableName as keyof Database)
           .where("qr", "=", qr as any)
