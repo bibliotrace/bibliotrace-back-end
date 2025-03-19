@@ -11,16 +11,17 @@ class CampusDao extends Dao<Campus, number> {
     this.entityName = "campus";
   }
 
-  async convertCampusStringToId(campus: string): Promise<number> {
+  // this function is literally just a reference to an existing DAO method plus is never used, thus I am commenting it out
+  /*async convertCampusStringToId(campus: string): Promise<Response<any>> {
     try {
       const campusResult = await this.getByKeyAndValue('campus_name', campus)
       if (campusResult != null && campusResult.object != null && campusResult.statusCode === 200) {
-        return campusResult.object.id
+        return new SuccessResponse("", campusResult.object.id)
       }
     } catch (error) {
-      throw new Error(`Error trying to get campus ID from campus string: ${error.message}`)
+      return new ServerErrorResponse(`Error trying to get campus ID from campus string: ${error.message}`)
     }
-  }
+  }*/
 }
 
 export default CampusDao;

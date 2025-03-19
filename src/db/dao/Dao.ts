@@ -98,7 +98,7 @@ abstract class Dao<E, K extends number | string> {
 
   public async getAllByKeyAndValue(
     key: string,
-    value: string,
+    value: string | number,
     transaction?: Transaction<Database>
   ): Promise<Response<E[]>> {
     if (transaction) {

@@ -11,6 +11,9 @@ class GenreTypeDao extends Dao<GenreType, number> {
     this.entityName = "genre type";
   }
 
+  // this method is never called so I am commenting it out, if you need it make sure to write tests for it
+  // this should probably use Response objects anyways
+  /*
   async convertGenreStringToId(genreString: string): Promise<number> {
     try {
       const genreResult = await this.getByKeyAndValue('genre_name', genreString)
@@ -23,7 +26,7 @@ class GenreTypeDao extends Dao<GenreType, number> {
     } catch (error) {
       throw new Error(`Error trying to get Genre Type ID from Genre string: ${error.message}`)
     }
-  }
+  }*/
 }
 
 export default GenreTypeDao;

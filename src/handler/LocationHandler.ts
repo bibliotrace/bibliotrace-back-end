@@ -15,7 +15,7 @@ export default class LocationHandler {
     this.bookManagementService = bookManagementService;
   }
 
-  public async getLocationsForCampus(authData): Promise<Response<Campus | Location[]| string>> {
+  public async getLocationsForCampus(authData): Promise<Response<Campus | Location[] | string>> {
     if (!authData.userRole?.campus) {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
@@ -28,12 +28,12 @@ export default class LocationHandler {
 
   public async addNewLocation(authData, newLocationName): Promise<Response<any>> {
     if (!authData.userRole?.campus) {
-      return new RequestErrorResponse("Missing Campus Data in Authentication", 400); 
+      return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
     if (!authData.userRole?.roleType) {
-      return new RequestErrorResponse("Missing UserRole Auth Data", 400); 
+      return new RequestErrorResponse("Missing UserRole Auth Data", 400);
     }
-    if (authData.userRole?.roleType !== 'Admin') {
+    if (authData.userRole?.roleType !== "Admin") {
       return new RequestErrorResponse("Only Admins are allowed to do this", 403);
     }
 
@@ -41,8 +41,8 @@ export default class LocationHandler {
       newLocationName,
       authData.userRole.campus
     );
-    
-    return locationResponse
+
+    return locationResponse;
   }
 
   public async setBookLocationInInventory(body, auth): Promise<Response<any>> {
@@ -51,9 +51,8 @@ export default class LocationHandler {
     const targetBook = await this.bookManagementService.getByQr(body.qr_code);
     if (auth.userRole.roleType === "Admin") {
       return new SuccessResponse(
-        (
-          await this.bookManagementService.setLocationByQr(body.qr_code, body.location_id)
-        )._message,
+        // TODO: if this breaks make sure that the location_id is a number cause I changed the function signatures to match that assumption
+        (await this.bookManagementService.setLocationByQr(body.qr_code, body.location_id))._message,
         targetBook
       );
     }
