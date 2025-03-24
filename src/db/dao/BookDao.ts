@@ -158,7 +158,13 @@ class BookDao extends Dao<Book, number> {
         }
 
         const dbResult = await dbQuery.executeTakeFirst();
-        return new SuccessResponse("successfully grabbed book", dbResult);
+        if (dbResult) {
+          return new SuccessResponse("successfully grabbed book", dbResult);
+        } else {
+          return new SuccessResponse(
+            `No book found with isbn ${isbn} and campus ${campus} matching filters`
+          );
+        }
       } catch (error) {
         return new ServerErrorResponse(
           `Failed to retrieve book with filter queries: Error ${error.message}`,
