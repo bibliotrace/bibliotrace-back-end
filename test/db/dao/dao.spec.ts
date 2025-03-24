@@ -142,6 +142,8 @@ describe("DAO testing suite", () => {
   let dummyUserRole2: UserRole;
   let dummyUserRoleNullable: UserRole;
 
+  let mockTransaction: Transaction<Database>;
+
   beforeAll(async () => {
     await TestConnectionManager.initialize();
     await TestConnectionManager.runCreateTestSQL();
@@ -568,6 +570,8 @@ describe("DAO testing suite", () => {
       ["Shopping_list", { entity: dummyShoppingListNullable, dao: shoppingListDao }],
       ["Restock_list", { entity: dummyRestockListNullable, dao: restockListDao }],
     ]);
+
+    mockTransaction = jest.fn() as unknown as Transaction<Database>;
   });
 
   afterAll(async () => {
@@ -1350,7 +1354,7 @@ describe("DAO testing suite", () => {
   // this would ensure that new DAO methods would include the ServerErrorResponse logic
   // however, this requires reflection voodoo and is well beyond the scope of this project
   test("Transaction present in any DAO method returns a ServerErrorResponse", async () => {
-    const mockTransaction = jest.fn() as unknown as Transaction<Database>;
+    //const mockTransaction = jest.fn() as unknown as Transaction<Database>;
 
     for (const [entityName, { entity, dao }] of entityDaoMap) {
       const response = await dao.create(entity, mockTransaction);
@@ -1415,20 +1419,633 @@ describe("DAO testing suite", () => {
   });
 
   describe("DAO-specific tests (for DAOs that have their own custom queries)", () => {
-    describe("BookDao tests", () => {});
+    describe("BookDao tests", () => {
+      let customBook: any = {
+        audience_name: "Potterheads",
+        series_name: "Harry Potter",
+        genre_name: "Fantasy",
+      };
 
-    describe("CampusDao tests", () => {});
+      beforeEach(async () => {
+        // for some reason the spread operator doesn't work outside of a specific test context so this is a dumb workaround
+        customBook = {
+          ...customBook,
+          ...dummyBook,
+        };
+      });
 
-    describe("CheckoutDao tests", () => {});
+      describe("Get book by ISBN tests", () => {
+        test("Successful retrieval of book by ISBN", async () => {
+          const response = await bookDao.getBookByIsbn(customBook.isbn_list.split("|")[0]);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          parseObjectForEquality(response.object, customBook);
+          expect(response.message).toContain(
+            `Successfully retrieved book with isbn ${customBook.isbn_list.split("|")[0]}`
+          );
+        });
 
-    describe("GenreTypeDao tests", () => {});
+        test("Retrieval of book with invalid ISBN is empty", async () => {
+          const response = await bookDao.getBookByIsbn("invalid_isbn");
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No book found with isbn invalid_isbn`);
+        });
 
-    describe("InventoryDao tests", () => {});
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await bookDao.getBookByIsbn(
+            customBook.isbn_list.split("|")[0],
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
+      });
 
-    describe("RestockListDao tests", () => {});
+      describe("Get book tags by ISBN tests", () => {
+        test("Successful retrieval of book tags by ISBN", async () => {
+          const { id, ...extractedTag } = dummyTag;
+          const response = await bookDao.getBookTagsByIsbn(customBook.isbn_list.split("|")[0]);
+          console.log(response);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          parseArrayForEquality(response, [extractedTag]);
+          expect(response.message).toContain(
+            `Successfully retrieved tags for book with isbn ${customBook.isbn_list.split("|")[0]}`
+          );
+        });
 
-    describe("ShoppingListDao tests", () => {});
+        test("Retrieval of book tags with invalid ISBN is empty", async () => {
+          const response = await bookDao.getBookTagsByIsbn("invalid_isbn");
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No book found with isbn invalid_isbn`);
+        });
 
-    describe("SuggestionDao tests", () => {});
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await bookDao.getBookTagsByIsbn(
+            customBook.isbn_list.split("|")[0],
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
+      });
+
+      describe("Get book by name tests", () => {
+        test("Successful retrieval of book by name", async () => {
+          const response = await bookDao.getBookByName(dummyBook.book_title);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          parseObjectForEquality(response.object, dummyBook);
+          expect(response.message).toContain(
+            `Successfully retrieved book with name ${dummyBook.book_title}`
+          );
+        });
+
+        test("Retrieval of book with invalid name is empty", async () => {
+          const response = await bookDao.getBookByName("invalid_name");
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No book found with name invalid_name`);
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await bookDao.getBookByName(dummyBook.book_title, mockTransaction);
+          expectTransactionFailure(response);
+        });
+      });
+
+      describe("getBasicBookByFilter tests", () => {
+        test("Successful retrieval of book with valid campus and ISBN", async () => {
+          const filterQueryList = [];
+          const isbn = "9780747532743";
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          expect(response.message).toContain(
+            `Successfully retrieved book with isbn ${isbn} and campus ${campus} matching filters`
+          );
+        });
+
+        test("Successful retrieval of book with filters applied", async () => {
+          const filterQueryList = [{ key: "genre_types.genre_name", value: "Fantasy" }];
+          const isbn = "9780747532743";
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          expect(response.message).toContain(
+            `Successfully retrieved book with isbn ${isbn} and campus ${campus} matching filters`
+          );
+        });
+
+        test("Failed retrieval with invalid campus", async () => {
+          const filterQueryList = [];
+          const isbn = "9780747532743";
+          const campus = "InvalidCampus";
+
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `No book found with isbn ${isbn} and campus ${campus} matching filters`
+          );
+        });
+
+        test("Failed retrieval with invalid ISBN", async () => {
+          const filterQueryList = [];
+          const isbn = "invalid_isbn";
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `No book found with isbn ${isbn} and campus ${campus} matching filters`
+          );
+        });
+
+        test("Failed retrieval with invalid filters", async () => {
+          const filterQueryList = [{ key: "genre_types.genre_name", value: "InvalidGenre" }];
+          const isbn = "9780747532743";
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `No book found with isbn ${isbn} and campus ${campus} matching filters`
+          );
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const filterQueryList = [];
+          const isbn = "9780747532743";
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getBasicBookByFilter(
+            filterQueryList,
+            isbn,
+            campus,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
+      });
+
+      describe("Get all ISBNs tests", () => {
+        // These tests should be written a little more carefully to check if multiple ISBN lists can be coalesced into the array
+        // but for right now I don't want to deal with that
+        test("Successful retrieval of all ISBNs with valid campus", async () => {
+          const filterQueryList = [];
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getAllISBNs(filterQueryList, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          parseArrayForEquality(response, [{ isbn_list: dummyBook.isbn_list }]);
+          expect(response.message).toContain(
+            `Successfully retrieved all isbns on campus ${campus} matching filters`
+          );
+        });
+
+        test("Successful retrieval of all ISBNs with filters applied", async () => {
+          const filterQueryList = [
+            { key: "genre_types.genre_name", value: "Fantasy" },
+            { key: "audiences.audience_name", value: "Potterheads" },
+          ];
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getAllISBNs(filterQueryList, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          parseArrayForEquality(response, [{ isbn_list: dummyBook.isbn_list }]);
+          expect(response.message).toContain(
+            `Successfully retrieved all isbns on campus ${campus} matching filters`
+          );
+        });
+
+        test("Failed retrieval with invalid campus", async () => {
+          const filterQueryList = [];
+          const campus = "InvalidCampus";
+
+          const response = await bookDao.getAllISBNs(filterQueryList, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `No isbns found on campus ${campus} matching provided filters`
+          );
+        });
+
+        test("Failed retrieval with invalid filters", async () => {
+          const filterQueryList = [
+            { key: "genre_types.genre_name", value: "InvalidGenre" },
+            { key: "audiences.audience_name", value: "InvalidAudience" },
+          ];
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getAllISBNs(filterQueryList, campus);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `No isbns found on campus ${campus} matching provided filters`
+          );
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const filterQueryList = [];
+          const campus = "Hogwarts";
+
+          const response = await bookDao.getAllISBNs(filterQueryList, campus, mockTransaction);
+          expectTransactionFailure(response);
+        });
+      });
+    });
+
+    describe("CheckoutDao tests", () => {
+      describe("Checkin tests", () => {
+        test("Successful deletion from checkout database on checkin", async () => {
+          const response = await checkoutDao.checkin(dummyCheckout.qr);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `${capitalizeFirstLetter(checkoutDao.entityName)} deleted successfully`
+          );
+        });
+
+        test("Checkout of nonexistent QR code does not modify database", async () => {
+          const response = await checkoutDao.checkin("invalid_qr");
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No checkout found with qr code invalid_qr to remove`);
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await checkoutDao.checkin(dummyCheckout.qr, mockTransaction);
+          expectTransactionFailure(response);
+        });
+      });
+    });
+
+    describe("InventoryDao tests", () => {
+      describe("Checkout tests", () => {
+        test("Successful deletion of inventory item on checkout", async () => {
+          const response = await inventoryDao.checkout(dummyInventory.qr, dummyInventory.campus_id);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`${dummyInventory.qr} checked out successfully`);
+        });
+
+        test("Checkout of nonexistent QR code does not modify database", async () => {
+          const response = await inventoryDao.checkout("invalid_qr", dummyInventory.campus_id);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Inventory with qr invalid_qr and campus id ${dummyInventory.campus_id} not found to check out`
+          );
+        });
+
+        test("Checkout of nonexistent campus id does not modify database", async () => {
+          const response = await inventoryDao.checkout(dummyInventory.qr, 100);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Inventory with qr ${dummyInventory.qr} and campus id 100 not found to check out`
+          );
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await inventoryDao.checkout(
+            dummyInventory.qr,
+            dummyInventory.campus_id,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
+      });
+
+      describe("Get book data from QR tests", () => {
+        test("Successful retrieval of book data with valid QR code", async () => {
+          dummyInventory.ttl = undefined; // we're getting rid of this field later anyways
+          const response = await inventoryDao.getBookDataFromQr(dummyInventory.qr);
+          console.log(response);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          expect(response.object).toEqual({
+            ...dummyInventory,
+            location_name: dummyLocation.location_name,
+            campus_name: dummyCampus.campus_name,
+            book_title: dummyBook.book_title,
+            author: dummyBook.author,
+            series_id: dummyBook.series_id,
+            series_name: dummySeries.series_name,
+            primary_genre_id: dummyGenre.id,
+            primary_genre_name: dummyGenre.genre_name,
+            isbn_list: dummyBook.isbn_list,
+          });
+          expect(response.message).toContain(
+            `Book data successfully retrieved for QR code ${dummyInventory.qr}`
+          );
+
+          dummyInventory.ttl = 10; // reset the field for now
+        });
+
+        test("Book data retrieval with invalid QR code is nonexistent", async () => {
+          const response = await inventoryDao.getBookDataFromQr("invalid_qr");
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`No book data found for QR code invalid_qr`);
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await inventoryDao.getBookDataFromQr(dummyInventory.qr, mockTransaction);
+          expectTransactionFailure(response);
+        });
+      });
+
+      describe("Set location tests", () => {
+        test("Successful update of location with valid QR code", async () => {
+          await campusDao.create(dummyCampus2);
+          await locationDao.create(dummyLocation2);
+
+          const qr = dummyInventory.qr;
+          const newLocation = dummyLocation2.id;
+
+          const response = await inventoryDao.setLocation(qr, newLocation);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined(); // because nothing is returned here there's not a good way to know if the db was actually updated
+          expect(response.message).toContain("Set location for qr successfully");
+        });
+
+        test("Update with invalid QR code does not modify database", async () => {
+          const qr = "invalid_qr";
+          const newLocation = dummyLocation2.id;
+
+          const response = await inventoryDao.setLocation(qr, newLocation);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.message).toContain(`No inventory found with qr ${qr} to update`);
+        });
+
+        test("Failed update with invalid location id", async () => {
+          const qr = dummyInventory.qr;
+          const newLocation = 100;
+
+          const response = await inventoryDao.setLocation(qr, newLocation);
+
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(ServerErrorResponse);
+          expect(response.statusCode).toBe(500);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`Error occurred during set location query: `);
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const qr = dummyInventory.qr;
+          const newLocation = dummyLocation2.id;
+
+          const response = await inventoryDao.setLocation(qr, newLocation, mockTransaction);
+          expectTransactionFailure(response);
+        });
+      });
+    });
+
+    describe("RestockListDao tests", () => {
+      describe("Add restock list item tests", () => {
+        test("Successful addition of restock item to restock list", async () => {
+          const response = await restockListDao.addRestockListItem(dummyRestockList);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          expect(response.object).toEqual(dummyRestockList);
+          expect(response.message).toContain(
+            `${capitalizeFirstLetter(restockListDao.entityName)} created/updated successfully`
+          );
+        });
+
+        test("Duplicate book id updates entire row entry", async () => {
+          await restockListDao.addRestockListItem(dummyRestockList);
+          dummyRestockList2.book_id = dummyRestockList.book_id;
+          dummyRestockList2.campus_id = dummyRestockList.campus_id;
+          const response = await restockListDao.addRestockListItem(dummyRestockList2);
+          console.log(response);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeDefined();
+          expect(response.object).toEqual({
+            ...dummyRestockList2,
+          });
+          expect(response.message).toContain(
+            `${capitalizeFirstLetter(restockListDao.entityName)} created/updated successfully`
+          );
+
+          dummyRestockList2.book_id = 12;
+        });
+
+        test("Failed add of restock item with invalid book id", async () => {
+          const invalidRestockList = { ...dummyRestockList };
+          invalidRestockList.book_id = 100;
+          const response = await restockListDao.addRestockListItem(invalidRestockList);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(ServerErrorResponse);
+          expect(response.statusCode).toBe(500);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`Failed to create restock item with error`);
+        });
+
+        test("Failed add of restock item with invalid campus id", async () => {
+          const invalidRestockList = { ...dummyRestockList };
+          invalidRestockList.campus_id = 100;
+          const response = await restockListDao.addRestockListItem(invalidRestockList);
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(ServerErrorResponse);
+          expect(response.statusCode).toBe(500);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(`Invalid campus_id 100. Campus does not exist.`);
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await restockListDao.addRestockListItem(
+            dummyRestockList,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
+      });
+
+      describe("Delete restock list item tests", () => {
+        test("Successful deletion of restock item from restock list", async () => {
+          await restockListDao.addRestockListItem(dummyRestockList);
+          const response = await restockListDao.deleteRestockListItem(
+            dummyRestockList.book_id,
+            dummyRestockList.campus_id
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Restock item with book id ${dummyRestockList.book_id} and campus id ${dummyRestockList.campus_id} removed successfully`
+          );
+        });
+
+        test("Deletion of restock list item with nonexistent book id does not modify database", async () => {
+          const response = await restockListDao.deleteRestockListItem(
+            100,
+            dummyRestockList.campus_id
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Restock item with book id 100 and campus id ${dummyRestockList.campus_id} not found to remove`
+          );
+        });
+
+        test("Deletion of restock list item with nonexistent campus id does not modify database", async () => {
+          await restockListDao.addRestockListItem(dummyRestockList);
+          const response = await restockListDao.deleteRestockListItem(
+            dummyRestockList.book_id,
+            100
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Restock item with book id ${dummyRestockList.book_id} and campus id 100 not found to remove`
+          );
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await restockListDao.deleteRestockListItem(
+            dummyRestockList.book_id,
+            dummyRestockList.campus_id,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
+      });
+    });
+
+    describe("ShoppingListDao tests", () => {
+      describe("Delete shopping list item tests", () => {
+        test("Successful deletion of shopping item from shopping list", async () => {
+          const response = await shoppingListDao.deleteShoppingListItem(
+            dummyShoppingList.book_id,
+            dummyShoppingList.campus_id
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Shopping item with book id ${dummyShoppingList.book_id} and campus id ${dummyShoppingList.campus_id} removed successfully`
+          );
+        });
+
+        test("Deletion of shopping list item with nonexistent book id does not modify database", async () => {
+          const response = await shoppingListDao.deleteShoppingListItem(
+            100,
+            dummyShoppingList.campus_id
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Shopping item with book id 100 and campus id ${dummyShoppingList.campus_id} not found to remove`
+          );
+        });
+
+        test("Deletion of shopping list item with nonexistent campus id does not modify database", async () => {
+          const response = await shoppingListDao.deleteShoppingListItem(
+            dummyShoppingList.book_id,
+            100
+          );
+          expect(response).toBeDefined();
+          expect(response).toBeInstanceOf(SuccessResponse);
+          expect(response.statusCode).toBe(200);
+          expect(response.object).toBeUndefined();
+          expect(response.message).toContain(
+            `Shopping item with book id ${dummyShoppingList.book_id} and campus id 100 not found to remove`
+          );
+        });
+
+        test("Transaction returns a ServerErrorResponse", async () => {
+          const response = await shoppingListDao.deleteShoppingListItem(
+            dummyShoppingList.book_id,
+            dummyShoppingList.campus_id,
+            mockTransaction
+          );
+          expectTransactionFailure(response);
+        });
+      });
+    });
   });
 });

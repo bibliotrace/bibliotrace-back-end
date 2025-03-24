@@ -137,14 +137,15 @@ export default class SearchRouteHandler {
   }
 
   // This function converts a filter string into a list of objects with the shape [{key, value}]
-  private async convertFilterStringToList(filters) {
-    const output = [];
+  private async convertFilterStringToList(filters): Promise<FilterListItem[]> {
+    const output: FilterListItem[] = [];
 
     if (filters != null) {
       for (let i = 0; i < filters.length; i++) {
         const targetKey = filters[i].queryKey;
         const targetVal = filters[i].queryValue;
-
+        // TODO: it seems a little hacky to just set the table name reference directly here
+        // maybe we should have a map of filter table names to their respective keys?
         if (targetKey == "Genre") {
           const genreStrings = targetVal.split(",");
           console.log("Genre Strings: ", genreStrings);
@@ -161,6 +162,11 @@ export default class SearchRouteHandler {
     }
     return output;
   }
+}
+
+export interface FilterListItem {
+  key: string;
+  value: string;
 }
 
 export interface ResultRow {

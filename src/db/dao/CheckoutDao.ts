@@ -19,13 +19,18 @@ class CheckoutDao extends Dao<Checkout, string> {
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        await this.db
+        const result = await this.db
           .deleteFrom(this.tableName as keyof Database)
           .where("qr", "=", qr_code)
           .execute();
+
+        if (result[0].numDeletedRows === 0n) {
+          return new SuccessResponse(`No checkout found with qr code ${qr_code} to remove`);
+        }
+
         return new SuccessResponse(
           `${this.capitalizeFirstLetter(this.entityName)} deleted successfully`
         );

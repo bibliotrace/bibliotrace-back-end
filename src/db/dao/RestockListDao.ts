@@ -16,22 +16,33 @@ class RestockListDao extends Dao<RestockList, number> {
 
   public async addRestockListItem(entity: RestockList, transaction?: Transaction<Database>) {
     if (transaction) {
-      return new ServerErrorResponse<RestockList>("Transactions not supported yet", 500);
+      return new ServerErrorResponse<RestockList>("Transactions are not supported yet");
     } else {
       try {
+        const campusExists = await this.db
+          .selectFrom("campus") // Ensure this matches the actual campus table name
+          .select("id")
+          .where("id", "=", entity.campus_id)
+          .executeTakeFirst();
+
+        if (!campusExists) {
+          return new ServerErrorResponse<RestockList>(
+            `Invalid campus_id ${entity.campus_id}. Campus does not exist.`
+          );
+        }
+
         await this.db
           .insertInto(this.tableName as keyof Database)
           .onDuplicateKeyUpdate({ quantity: entity.quantity })
           .values(entity)
           .execute();
         return new SuccessResponse(
-          `${this.capitalizeFirstLetter(this.entityName)} created successfully`,
+          `${this.capitalizeFirstLetter(this.entityName)} created/updated successfully`,
           entity
         );
       } catch (error) {
         return new ServerErrorResponse<RestockList>(
-          `Failed to create ${this.entityName} with error ${error.message}`,
-          500
+          `Failed to create ${this.entityName} with error ${error.message}`
         );
       }
     }
@@ -43,7 +54,7 @@ class RestockListDao extends Dao<RestockList, number> {
     transaction?: Transaction<Database>
   ): Promise<Response<RestockList>> {
     if (transaction) {
-      return new ServerErrorResponse("Transactions not supported yet", 500);
+      return new ServerErrorResponse("Transactions are not supported yet");
     } else {
       try {
         const result = await this.db
@@ -51,8 +62,17 @@ class RestockListDao extends Dao<RestockList, number> {
           .where("book_id", "=", book_id)
           .where("campus_id", "=", campus_id)
           .execute();
+
+        if (result[0].numDeletedRows === 0n) {
+          return new SuccessResponse(
+            `Restock item with book id ${book_id} and campus id ${campus_id} not found to remove`
+          );
+        }
+        // logic counting number of deleted items removed as there is no way for a duplicate entry with the same book_id and campus_id to exist
+        // if it did, the onDuplicateKeyUpdate would have updated the row instead of creating a new one
+        // so we can safely assume that the number of rows deleted on a successful delete is always 1
         return new SuccessResponse(
-          `${result.length} ${this.capitalizeFirstLetter(this.entityName)}(s) deleted successfully`
+          `Restock item with book id ${book_id} and campus id ${campus_id} removed successfully`
         );
       } catch (error) {
         return new ServerErrorResponse(

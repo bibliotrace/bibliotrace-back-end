@@ -1,4 +1,4 @@
-import { ResultRow } from "../handler/SearchRouteHandler";
+import { FilterListItem, ResultRow } from "../handler/SearchRouteHandler";
 import Response from "../response/Response";
 import DaoFactory from "../db/dao/DaoFactory";
 import SuccessResponse from "../response/SuccessResponse";
@@ -15,7 +15,7 @@ export default class SearchDataService {
   // It will then return basic metadata from various tables assuming the filters and campus
   // lockdowns let it through.
   async retrieveBasicMetadata(
-    filterQueryList, // Expected to be in the format { key: 'genre', value: 'Dystopian' }
+    filterQueryList: FilterListItem[], // Expected to be in the format { key: 'genre', value: 'Dystopian' }
     isbn: string, // Expected to be in the format "ISBN||CoverURL"
     campus: string
   ): Promise<Response<ResultRow>> {
