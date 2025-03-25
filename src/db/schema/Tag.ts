@@ -1,7 +1,6 @@
 interface Tag {
   id?: number;
-  book_id: number;
-  tag: string;
+  tag_name: string;
 }
 
 export type { Tag };

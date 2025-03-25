@@ -1,10 +1,6 @@
 USE bibliotrace_v3_test;
 
 -- Modify data as needed for tests, this will be run at initialization of bibliotrace service
-INSERT INTO genre_types (genre_name)
-VALUES ('Action-Adventure/Suspense'), ('Activity Book'), ('Board Book'), ('Dystopian'), ('Fantasy'), ('Fiction'), ('Graphic Novel'), 
-('Historical Fiction'), ('Leveled Reader'), ('Non-Fiction'), ('Paranormal'), ('Picture Book'), ('Romance'), ('Science Fiction'), 
-('Spanish'), ('Young Chapter Book');
 
 INSERT INTO campus (campus_name)
 VALUES ('Lehi'), ('Salt Lake City');
@@ -20,6 +16,17 @@ VALUES ('test', '$argon2id$v=19$m=65536,t=3,p=2$zNxBnZCVc7lpGE3LJTAOGA$0TS+loWwH
 
 INSERT INTO audiences (audience_name) 
 VALUES ('Board Books (0-2 Years)'), ('Picture Books (2-8 Years)'), ('Early Chapter Books (6-9 Years)'), ('Middle Grade (8-12 Years)'), ('Young Adult (12-18 Years)'), ('Advanced (16+ Years)');
+
+INSERT INTO genre (genre_name) VALUES
+('Action-Adventure/Suspense'), ('Activity Book'), ('Board Book'), ('Dystopian'), ('Fantasy'), ('Fiction'), ('Graphic Novel'), 
+('Historical Fiction'), ('Leveled Reader'), ('Non-Fiction'), ('Paranormal'), ('Picture Book'), ('Romance'), ('Science Fiction'), 
+('Spanish'), ('Young Chapter Book');
+
+-- Insert data into the 'tag' table
+INSERT INTO tag (tag_name) VALUES
+('Adventure'),
+('Mythology'),
+('Dystopia');
 
 INSERT INTO books (book_title, isbn_list, author, primary_genre_id, audience_id, pages, publish_date, short_description, language, img_callback)
 VALUES 
@@ -40,6 +47,41 @@ VALUES
 ('The Hunger Games', '9780439023481|9780439023528', 'Suzanne Collins', 4, 5, 374, 2008, 'In a dystopian future, Katniss Everdeen volunteers for the deadly Hunger Games.', 'English', NULL),
 ('Catching Fire', '9780439023498|9780439023528', 'Suzanne Collins', 4, 5, 391, 2009, 'Katniss and Peeta face a new challenge in the Quarter Quell.', 'English', NULL),
 ('Mockingjay', '9780439023511|9780439023528', 'Suzanne Collins', 4, 5, 390, 2010, 'Katniss becomes the symbol of the rebellion against the Capitol.', 'English', NULL);
+
+
+INSERT INTO book_genre (book_id, genre_id) VALUES
+(1, 5), 
+(2, 5), 
+(3, 5), 
+(4, 5), 
+(5, 5), 
+(6, 5), 
+(7, 5), 
+(8, 5), 
+(9, 5), 
+(10, 5),
+(11, 5),
+(12, 5),
+(13, 5),
+(14, 5),
+(15, 5);
+
+INSERT INTO book_tag (book_id, tag_id) VALUES
+(1, 1), 
+(2, 1), 
+(3, 1), 
+(4, 1), 
+(5, 1), 
+(6, 1), 
+(7, 1), 
+(8, 1), 
+(9, 1), 
+(10, 1),
+(11, 1),
+(12, 1),
+(13, 3),
+(14, 3),
+(15, 3);
 
 INSERT INTO location (campus_id, location_name) VALUES 
 (1, 'storage'),
