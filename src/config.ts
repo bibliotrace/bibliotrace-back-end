@@ -23,6 +23,8 @@ import LocationHandler from "./handler/LocationHandler";
 import ReportHandler from "./handler/ReportHandler";
 import ReportService from "./service/ReportService";
 import BookDataHandler from "./handler/BookDataHandler";
+import GenreTagService from "./service/GenreTagService";
+import GenreTagHandler from "./handler/GenreTagHandler";
 
 export class Config {
   static dependencies: ConfigTypes = {};
@@ -35,6 +37,7 @@ export class Config {
   static isbnService: IsbnService;
   static locationService: LocationService;
   static reportService: ReportService;
+  static genreTagService: GenreTagService;
 
   static async setup(): Promise<void> {
     if (
@@ -45,13 +48,15 @@ export class Config {
       this.dependencies.checkoutHandler != null ||
       this.dependencies.locationHandler != null ||
       this.dependencies.reportHandler != null ||
+      this.dependencies.genreTagHandler != null ||
       this.bookManagementService != null ||
       this.suggestionService != null ||
       this.auditService != null ||
       this.checkoutService != null ||
       this.searchDataService != null ||
       this.locationService != null ||
-      this.reportService != null
+      this.reportService != null ||
+      this.genreTagService != null
     ) {
       return; // Prevent re-initialization
     }
@@ -97,6 +102,7 @@ export class Config {
     this.authService = new AuthService(daoFactory);
     this.locationService = new LocationService(daoFactory);
     this.reportService = new ReportService(daoFactory);
+    this.genreTagService = new GenreTagService(daoFactory);
 
     // Route Handlers
     this.dependencies.authHandler = new AuthHandler(this.authService);
@@ -113,6 +119,7 @@ export class Config {
     this.dependencies.checkoutHandler = new CheckoutHandler(this.checkoutService);
     this.dependencies.locationHandler = new LocationHandler(this.locationService, this.bookManagementService);
     this.dependencies.reportHandler = new ReportHandler(this.reportService);
+    this.dependencies.genreTagHandler = new GenreTagHandler(this.genreTagService);
 
     console.log("Dependencies Instantiated");
   }
@@ -129,6 +136,7 @@ export interface ConfigTypes {
   checkoutHandler?: CheckoutHandler;
   locationHandler?: LocationHandler;
   reportHandler?: ReportHandler;
+  genreTagHandler?: GenreTagHandler;
 }
 
 export default new Config();

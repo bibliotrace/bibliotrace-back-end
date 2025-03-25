@@ -1,17 +1,17 @@
 import { Kysely } from "kysely";
 import Database from "../schema/Database";
-import { Genres } from "../schema/Genres";
+import { Genre } from "../schema/Genre";
 import Dao from "./Dao";
 import { Book } from "../schema/Book";
 import Response from "../../response/Response";
 import SuccessResponse from "../../response/SuccessResponse";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 
-class GenresDao extends Dao<Genres, number> {
+class GenreDao extends Dao<Genre, number> {
   constructor(db: Kysely<Database>) {
     super(db);
-    this.tableName = "genres";
-    this.keyName = "book_id";
+    this.tableName = "genre";
+    this.keyName = "id";
     this.entityName = "genre";
   }
 
@@ -65,4 +65,4 @@ class GenresDao extends Dao<Genres, number> {
   }
 }
 
-export default GenresDao;
+export default GenreDao;
