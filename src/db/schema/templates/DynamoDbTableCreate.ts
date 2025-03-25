@@ -11,6 +11,8 @@ export async function createIsbnQueryCacheTable(
   const tableName = process.env.DYNAMO_ISBN_TABLE;
 
   let isCreated = false;
+  let numConnectionFailures = 0;
+  const maxConnectionFailures = 10;
 
   while (!isCreated) {
     try {
@@ -22,6 +24,12 @@ export async function createIsbnQueryCacheTable(
         isCreated = true;
       } else if (err.code && err.code === "ECONNREFUSED") {
         setTimeout(() => {}, 1000); // stupid hack to wait for the connection to be established
+        numConnectionFailures++;
+        if (numConnectionFailures >= maxConnectionFailures) {
+          console.log("Max connection failures reached. Exiting...");
+          process.exit(1);
+        }
+        console.log(`Connection refused. Retrying... (${numConnectionFailures})`);
       } else {
         // console.log(err);
         throw new Error(err);
