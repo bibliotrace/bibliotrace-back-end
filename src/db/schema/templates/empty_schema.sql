@@ -1,6 +1,6 @@
 -- USE bibliotrace_v3;
 
-DROP TABLE IF EXISTS auth, genres, genre_types, tags, shopping_list, restock_list, location, audiences, audit, audit_entry, campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles, books, book_tag, book_genre ;
+DROP TABLE IF EXISTS auth, audit_states, genres, genre_types, tags, shopping_list, restock_list, location, audiences, audit, audit_entry, campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles, books, book_tag, book_genre ;
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
