@@ -6,8 +6,7 @@ import AuditEntryDao from "./AuditEntryDao";
 import BookDao from "./BookDao";
 import CampusDao from "./CampusDao";
 import CheckoutDao from "./CheckoutDao";
-import GenresDao from "./GenresDao";
-import GenreTypeDao from "./GenreTypeDao";
+import GenreDao from "./GenreDao";
 import InventoryDao from "./InventoryDao";
 import SeriesDao from "./SeriesDao";
 import SuggestionDao from "./SuggestionDao";
@@ -17,16 +16,19 @@ import UserRoleDao from "./UserRoleDao";
 import LocationDao from "./LocationDao";
 import RestockListDao from "./RestockListDao";
 import ShoppingListDao from "./ShoppingListDao";
+import BookGenreDao from "./BookGenreDao";
+import BookTagDao from "./BookTagDao";
 
 class DaoFactory {
   audienceDao: AudienceDao;
   auditDao: AuditDao;
   auditEntryDao: AuditEntryDao;
   bookDao: BookDao;
+  bookGenreDao: BookGenreDao;
+  bookTagDao: BookTagDao;
   campusDao: CampusDao;
   checkoutDao: CheckoutDao;
-  genresDao: GenresDao;
-  genreTypeDao: GenreTypeDao;
+  genreDao: GenreDao;
   inventoryDao: InventoryDao;
   locationDao: LocationDao;
   restockListDao: RestockListDao;
@@ -42,10 +44,11 @@ class DaoFactory {
     this.auditDao = new AuditDao(db);
     this.auditEntryDao = new AuditEntryDao(db);
     this.bookDao = new BookDao(db);
+    this.bookGenreDao = new BookGenreDao(db);
+    this.bookTagDao = new BookTagDao(db);
     this.campusDao = new CampusDao(db);
     this.checkoutDao = new CheckoutDao(db);
-    this.genresDao = new GenresDao(db);
-    this.genreTypeDao = new GenreTypeDao(db);
+    this.genreDao = new GenreDao(db);
     this.inventoryDao = new InventoryDao(db);
     this.locationDao = new LocationDao(db);
     this.restockListDao = new RestockListDao(db);
@@ -73,6 +76,14 @@ class DaoFactory {
     return this.bookDao;
   }
 
+  getBookGenreDao(): BookGenreDao {
+    return this.bookGenreDao;
+  }
+
+  getBookTagDao(): BookTagDao {
+    return this.bookTagDao;
+  }
+
   getCampusDao(): CampusDao {
     return this.campusDao;
   }
@@ -81,12 +92,8 @@ class DaoFactory {
     return this.checkoutDao;
   }
 
-  getGenresDao(): GenresDao {
-    return this.genresDao;
-  }
-
-  getGenreTypeDao(): GenreTypeDao {
-    return this.genreTypeDao;
+  getGenreDao(): GenreDao {
+    return this.genreDao;
   }
 
   getInventoryDao(): InventoryDao {

@@ -3,8 +3,6 @@ import fs from "fs";
 import path from "path";
 import { Kysely, MysqlDialect } from "kysely";
 import Database from "../src/db/schema/Database";
-import dotenv from "dotenv";
-dotenv.config({ path: "./.env" });
 
 class TestConnectionManager {
   private pool: Pool;
