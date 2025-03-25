@@ -46,19 +46,19 @@ inventoryRouter.post("/checkin", async (req: any, res) => {
 });
 
 inventoryRouter.post("/genre", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.genreTagHandler.addGenre(req.body, req.auth));
+  sendResponse(res, await Config.dependencies.genreTagHandler.addGenre(req.body));
 });
 
 inventoryRouter.delete("/genre", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.genreTagHandler.removeGenre(req.body, req.auth));
+  sendResponse(res, await Config.dependencies.genreTagHandler.removeGenre(req.body));
 });
 
 inventoryRouter.post("/tag", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.genreTagHandler.addTag(req.body, req.auth));
+  sendResponse(res, await Config.dependencies.genreTagHandler.addTag(req.body));
 });
 
 inventoryRouter.delete("/tag", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.genreTagHandler.removeTag(req.body, req.auth));
+  sendResponse(res, await Config.dependencies.genreTagHandler.removeTag(req.body));
 });
 
 inventoryRouter.post("/setLocation", async (req: any, res) => {
