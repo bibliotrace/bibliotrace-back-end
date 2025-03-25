@@ -1,6 +1,6 @@
 import { Audience } from "./Audience";
 import { Audit } from "./Audit";
-import { AuditState } from "./AuditState";
+import { AuditEntry } from "./AuditEntry";
 import { Book } from "./Book";
 import { Campus } from "./Campus";
 import { Checkout } from "./Checkout";
@@ -19,7 +19,7 @@ import { UserRole } from "./UserRole";
 interface Database {
   audiences: Audience;
   audit: Audit;
-  audit_states: AuditState;
+  audit_entry: AuditEntry;
   books: Book;
   campus: Campus;
   checkout: Checkout;

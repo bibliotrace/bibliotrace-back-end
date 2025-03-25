@@ -1,13 +1,8 @@
-DROP TABLE IF EXISTS shopping_list, restock_list, location, audiences, audit, audit_states, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;
+DROP TABLE IF EXISTS shopping_list, restock_list, location, audiences, audit, audit_entry, books, campus, checkout, genres, genre_types, inventory, series, suggestions, tags, users, user_roles;
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   audience_name VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE audit_states (
-  id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  audit_state_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE genre_types (
@@ -59,16 +54,6 @@ CREATE TABLE books (
 );
 CREATE UNIQUE INDEX idx_name ON books(book_title);
 
-CREATE TABLE audit (
-  book_id INT UNSIGNED PRIMARY KEY,
-  last_audit_date DATE DEFAULT (CURRENT_DATE),
-  state_id TINYINT UNSIGNED NOT NULL,
-  expected_amount SMALLINT,
-  actual_amount SMALLINT,
-  FOREIGN KEY (book_id) REFERENCES books(id),
-  FOREIGN KEY (state_id) REFERENCES audit_states(id)
-);
-
 CREATE TABLE inventory (
   qr VARCHAR(15) PRIMARY KEY,
   book_id INT UNSIGNED NOT NULL,
@@ -82,6 +67,23 @@ CREATE TABLE inventory (
 CREATE INDEX idx_location ON inventory(location_id);
 CREATE INDEX idx_campus_id ON campus(id);
 CREATE INDEX idx_ttl ON inventory(ttl);
+
+CREATE TABLE audit (
+  id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  campus_id TINYINT UNSIGNED NOT NULL,
+  start_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  complete_date DATETIME,
+  FOREIGN KEY (campus_id) REFERENCES campus(id)
+);
+
+CREATE TABLE audit_entry (
+  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  qr VARCHAR(15) NOT NULL,
+  audit_id TINYINT UNSIGNED NOT NULL,
+  state VARCHAR(15),
+  FOREIGN KEY (qr) REFERENCES inventory(qr),
+  FOREIGN KEY (audit_id) REFERENCES audit(id)
+);
 
 CREATE TABLE checkout (
   checkout_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
