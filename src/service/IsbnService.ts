@@ -61,6 +61,7 @@ class IsbnService {
     }
     const resultJson = await result.json();
     const book = resultJson.book;
+    console.log(resultJson)
 
     const book_title: string = book.title ?? book.title_long ?? "Unknown title";
     let isbn_list: string = ""; // this should always exist given that we're querying by isbn here lol

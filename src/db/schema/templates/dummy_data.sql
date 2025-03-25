@@ -22,7 +22,7 @@ VALUES ('Board Books (0-2 Years)'), ('Picture Books (2-8 Years)'), ('Early Chapt
 
 INSERT INTO books (book_title, isbn_list, author, primary_genre_id, audience_id, pages, publish_date, short_description, language, img_callback)
 VALUES 
-('Harry Potter and the Sorcerer''s Stone', '9780439708180|9780439362139', 'J.K. Rowling', 5, 4, 309, 1997, 'The first book in the Harry Potter series, following the young wizard''s discovery of his magical heritage.', 'English', NULL),
+('Harry Potter and the Sorcerer''s Stone', '9780439708180|9780590353427', 'J.K. Rowling', 5, 4, 309, 1997, 'The first book in the Harry Potter series, following the young wizard''s discovery of his magical heritage.', 'English', NULL),
 ('Harry Potter and the Chamber of Secrets', '9780439064873|9780439554893', 'J.K. Rowling', 5, 4, 341, 1998, 'Harry returns to Hogwarts and uncovers the mystery of the Chamber of Secrets.', 'English', NULL),
 ('Harry Potter and the Prisoner of Azkaban', '9780439136358|9780439655485', 'J.K. Rowling', 5, 4, 435, 1999, 'Harry learns the truth about his parents'' past and meets the mysterious Sirius Black.', 'English', NULL),
 ('Harry Potter and the Goblet of Fire', '9780439139595|9780439139601', 'J.K. Rowling', 5, 4, 734, 2000, 'Harry competes in the dangerous Triwizard Tournament.', 'English', NULL),
@@ -44,6 +44,9 @@ INSERT INTO location (campus_id, location_name) VALUES
 (1, 'Storage'),
 (1, 'Shelf'),
 (1, 'Downstairs');
+
+INSERT INTO genres (book_id, genre_id_1, genre_id_2, genre_id_3) 
+VALUES (1, 1, 2, 3),(5, 3, 1, 2);
 
 INSERT INTO inventory (qr, book_id, location_id, campus_id, ttl)
 VALUES

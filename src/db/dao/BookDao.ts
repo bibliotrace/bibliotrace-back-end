@@ -6,6 +6,7 @@ import Dao from "./Dao";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import { Kysely, Transaction } from "kysely";
 import { FilterListItem } from "../../handler/SearchRouteHandler";
+import RequestErrorResponse from "../../response/RequestErrorResponse";
 
 class BookDao extends Dao<Book, number> {
   constructor(db: Kysely<Database>) {
@@ -42,7 +43,7 @@ class BookDao extends Dao<Book, number> {
             "books.language as language",
             "books.img_callback as img_callback",
             "audiences.audience_name as audience_name",
-            "genre_types.genre_name as genre_name",
+            "genre_types.genre_name as primary_genre_name",
             "series.series_name as series_name",
           ])
           .leftJoin("audiences", "audiences.id", "books.audience_id")
@@ -51,7 +52,7 @@ class BookDao extends Dao<Book, number> {
           .where("isbn_list", "like", `%${isbn}%` as any)
           .executeTakeFirst(); // isbn should be unique, thus we just take the first row containing the isbn
         if (!book) {
-          return new SuccessResponse(`No book found with isbn ${isbn}`);
+          return new RequestErrorResponse(`No book found with isbn ${isbn}`, 404);
         }
         return new SuccessResponse(`Successfully retrieved book with isbn ${isbn}`, book);
       } catch (error) {
@@ -218,6 +219,11 @@ class BookDao extends Dao<Book, number> {
       }
     }
   }
+
+  // Function for getting new arrivals
+    // Get distinct counts from inventory sort by the id descending 
+    // Sort by book id table descending
+    // Limit 50?
 }
 
 export default BookDao;

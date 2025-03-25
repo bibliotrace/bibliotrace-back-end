@@ -40,35 +40,6 @@ export class InventoryHandler {
     // TODO: split out and use the update portion of the insertBook function 
   }
 
-  // This function will get all book metadata for a given book
-  // If the user is admin and we haven't seen the book before, look up the book's information in the Isbn Service
-  public async getByIsbn(isbnString: string, req) {
-    if (!isbnString) {
-      return new RequestErrorResponse(
-        "ISBN is required to search for book information",
-        400
-      );
-    } else if (!isValidISBN(isbnString)) {
-      // isbn not included in response message as it can overflow the error modal lol
-      return new RequestErrorResponse(`Invalid ISBN provided`, 400);
-    }
-
-    const localData = await this.bookManagementService.getByIsbn(
-      sanitizeISBN(isbnString)
-    );
-    if (localData == null || localData.statusCode !== 200 || localData.object == null) {
-      if (validateUserType(req, null, "Admin")) {
-        console.log("ISBN not found in inventory, searching ISBNdb...");
-        const isbnResult = await this.isbnService.retrieveMetadata(sanitizeISBN(isbnString));
-        return isbnResult
-      }
-    } else {
-      return localData
-    }
-
-    return new SuccessResponse('Book Not Found');
-  }
-
   public async getTagsByIsbn(params: any) {
     if (!params.isbn) {
       return new RequestErrorResponse("ISBN is required to get its book tags", 400);
