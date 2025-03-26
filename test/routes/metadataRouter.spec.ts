@@ -59,7 +59,7 @@ describe("GET /metadata/genres", () => {
       .spyOn(Config.dependencies.genreTagHandler, "getGenres")
       .mockRejectedValue(new Error("Database error"));
 
-    const response = await request(app).get("/metadata/genres");
+    const response = await request(app).get("/metadata/genre");
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: "Database error" });
