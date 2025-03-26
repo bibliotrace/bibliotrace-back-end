@@ -1,6 +1,5 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
-import { Campus } from "../db/schema/Campus";
 import GenreTagService from "../service/GenreTagService";
 import { Tag } from "../db/schema/Tag";
 import { Genre } from "../db/schema/Genre";

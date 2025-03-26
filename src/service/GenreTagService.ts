@@ -1,9 +1,7 @@
 import DaoFactory from "../db/dao/DaoFactory";
-import { Campus } from "../db/schema/Campus";
 import { Genre } from "../db/schema/Genre";
 import { Tag } from "../db/schema/Tag";
 import Response from "../response/Response";
-import ServerErrorResponse from "../response/ServerErrorResponse";
 import Service from "./Service";
 
 export default class GenreTagService extends Service {
