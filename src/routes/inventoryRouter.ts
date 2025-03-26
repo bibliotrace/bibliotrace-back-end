@@ -1,8 +1,6 @@
 import express from "express";
 import { Config } from "../config";
-import { sendResponse, validateUserType } from "../utils/utils";
-import SuccessResponse from "../response/SuccessResponse";
-import RequestErrorResponse from "../response/RequestErrorResponse";
+import { sendResponse } from "../utils/utils";
 
 export const inventoryRouter = express.Router();
 

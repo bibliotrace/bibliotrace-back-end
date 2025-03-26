@@ -1,6 +1,6 @@
-import SuggestionService from "../service/SuggestionService";
 import { Transporter } from "nodemailer";
 import ServerErrorResponse from "../response/ServerErrorResponse";
+import SuggestionService from "../service/SuggestionService";
 import { parseRequiredFields } from "../utils/utils";
 
 export class SuggestionHandler {

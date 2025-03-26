@@ -1,10 +1,7 @@
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import BookManagementService from "../service/BookManagementService";
 import IsbnService from "../service/IsbnService";
-import RequestErrorResponse from "../response/RequestErrorResponse";
-import SuccessResponse from "../response/SuccessResponse";
-import { isValidISBN } from "../utils/utils";
-import { sanitizeISBN } from "../utils/utils";
-import { validateUserType } from "../utils/utils";
+import { isValidISBN, sanitizeISBN } from "../utils/utils";
 
 export default class BookDataHandler {
   private bookManagementService: BookManagementService;
