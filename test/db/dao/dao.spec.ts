@@ -1424,7 +1424,7 @@ describe("DAO testing suite", () => {
       let customBook: any = {
         audience_name: "Potterheads",
         series_name: "Harry Potter",
-        genre_name: "Fantasy",
+        primary_genre_name: "Fantasy",
       };
 
       beforeEach(async () => {
@@ -1545,7 +1545,7 @@ describe("DAO testing suite", () => {
         });
 
         test("Successful retrieval of book with filters applied", async () => {
-          const filterQueryList = [{ key: "genre.genre_name", value: "Fantasy" }];
+          const filterQueryList = [{ key: "genre.primary_genre_name", value: "Fantasy" }];
           const isbn = "9780747532743";
           const campus = "Hogwarts";
 
@@ -1589,7 +1589,7 @@ describe("DAO testing suite", () => {
         });
 
         test("Failed retrieval with invalid filters", async () => {
-          const filterQueryList = [{ key: "genre.genre_name", value: "InvalidGenre" }];
+          const filterQueryList = [{ key: "genre.primary_genre_name", value: "InvalidGenre" }];
           const isbn = "9780747532743";
           const campus = "Hogwarts";
 
@@ -1639,7 +1639,7 @@ describe("DAO testing suite", () => {
 
         test("Successful retrieval of all ISBNs with filters applied", async () => {
           const filterQueryList = [
-            { key: "genre.genre_name", value: "Fantasy" },
+            { key: "genre.primary_genre_name", value: "Fantasy" },
             { key: "audiences.audience_name", value: "Potterheads" },
           ];
           const campus = "Hogwarts";
@@ -1673,7 +1673,7 @@ describe("DAO testing suite", () => {
 
         test("Failed retrieval with invalid filters", async () => {
           const filterQueryList = [
-            { key: "genre.genre_name", value: "InvalidGenre" },
+            { key: "genre.primary_genre_name", value: "InvalidGenre" },
             { key: "audiences.audience_name", value: "InvalidAudience" },
           ];
           const campus = "Hogwarts";
@@ -1789,7 +1789,7 @@ describe("DAO testing suite", () => {
             series_id: dummyBook.series_id,
             series_name: dummySeries.series_name,
             primary_genre_id: dummyGenre.id,
-            genre_name: dummyGenre.genre_name,
+            primary_genre_name: dummyGenre.genre_name,
             isbn_list: dummyBook.isbn_list,
           });
           expect(response.message).toContain(
