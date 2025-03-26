@@ -84,7 +84,7 @@ export class Config {
     dbConnectionManager.testConnection();
 
     if (process.env.NODE_ENV === "local") {
-      await dbConnectionManager.executeQuery("USE bibliotrace_v3");
+      await dbConnectionManager.executeQuery("USE bibliotrace_v3_test");
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
     }
