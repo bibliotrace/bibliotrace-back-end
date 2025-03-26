@@ -1452,7 +1452,7 @@ describe("DAO testing suite", () => {
           const response = await bookDao.getBookByIsbn("invalid_isbn");
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(RequestErrorResponse);
-          expect(response.statusCode).toBe(400);
+          expect(response.statusCode).toBe(404);
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(`No book found with isbn invalid_isbn`);
         });
