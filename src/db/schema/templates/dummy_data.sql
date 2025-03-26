@@ -1,4 +1,4 @@
-USE bibliotrace_v3_test;
+-- USE bibliotrace_v3;
 
 -- Modify data as needed for tests, this will be run at initialization of bibliotrace service
 

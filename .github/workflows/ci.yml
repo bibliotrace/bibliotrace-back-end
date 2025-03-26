@@ -24,7 +24,7 @@ jobs:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: bibliotrace_v3_test
+          MYSQL_DATABASE: bibliotrace_v3
           MYSQL_USER: admin
           MYSQL_PASSWORD: Bibl!otrace_2025
         options: >-

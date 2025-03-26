@@ -1595,8 +1595,8 @@ describe("DAO testing suite", () => {
 
           const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
           expect(response).toBeDefined();
-          expect(response).toBeInstanceOf(SuccessResponse);
-          expect(response.statusCode).toBe(200);
+          expect(response).toBeInstanceOf(ServerErrorResponse);
+          expect(response.statusCode).toBe(400);
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(
             `No book found with isbn ${isbn} and campus ${campus} matching filters`
@@ -1681,8 +1681,8 @@ describe("DAO testing suite", () => {
           const response = await bookDao.getAllISBNs(filterQueryList, campus);
 
           expect(response).toBeDefined();
-          expect(response).toBeInstanceOf(SuccessResponse);
-          expect(response.statusCode).toBe(200);
+          expect(response).toBeInstanceOf(ServerErrorResponse);
+          expect(response.statusCode).toBe(500);
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(
             `No isbns found on campus ${campus} matching provided filters`

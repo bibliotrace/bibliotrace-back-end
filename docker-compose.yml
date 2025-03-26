@@ -5,7 +5,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: bibliotrace_v3_test
+      MYSQL_DATABASE: bibliotrace_v3
       MYSQL_USER: admin
       MYSQL_PASSWORD: Bibl!otrace_2025
     ports:
