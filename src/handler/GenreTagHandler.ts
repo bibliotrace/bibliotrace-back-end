@@ -12,6 +12,10 @@ export default class GenreTagHandler {
     this.genreTagService = genreTagService;
   }
 
+  public async getGenres(): Promise<Response<Genre[]>> {
+    return await this.genreTagService.getGenres();
+  }
+
   public async addGenre(body): Promise<Response<Genre>> {
     if (!body.genre_name) {
       return new RequestErrorResponse("Request is missing genre name", 400);
@@ -26,6 +30,10 @@ export default class GenreTagHandler {
     }
 
     return await this.genreTagService.removeGenre(body.genre_name);
+  }
+
+  public async getTags(): Promise<Response<Tag[]>> {
+    return await this.genreTagService.getTags();
   }
 
   public async addTag(body): Promise<Response<Tag>> {

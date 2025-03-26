@@ -1,6 +1,6 @@
 -- USE bibliotrace_v3;
 
-DROP TABLE IF EXISTS auth, genres, genre_types, tags, shopping_list, restock_list, location, audiences, audit, audit_states,campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles, books, book_tag, book_genre ;
+DROP TABLE IF EXISTS auth, genres, genre_types, tags, shopping_list, restock_list, location, audiences, audit, audit_states, campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles, books, book_tag, book_genre ;
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -38,12 +38,12 @@ CREATE TABLE location (
 
 CREATE TABLE genre (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  genre_name VARCHAR(255) NOT NULL
+  genre_name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE tag (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  tag_name VARCHAR(255) NOT NULL
+  tag_name VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE books (
@@ -71,16 +71,16 @@ CREATE TABLE book_genre (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_id INT UNSIGNED NOT NULL,
   genre_id INT UNSIGNED NOT NULL,
-  FOREIGN KEY (book_id) REFERENCES books(id),
-  FOREIGN KEY (genre_id) REFERENCES genre(id)
+  FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+  FOREIGN KEY (genre_id) REFERENCES genre(id) ON DELETE CASCADE
 );
 
 CREATE TABLE book_tag (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_id INT UNSIGNED NOT NULL,
   tag_id INT UNSIGNED NOT NULL,
-  FOREIGN KEY (book_id) REFERENCES books(id),
-  FOREIGN KEY (tag_id) REFERENCES tag(id)
+  FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE
 );
 
 CREATE TABLE audit (
