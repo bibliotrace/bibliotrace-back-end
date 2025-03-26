@@ -22,12 +22,12 @@ export default class BookManagementService extends Service {
     const bookDataResponse = await this.bookDao.getBookByIsbn(isbn) as Response<any>;
     if (bookDataResponse.statusCode === 200 && bookDataResponse.object != null) {
       // Pull external genres and tags to add to the book
-      const genresResponse = await this.genresDao.getGenresByBookId(bookDataResponse.object.id);
+      const genresResponse = await this.bookGenreDao.getGenresByBookId(bookDataResponse.object.id);
       if (genresResponse.statusCode === 200 && genresResponse.object != null) {
         bookDataResponse._object.genre_list = genresResponse.object
       }
 
-      const tagsResponse = await this.tagDao.getTagsByBookId(bookDataResponse.object.id);
+      const tagsResponse = await this.bookTagDao.getTagsByBookId(bookDataResponse.object.id);
       if (tagsResponse.statusCode === 200 && tagsResponse.object != null) {
         bookDataResponse._object.tag_list = tagsResponse.object
       }

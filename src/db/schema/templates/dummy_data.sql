@@ -24,9 +24,9 @@ INSERT INTO genre (genre_name) VALUES
 
 -- Insert data into the 'tag' table
 INSERT INTO tag (tag_name) VALUES
-('Adventure'),
-('Mythology'),
-('Dystopia');
+('Harry Potter'),
+('Magic'),
+('Based in England');
 
 INSERT INTO books (book_title, isbn_list, author, primary_genre_id, audience_id, pages, publish_date, short_description, language, img_callback)
 VALUES 
@@ -50,24 +50,30 @@ VALUES
 
 
 INSERT INTO book_genre (book_id, genre_id) VALUES
-(1, 5), 
-(2, 5), 
-(3, 5), 
+(1, 5),
+(1, 3),
+(1, 9),
+(2, 6), 
+(3, 1),
+(3, 7),
+(3, 8), 
 (4, 5), 
-(5, 5), 
-(6, 5), 
+(5, 4), 
+(6, 1), 
 (7, 5), 
-(8, 5), 
-(9, 5), 
-(10, 5),
-(11, 5),
-(12, 5),
-(13, 5),
-(14, 5),
+(8, 9), 
+(9, 6), 
+(10, 10),
+(11, 2),
+(12, 1),
+(13, 3),
+(14, 3),
 (15, 5);
 
 INSERT INTO book_tag (book_id, tag_id) VALUES
-(1, 1), 
+(1, 1),
+(1, 2),
+(1, 3),
 (2, 1), 
 (3, 1), 
 (4, 1), 
@@ -87,9 +93,6 @@ INSERT INTO location (campus_id, location_name) VALUES
 (1, 'storage'),
 (1, 'shelf'),
 (1, 'downstairs');
-
-INSERT INTO genres (book_id, genre_id_1, genre_id_2, genre_id_3) 
-VALUES (1, 1, 2, 3),(5, 3, 1, 2);
 
 INSERT INTO inventory (qr, book_id, location_id, campus_id, ttl)
 VALUES
