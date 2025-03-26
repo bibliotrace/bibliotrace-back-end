@@ -74,14 +74,14 @@ class InventoryDao extends Dao<Inventory, string> {
             "books.series_id as series_id",
             "series.series_name as series_name",
             "books.primary_genre_id as primary_genre_id",
-            "genre_types.genre_name as primary_genre_name",
+            "genre.genre_name as primary_genre_name",
             "books.isbn_list as isbn_list",
           ])
           .innerJoin("books", "books.id", "inventory.book_id")
           .leftJoin("location", "location.id", "inventory.location_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
           .leftJoin("series", "series.id", "books.series_id")
-          .leftJoin("genre_types", "genre_types.id", "books.primary_genre_id")
+          .leftJoin("genre", "genre.id", "books.primary_genre_id")
           .where("inventory.qr", "=", qr)
           .executeTakeFirst();
         // console.log(result, "HEREs THE RESULTS");

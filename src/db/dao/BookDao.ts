@@ -42,11 +42,11 @@ class BookDao extends Dao<Book, number> {
             "books.language as language",
             "books.img_callback as img_callback",
             "audiences.audience_name as audience_name",
-            "genre_types.genre_name as genre_name",
+            "genre.genre_name as genre_name",
             "series.series_name as series_name",
           ])
           .leftJoin("audiences", "audiences.id", "books.audience_id")
-          .leftJoin("genre_types", "genre_types.id", "books.primary_genre_id")
+          .leftJoin("genre", "genre.id", "books.primary_genre_id")
           .leftJoin("series", "series.id", "books.series_id")
           .where("isbn_list", "like", `%${isbn}%` as any)
           .executeTakeFirst(); // isbn should be unique, thus we just take the first row containing the isbn
@@ -73,8 +73,9 @@ class BookDao extends Dao<Book, number> {
       try {
         const book = await this.db
           .selectFrom(this.tableName as keyof Database)
-          .select("tags.tag")
-          .innerJoin("tags", "tags.book_id", "books.id")
+          .select("tag.tag_name")
+          .innerJoin("book_tag", "book_tag.book_id", "books.id")
+          .innerJoin("tag", "tag.id", "book_tag.tag_id")
           .where("isbn_list", "like", `%${isbn}%` as any)
           .execute();
         if (!book || book.length === 0) {
@@ -135,7 +136,7 @@ class BookDao extends Dao<Book, number> {
         let dbQuery = this.db
           .selectFrom("books")
           .innerJoin("inventory", "inventory.book_id", "books.id")
-          .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
+          .leftJoin("genre", "books.primary_genre_id", "genre.id")
           .leftJoin("audiences", "audiences.id", "books.audience_id")
           .leftJoin("series", "series.id", "books.series_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
@@ -143,7 +144,7 @@ class BookDao extends Dao<Book, number> {
             "books.id",
             "books.book_title",
             "books.author",
-            "genre_types.genre_name",
+            "genre.genre_name",
             "series.series_name",
           ])
           .where("campus.campus_name", "=", campus)
@@ -156,20 +157,18 @@ class BookDao extends Dao<Book, number> {
           }
         }
 
-        // console.log(dbQuery.compile().sql);
         const dbResult = await dbQuery.executeTakeFirst();
-        if (!dbResult) {
+        if (dbResult) {
+          return new SuccessResponse("successfully grabbed book", dbResult);
+        } else {
           return new SuccessResponse(
             `No book found with isbn ${isbn} and campus ${campus} matching filters`
           );
         }
-        return new SuccessResponse(
-          `Successfully retrieved book with isbn ${isbn} and campus ${campus} matching filters`,
-          dbResult
-        );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to retrieve book with filter queries: Error ${error.message}`
+          `Failed to retrieve book with filter queries: Error ${error.message}`,
+          500
         );
       }
     }
@@ -189,7 +188,7 @@ class BookDao extends Dao<Book, number> {
           .distinct()
           .select("isbn_list")
           .innerJoin("inventory", "inventory.book_id", "books.id")
-          .leftJoin("genre_types", "books.primary_genre_id", "genre_types.id")
+          .leftJoin("genre", "books.primary_genre_id", "genre.id")
           .leftJoin("audiences", "audiences.id", "books.audience_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
           .where("campus.campus_name", "=", campus);

@@ -1,15 +1,15 @@
 import { Kysely } from "kysely";
 import Database from "../schema/Database";
-import { Tag } from "../schema/Tag";
 import Dao from "./Dao";
+import { BookTag } from "../schema/BookTag";
 
-class TagDao extends Dao<Tag, number> {
+class BookTagDao extends Dao<BookTag, number> {
   constructor(db: Kysely<Database>) {
     super(db);
-    this.tableName = "tag";
+    this.tableName = "book_tag";
     this.keyName = "id";
-    this.entityName = "tag";
+    this.entityName = "book tag";
   }
 }
 
-export default TagDao;
+export default BookTagDao;
