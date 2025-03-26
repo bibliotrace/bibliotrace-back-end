@@ -57,7 +57,6 @@ export default class SearchRouteHandler {
 
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
-      console.log(filterQueryList)
       const metadataResult = await this.searchService.retrieveBasicMetadata(
         filterQueryList,
         isbnResult[i],
@@ -149,13 +148,13 @@ export default class SearchRouteHandler {
         // maybe we should have a map of filter table names to their respective keys?
         if (targetKey == "Genre") {
           const genreStrings = targetVal.split(",");
-          console.log("Genre Strings: ", genreStrings);
+          // console.log("Genre Strings: ", genreStrings);
 
           output.push({ key: "genre.genre_name", value: genreStrings });
         }
         if (targetKey == "Audience") {
           const audienceStrings = targetVal.split(",");
-          console.log("Audience Strings: ", audienceStrings);
+          // console.log("Audience Strings: ", audienceStrings);
 
           output.push({ key: "audiences.audience_name", value: audienceStrings });
         }

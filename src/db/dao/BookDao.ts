@@ -25,7 +25,6 @@ class BookDao extends Dao<Book, number> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        // console.log("Fetching Book By ISBN", isbn);
         const book = await this.db
           .selectFrom(this.tableName as keyof Database)
           .select([
@@ -82,8 +81,6 @@ class BookDao extends Dao<Book, number> {
         if (!book || book.length === 0) {
           return new SuccessResponse(`No book found with isbn ${isbn}`);
         }
-
-        // console.log(book);
 
         return new SuccessResponse(`Successfully retrieved tags for book with isbn ${isbn}`, book);
       } catch (error) {
