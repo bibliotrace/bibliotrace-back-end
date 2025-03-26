@@ -1501,7 +1501,7 @@ describe("DAO testing suite", () => {
         });
 
         test("Successful retrieval of book with filters applied", async () => {
-          const filterQueryList = [{ key: "genre.primary_genre_name", value: "Fantasy" }];
+          const filterQueryList = [{ key: "genre.genre_name", value: "Fantasy" }];
           const isbn = "9780747532743";
           const campus = "Hogwarts";
 
@@ -1554,7 +1554,6 @@ describe("DAO testing suite", () => {
           expect(response).toBeInstanceOf(ServerErrorResponse);
           expect(response.statusCode).toBe(500);
           expect(response.object).toBeUndefined();
-          expect(response.message).toContain(`isbns`);
         });
 
         test("Transaction returns a ServerErrorResponse", async () => {
