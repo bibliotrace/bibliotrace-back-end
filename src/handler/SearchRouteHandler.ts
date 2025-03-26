@@ -58,7 +58,7 @@ export default class SearchRouteHandler {
     if (isbnResult == null) {
       isbnResult = []
     }
-    
+
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
       const metadataResult = await this.searchService.retrieveBasicMetadata(
@@ -170,7 +170,7 @@ export default class SearchRouteHandler {
 
 export interface FilterListItem {
   key: string;
-  value: string;
+  value: string | string[];
 }
 
 export interface ResultRow {
