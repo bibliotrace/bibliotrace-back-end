@@ -707,7 +707,9 @@ describe("DAO testing suite", () => {
     if (!response.object || !Array.isArray(response.object)) {
       throw new Error("Response object is not an array");
     }
-
+    response.object = response.object.sort((a, b) => {
+      return a.id - b.id;
+    });
     for (let i = 0; i < response.object.length; i++) {
       parseObjectForEquality(response.object[i], entityArray[i]);
     }
