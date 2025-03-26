@@ -13,7 +13,7 @@ export default class DBConnectionManager {
       host: process.env.DB_HOST ?? "localhost",
       user: process.env.DB_USER ?? "admin",
       password: process.env.DB_PASSWORD ?? "Bibl!otrace_2025",
-      database: process.env.DB_TARGET_NAME ?? "bibliotrace_v3",
+      database: process.env.DB_TARGET_NAME ?? "bibliotrace_v3_test",
     });
 
     this.kyselyDB = new Kysely<Database>({

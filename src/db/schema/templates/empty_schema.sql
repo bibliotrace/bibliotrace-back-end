@@ -1,4 +1,4 @@
--- USE bibliotrace_v3;
+-- USE bibliotrace_v3_test;
 
 DROP TABLE IF EXISTS auth, genres, genre_types, tags, shopping_list, restock_list, location, audiences, audit, audit_states,campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles, books, book_tag, book_genre ;
 
