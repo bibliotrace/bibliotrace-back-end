@@ -42,6 +42,7 @@ import { BookGenre } from "../../../src/db/schema/BookGenre";
 import { BookTag } from "../../../src/db/schema/BookTag";
 import BookGenreDao from "../../../src/db/dao/BookGenreDao";
 import BookTagDao from "../../../src/db/dao/BookTagDao";
+import RequestErrorResponse from "../../../src/response/RequestErrorResponse";
 
 // NOTE: This testing suite assumes that data already comes in with the right fields, which should largely be parsed/checked in the handlers
 
@@ -1450,8 +1451,8 @@ describe("DAO testing suite", () => {
         test("Retrieval of book with invalid ISBN is empty", async () => {
           const response = await bookDao.getBookByIsbn("invalid_isbn");
           expect(response).toBeDefined();
-          expect(response).toBeInstanceOf(SuccessResponse);
-          expect(response.statusCode).toBe(200);
+          expect(response).toBeInstanceOf(RequestErrorResponse);
+          expect(response.statusCode).toBe(400);
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(`No book found with isbn invalid_isbn`);
         });
@@ -1788,7 +1789,7 @@ describe("DAO testing suite", () => {
             series_id: dummyBook.series_id,
             series_name: dummySeries.series_name,
             primary_genre_id: dummyGenre.id,
-            primary_genre_name: dummyGenre.genre_name,
+            genre_name: dummyGenre.genre_name,
             isbn_list: dummyBook.isbn_list,
           });
           expect(response.message).toContain(
