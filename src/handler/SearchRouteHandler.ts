@@ -57,6 +57,7 @@ export default class SearchRouteHandler {
 
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
+      console.log(filterQueryList)
       const metadataResult = await this.searchService.retrieveBasicMetadata(
         filterQueryList,
         isbnResult[i],

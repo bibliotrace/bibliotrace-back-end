@@ -154,7 +154,7 @@ class BookDao extends Dao<Book, number> {
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
             // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
-            dbQuery = dbQuery.where(filter.key as any, "=", filter.value as any);
+            dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
           }
         }
 
