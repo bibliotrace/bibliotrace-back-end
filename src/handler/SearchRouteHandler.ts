@@ -52,9 +52,13 @@ export default class SearchRouteHandler {
     const bookDataResult = [];
     const bookSet = new Set<string>();
     if (isbnResult == null) {
-      isbnResult = await this.searchService.retrieveAllISBNs(filterQueryList, campus);
+      isbnResult = (await this.searchService.retrieveAllISBNs(filterQueryList, campus)).object;
     }
 
+    if (isbnResult == null) {
+      isbnResult = []
+    }
+    
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
     for (let i = 0; i < isbnResult.length; i++) {
       const metadataResult = await this.searchService.retrieveBasicMetadata(
