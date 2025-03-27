@@ -4,16 +4,15 @@ import { sendResponse } from "../utils/utils";
 
 export const metadataRouter = express.Router();
 
-metadataRouter.get("/genres", async (req, res) => {
-  try {
-    const genres = await Config.dependencies.filterTypeRoutesHandler.getGenres();
+metadataRouter.get("/genre", async (req, res) => {
+  const response = await Config.dependencies.genreTagHandler.getGenres();
 
-    if (genres != null && genres.length > 0) {
-      res.send({ results: genres });
-    }
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
+  sendResponse(res, response);
+});
+
+metadataRouter.get("/tag", async (req: any, res) => {
+  const response = await Config.dependencies.genreTagHandler.getAllTags(req.auth);
+  sendResponse(res, response);
 });
 
 metadataRouter.get("/audiences", async (req, res) => {
@@ -38,18 +37,18 @@ metadataRouter.get("/campuses", async (req: any, res) => {
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
-})
-
+});
 
 metadataRouter.get("/locations", async (req: any, res) => {
   const response = await Config.dependencies.locationHandler.getLocationsForCampus(req.auth);
-  console.log(response)
   sendResponse(res, response);
 });
 
-metadataRouter.post('/locations', async (req: any, res) => {
-  console.log(req.body)
-  const response = await Config.dependencies.locationHandler.addNewLocation(req.auth, req.body.newLocationName);
+metadataRouter.post("/locations", async (req: any, res) => {
+  console.log(req.body);
+  const response = await Config.dependencies.locationHandler.addNewLocation(
+    req.auth,
+    req.body.newLocationName
+  );
   sendResponse(res, response);
-})
-
+});

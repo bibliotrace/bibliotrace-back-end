@@ -22,6 +22,7 @@ import LocationService from "./service/LocationService";
 import LocationHandler from "./handler/LocationHandler";
 import ReportHandler from "./handler/ReportHandler";
 import ReportService from "./service/ReportService";
+import BookDataHandler from "./handler/BookDataHandler";
 import GenreTagService from "./service/GenreTagService";
 import GenreTagHandler from "./handler/GenreTagHandler";
 
@@ -106,6 +107,7 @@ export class Config {
     // Route Handlers
     this.dependencies.authHandler = new AuthHandler(this.authService);
     this.dependencies.inventoryHandler = new InventoryHandler(this.bookManagementService, this.isbnService);
+    this.dependencies.bookDataHandler = new BookDataHandler(this.bookManagementService, this.isbnService);
     this.dependencies.suggestionHandler = new SuggestionHandler(this.suggestionService);
     this.dependencies.searchRouteHandler = new SearchRouteHandler(
       this.isbnService,
@@ -129,6 +131,7 @@ export interface ConfigTypes {
   authHandler?: AuthHandler;
   filterTypeRoutesHandler?: FilterTypeRoutesHandler;
   inventoryHandler?: InventoryHandler;
+  bookDataHandler?: BookDataHandler;
   suggestionHandler?: SuggestionHandler;
   checkoutHandler?: CheckoutHandler;
   locationHandler?: LocationHandler;
