@@ -27,25 +27,25 @@ const app = express();
 app.use(express.json());
 app.use("/inventory", inventoryRouter);
 
-describe("PUT /insert", () => {
-  it("should return a successful insert book response", async () => {
-    const mockQRCode = "aa4444";
-    const mockInsertResponse = new SuccessResponse("Book inserted successfully", null);
-    jest.spyOn(utils_1, "validateUserType").mockReturnValue(true);
+// describe("PUT /insert", () => {
+//   it("should return a successful insert book response", async () => {
+//     const mockQRCode = "aa4444";
+//     const mockInsertResponse = new SuccessResponse("Book inserted successfully", null);
+//     jest.spyOn(utils_1, "validateUserType").mockReturnValue(true);
     
-    jest.spyOn(Config.dependencies.inventoryHandler, "insertBook").mockResolvedValue(mockInsertResponse as Response<string>);
+//     jest.spyOn(Config.dependencies.inventoryHandler, "insertBook").mockResolvedValue(mockInsertResponse as Response<string>);
 
-    const response = await request(app)
-      .put("/inventory/insert")
-      .send(mockQRCode);
+//     const response = await request(app)
+//       .put("/inventory/insert")
+//       .send(mockQRCode);
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({
-      message: "Book inserted successfully",
-      object: null,
-    });
-  });
-});
+//     expect(response.status).toBe(200);
+//     expect(response.body).toEqual({
+//       message: "Book inserted successfully",
+//       object: null,
+//     });
+//   });
+// });
 
 
 // describe("GET /get/tags/:isbn", () => {

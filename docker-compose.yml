@@ -10,8 +10,6 @@ services:
       MYSQL_PASSWORD: Bibl!otrace_2025
     ports:
       - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
 
   dynamodb:
     image: amazon/dynamodb-local
@@ -39,6 +37,3 @@ services:
       DB_PASSWORD: Bibl!otrace_2025
     volumes:
       - .:/app
-
-volumes:
-  mysql_data:
