@@ -91,8 +91,8 @@ bookDataRouter.put("/:isbn", async (req: JWTRequest, res) => {
   message: success or failure
 }
 */
-bookDataRouter.put('/genre-list/:isbn', (req, res) => {
-
+bookDataRouter.put('/genre-list/:isbn', async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.addGenreToBook(req.body.genre, req.params.isbn, req.auth.userRole.roleType))
 })
 
 // Delete an entry in a book's secondary genres
@@ -104,8 +104,8 @@ bookDataRouter.put('/genre-list/:isbn', (req, res) => {
   message: success or failure
 }
 */
-bookDataRouter.delete('/genre-list/:isbn', (req, res) => {
-
+bookDataRouter.delete('/genre-list/:isbn', async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.deleteGenreFromBook(req.body.genre, req.params.isbn, req.auth.userRole.roleType))
 })
 
 // Add an entry to a book's tag list
@@ -117,8 +117,8 @@ bookDataRouter.delete('/genre-list/:isbn', (req, res) => {
   message: success or failure
 }
 */
-bookDataRouter.put('/tag-list/:isbn', (req, res) => {
-
+bookDataRouter.put('/tag-list/:isbn', async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.addTagToBook(req.body.tag, req.params.isbn, req.auth.userRole.roleType))
 })
 
 // Delete an entry from a book's tag list
@@ -130,8 +130,8 @@ bookDataRouter.put('/tag-list/:isbn', (req, res) => {
   message: success or failure
 }
 */
-bookDataRouter.delete('/tag-list/:isbn', (req, res) => {
-
+bookDataRouter.delete('/tag-list/:isbn', async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.deleteTagFromBook(req.body.tag, req.params.isbn, req.auth.userRole.roleType))
 })
 
 module.exports = { bookDataRouter };

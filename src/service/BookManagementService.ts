@@ -142,6 +142,150 @@ export default class BookManagementService extends Service {
       return await this.bookDao.update(book.id, updatedInformation);
     }
   }
+
+  public async addGenreToBook(genreString: string, isbn: string): Promise<Response<any>> {
+    let genreId, bookId;
+    const genreResponse = await this.genreDao.getByKeyAndValue("genre_name", genreString);
+    if (genreResponse != null && genreResponse.statusCode !== 200) {
+      return genreResponse;
+    } else if (genreResponse != null && genreResponse.object != null) {
+      genreId = genreResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Genre Not Found", 404);
+    }
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse != null && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse != null) {
+      bookId = bookResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Book Not Found by ISBN", 404);
+    }
+
+    const bookGenreResponse = await this.bookGenreDao.getAllByKeyAndValue("book_id", bookId);
+    if (bookGenreResponse != null && bookGenreResponse.statusCode !== 200) {
+      return bookGenreResponse;
+    } else if (bookGenreResponse != null && bookGenreResponse.object != null) {
+      // Secondary Genres exist, check through them to see if you can find the new insert
+      // If so, return before doing the create again
+      const bookGenrePairs = bookGenreResponse.object;
+      for (const bookGenrePair of bookGenrePairs) {
+        if (bookGenrePair.genre_id === genreId) {
+          return new SuccessResponse("No Change", bookGenrePair);
+        }
+      }
+    }
+
+    return await this.bookGenreDao.create({ book_id: bookId, genre_id: genreId });
+  }
+
+  public async deleteGenreFromBook(genreString: string, isbn: string): Promise<Response<any>> {
+    let genreId, bookId;
+    const genreResponse = await this.genreDao.getByKeyAndValue("genre_name", genreString);
+    if (genreResponse != null && genreResponse.statusCode !== 200) {
+      return genreResponse;
+    } else if (genreResponse != null && genreResponse.object != null) {
+      genreId = genreResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Genre Not Found", 404);
+    }
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse != null && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse != null) {
+      bookId = bookResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Book Not Found by ISBN", 404);
+    }
+
+    const bookGenreResponse = await this.bookGenreDao.getAllByKeyAndValue("book_id", bookId);
+    if (bookGenreResponse != null && bookGenreResponse.statusCode !== 200) {
+      return bookGenreResponse;
+    } else if (bookGenreResponse != null && bookGenreResponse.object != null) {
+      // Secondary Genres exist, check through them to see if you can find the new insert
+      // If so, run the delete function
+      const bookGenrePairs = bookGenreResponse.object;
+      for (const bookGenrePair of bookGenrePairs) {
+        if (bookGenrePair.genre_id === genreId) {
+          return await this.bookGenreDao.delete(bookGenrePair.id);
+        }
+      }
+    }
+
+    return new SuccessResponse("No Change");
+  }
+
+  public async addTagToBook(tagString: string, isbn: string): Promise<Response<any>> {
+    let tagId, bookId;
+    const tagResponse = await this.tagDao.getByKeyAndValue("tag_name", tagString);
+    if (tagResponse != null && tagResponse.statusCode !== 200) {
+      return tagResponse;
+    } else if (tagResponse != null && tagResponse.object != null) {
+      tagId = tagResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Tag Not Found", 404);
+    }
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse != null && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse != null) {
+      bookId = bookResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Book Not Found by ISBN", 404);
+    }
+
+    const bookTagResponse = await this.bookTagDao.getAllByKeyAndValue("book_id", bookId);
+    if (bookTagResponse != null && bookTagResponse.statusCode !== 200) {
+      return bookTagResponse;
+    } else if (bookTagResponse != null && bookTagResponse.object != null) {
+      // Secondary Tags exist, check through them to see if you can find the new insert
+      // If so, return before doing the create again
+      const bookTagPairs = bookTagResponse.object;
+      for (const bookTagPair of bookTagPairs) {
+        if (bookTagPair.tag_id === tagId) {
+          return new SuccessResponse("No Change", bookTagPair);
+        }
+      }
+    }
+
+    return await this.bookTagDao.create({ book_id: bookId, tag_id: tagId });
+  }
+
+  public async deleteTagFromBook(tagString: string, isbn: string): Promise<Response<any>> {
+    let tagId, bookId;
+    const tagResponse = await this.tagDao.getByKeyAndValue("tag_name", tagString);
+    if (tagResponse != null && tagResponse.statusCode !== 200) {
+      return tagResponse;
+    } else if (tagResponse != null && tagResponse.object != null) {
+      tagId = tagResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Tag Not Found", 404);
+    }
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse != null && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse != null) {
+      bookId = bookResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Book Not Found by ISBN", 404);
+    }
+
+    const bookTagResponse = await this.bookTagDao.getAllByKeyAndValue("book_id", bookId);
+    if (bookTagResponse != null && bookTagResponse.statusCode !== 200) {
+      return bookTagResponse;
+    } else if (bookTagResponse != null && bookTagResponse.object != null) {
+      // Secondary Genres exist, check through them to see if you can find the new insert
+      // If so, run the delete function
+      const bookTagPairs = bookTagResponse.object;
+      for (const bookGenrePair of bookTagPairs) {
+        if (bookGenrePair.tag_id === tagId) {
+          return await this.bookTagDao.delete(bookGenrePair.id);
+        }
+      }
+    }
+
+    return new SuccessResponse("No Change");
+  }
 }
 
 export interface BookInsertRequest {
