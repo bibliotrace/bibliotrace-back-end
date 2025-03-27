@@ -25,7 +25,7 @@ inventoryRouter.get("/tag", async (req: any, res) => {
 })
 
 inventoryRouter.post("/tag", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.genreTagHandler.addTag(req.body));
+  sendResponse(res, await Config.dependencies.genreTagHandler.addTag(req.body, req.auth));
 });
 
 inventoryRouter.delete("/tag", async (req: any, res) => {

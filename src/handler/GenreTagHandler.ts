@@ -46,7 +46,7 @@ export default class GenreTagHandler {
       return new RequestErrorResponse("Request is missing tag name", 400);
     }
 
-    return await this.genreTagService.addTag(body.tag_name, authData.userRole.campus);
+    return await this.genreTagService.addTag(body.tag_name);
   }
 
   public async removeTag(body): Promise<Response<Tag>> {
