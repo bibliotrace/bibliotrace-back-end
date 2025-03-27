@@ -138,7 +138,6 @@ export default class BookManagementService extends Service {
         language,
         img_callback,
       };
-      console.log(updatedInformation, book.id);
       return await this.bookDao.update(book.id, updatedInformation);
     }
   }

@@ -34,6 +34,13 @@ export default class GenreTagHandler {
     return await this.genreTagService.removeGenre(body.genre_name, authData.userRole?.campus);
   }
 
+  public async getAllTags(authData): Promise<Response<Tag[] | Campus>> {
+    if (!authData.userRole?.campus) {
+      return new RequestErrorResponse("Missing Campus Data in Authentication");
+    }
+    return await this.genreTagService.getTags(authData.userRole?.campus)
+  }
+
   public async addTag(body, authData): Promise<Response<Tag | Campus>> {
     if (!authData.userRole?.campus) {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);

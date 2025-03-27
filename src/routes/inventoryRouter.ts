@@ -20,6 +20,10 @@ inventoryRouter.delete("/genre", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.genreTagHandler.removeGenre(req.body, req.auth));
 });
 
+inventoryRouter.get("/tag", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.genreTagHandler.getAllTags(req.auth))
+})
+
 inventoryRouter.post("/tag", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.genreTagHandler.addTag(req.body, req.auth));
 });
