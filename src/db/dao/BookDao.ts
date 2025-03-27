@@ -215,6 +215,36 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
+  public async createBook(title, isbn_list, author, primary_genre_id, audience_id, 
+    pages, series_id, series_number, publish_date, short_description, language, img_callback) {
+    try {
+      let insertQuery = this.db.insertInto('books')
+      .columns(['book_title', 'isbn_list', 'author', 'primary_genre_id', 'audience_id', 'pages',
+        'series_id', 'series_number', 'publish_date', 'short_description', 'language', 'img_callback'
+      ])
+      .values({
+        book_title: title,
+        isbn_list,
+        author,
+        primary_genre_id,
+        audience_id,
+        pages,
+        series_id,
+        series_number,
+        publish_date,
+        short_description,
+        language,
+        img_callback,
+      })
+      
+      const result = await insertQuery.execute();
+      console.log(result, 'We Did It!!!')
+      return new SuccessResponse('Successfully Created a Book', result)
+    } catch (e) {
+      return new ServerErrorResponse(e.message, 500)
+    }
+  }
+
   // Function for getting new arrivals
     // Get distinct counts from inventory sort by the id descending 
     // Sort by book id table descending

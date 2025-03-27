@@ -53,4 +53,18 @@ export default class BookDataHandler {
     return await this.isbnService.retrieveMetadata(isbnString)
   }
 
+  // This function will take an object for book data and update it in the db
+  // This responds with a 401 if the request isn't made by an admin
+  public async updateBook(book: any, authRole: string) {
+    if (authRole != 'Admin') {
+      return new RequestErrorResponse('Admin User Type Required', 401)
+    }
+    console.log(book);
+    if (book.book_title == null || book.isbn_list == null || book.primary_genre_name == null) {
+      return new RequestErrorResponse('Missing book title, isbn_list, and/or primary_genre', 400)
+    }
+    
+    return await this.bookManagementService.updateBook(book)
+  }
+
 }
