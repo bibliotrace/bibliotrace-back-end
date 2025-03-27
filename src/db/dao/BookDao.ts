@@ -17,15 +17,11 @@ class BookDao extends Dao<Book, number> {
   }
 
   // TODO: optimize to use index on isbn_list
-  public async getBookByIsbn(
-    isbn: string,
-    transaction?: Transaction<Database>
-  ): Promise<Response<Book>> {
+  public async getBookByIsbn(isbn: string, transaction?: Transaction<Database>): Promise<Response<Book>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        // console.log("Fetching Book By ISBN", isbn);
         const book = await this.db
           .selectFrom(this.tableName as keyof Database)
           .select([
@@ -56,18 +52,12 @@ class BookDao extends Dao<Book, number> {
         }
         return new SuccessResponse(`Successfully retrieved book with isbn ${isbn}`, book);
       } catch (error) {
-        return new ServerErrorResponse(
-          `Failed to retrieve book with isbn ${isbn} with error ${error}`,
-          500
-        );
+        return new ServerErrorResponse(`Failed to retrieve book with isbn ${isbn} with error ${error}`, 500);
       }
     }
   }
 
-  public async getBookTagsByIsbn(
-    isbn: string,
-    transaction?: Transaction<Database>
-  ): Promise<Response<any>> {
+  public async getBookTagsByIsbn(isbn: string, transaction?: Transaction<Database>): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
@@ -83,23 +73,15 @@ class BookDao extends Dao<Book, number> {
           return new SuccessResponse(`No book found with isbn ${isbn}`);
         }
 
-        // console.log(book);
-
         return new SuccessResponse(`Successfully retrieved tags for book with isbn ${isbn}`, book);
       } catch (error) {
-        return new ServerErrorResponse(
-          `Failed to retrieve book with isbn ${isbn} with error ${error}`,
-          500
-        );
+        return new ServerErrorResponse(`Failed to retrieve book with isbn ${isbn} with error ${error}`, 500);
       }
     }
   }
 
   // TODO: optimize to use index on name
-  public async getBookByName(
-    name: string,
-    transaction?: Transaction<Database>
-  ): Promise<Response<Book>> {
+  public async getBookByName(name: string, transaction?: Transaction<Database>): Promise<Response<Book>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
@@ -115,10 +97,7 @@ class BookDao extends Dao<Book, number> {
         }
         return new SuccessResponse(`Successfully retrieved book with name ${name}`, book);
       } catch (error) {
-        return new ServerErrorResponse(
-          `Failed to retrieve book with name ${name} with error ${error}`,
-          500
-        );
+        return new ServerErrorResponse(`Failed to retrieve book with name ${name} with error ${error}`, 500);
       }
     }
   }
@@ -141,20 +120,13 @@ class BookDao extends Dao<Book, number> {
           .leftJoin("audiences", "audiences.id", "books.audience_id")
           .leftJoin("series", "series.id", "books.series_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
-          .select([
-            "books.id",
-            "books.book_title",
-            "books.author",
-            "genre.genre_name",
-            "series.series_name",
-          ])
+          .select(["books.id", "books.book_title", "books.author", "genre.genre_name", "series.series_name"])
           .where("campus.campus_name", "=", campus)
           .where("books.isbn_list", "like", `%${isbn}%`);
-
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
             // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
-            dbQuery = dbQuery.where(filter.key as any, "=", filter.value as any);
+            dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
           }
         }
 
@@ -162,9 +134,7 @@ class BookDao extends Dao<Book, number> {
         if (dbResult) {
           return new SuccessResponse("successfully grabbed book", dbResult);
         } else {
-          return new SuccessResponse(
-            `No book found with isbn ${isbn} and campus ${campus} matching filters`
-          );
+          return new SuccessResponse(`No book found with isbn ${isbn} and campus ${campus} matching filters`);
         }
       } catch (error) {
         return new ServerErrorResponse(
@@ -197,15 +167,13 @@ class BookDao extends Dao<Book, number> {
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
             // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
-            dbQuery = dbQuery.where(filter.key as any, "=", filter.value as any);
+            dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
           }
         }
 
         const dbResult = await dbQuery.execute();
         if (!dbResult || dbResult.length === 0) {
-          return new SuccessResponse(
-            `No isbns found on campus ${campus} matching provided filters`
-          );
+          return new SuccessResponse(`No isbns found on campus ${campus} matching provided filters`);
         }
         return new SuccessResponse(
           `Successfully retrieved all isbns on campus ${campus} matching filters`,
@@ -219,10 +187,67 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
+  public async createBook(
+    title,
+    isbn_list,
+    author,
+    primary_genre_id,
+    audience_id,
+    pages,
+    series_id,
+    series_number,
+    publish_date,
+    short_description,
+    language,
+    img_callback
+  ) {
+    try {
+      if (series_number === "") {
+        series_number = 0;
+      }
+      const insertQuery = this.db
+        .insertInto("books")
+        .columns([
+          "book_title",
+          "isbn_list",
+          "author",
+          "primary_genre_id",
+          "audience_id",
+          "pages",
+          "series_id",
+          "series_number",
+          "publish_date",
+          "short_description",
+          "language",
+          "img_callback",
+        ])
+        .values({
+          book_title: title,
+          isbn_list,
+          author,
+          primary_genre_id,
+          audience_id,
+          pages,
+          series_id,
+          series_number,
+          publish_date,
+          short_description,
+          language,
+          img_callback,
+        });
+
+      const result = await insertQuery.execute();
+      console.log(result, "We Did It!!!");
+      return new SuccessResponse("Successfully Created a Book", result);
+    } catch (e) {
+      return new ServerErrorResponse(e.message, 500);
+    }
+  }
+
   // Function for getting new arrivals
-    // Get distinct counts from inventory sort by the id descending 
-    // Sort by book id table descending
-    // Limit 50?
+  // Get distinct counts from inventory sort by the id descending
+  // Sort by book id table descending
+  // Limit 50?
 }
 
 export default BookDao;

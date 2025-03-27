@@ -1503,13 +1503,14 @@ describe("DAO testing suite", () => {
         });
 
         test("Successful retrieval of book with filters applied", async () => {
-          const filterQueryList = [{ key: "genre.genre_name", value: "Fantasy" }];
+          const filterQueryList = [{ key: "genre.genre_name", value: ["Fantasy"] }];
           const isbn = "9780747532743";
           const campus = "Hogwarts";
 
           const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
 
           expect(response).toBeDefined();
+          console.log(response)
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeDefined();
@@ -1589,8 +1590,8 @@ describe("DAO testing suite", () => {
 
         test("Successful retrieval of all ISBNs with filters applied", async () => {
           const filterQueryList = [
-            { key: "genre.genre_name", value: "Fantasy" },
-            { key: "audiences.audience_name", value: "Potterheads" },
+            { key: "genre.genre_name", value: ["Fantasy"] },
+            { key: "audiences.audience_name", value: ["Potterheads"] },
           ];
           const campus = "Hogwarts";
 

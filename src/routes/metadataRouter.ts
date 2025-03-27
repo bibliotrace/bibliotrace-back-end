@@ -10,8 +10,8 @@ metadataRouter.get("/genre", async (req, res) => {
   sendResponse(res, response);
 });
 
-metadataRouter.get("/tag", async (req, res) => {
-  const response = await Config.dependencies.genreTagHandler.getTags();
+metadataRouter.get("/tag", async (req: any, res) => {
+  const response = await Config.dependencies.genreTagHandler.getAllTags(req.auth);
   sendResponse(res, response);
 });
 

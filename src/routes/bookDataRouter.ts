@@ -1,8 +1,7 @@
 import express from "express";
-import { sendResponse } from "../utils/utils";
-import { Config } from "../config";
-import SuccessResponse from "../response/SuccessResponse";
 import { Request as JWTRequest } from "express-jwt";
+import { Config } from "../config";
+import { sendResponse } from "../utils/utils";
 
 export const bookDataRouter = express.Router();
 
@@ -51,30 +50,87 @@ bookDataRouter.get("/:isbn", async (req, res) => {
 }
 */
 bookDataRouter.get("/suggest/:isbn", async (req: JWTRequest, res) => {
-  console.log(req.auth)
-  sendResponse(res, await Config.dependencies.bookDataHandler.getIsbnDbSuggestion(req.params.isbn, req.auth.userRole.roleType))
+  console.log(req.auth);
+  sendResponse(
+    res,
+    await Config.dependencies.bookDataHandler.getIsbnDbSuggestion(req.params.isbn, req.auth.userRole.roleType)
+  );
 });
 
-// Update an existing book's metadata
+// Update a book's metadata, whether or not it exists in the db
 /* Input: {
-
+{
+  "book_title",
+  "isbn_list",
+  "author",
+  "primary_genre",
+  "audience",
+  "pages",
+  "series_name",
+  "series_number",
+  "publish_date",
+  "short_description",
+  "language",
+  "img_callback",
+  }
 } Output: {
   message: success or failure
 }
 */
-bookDataRouter.put("/:isbn", (req, res) => {
-  sendResponse(res, new SuccessResponse("dummy")); // await Config.bookDataHandler.something)
+bookDataRouter.put("/:isbn", async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.updateBook(req.body, req.auth.userRole.roleType)); // await Config.bookDataHandler.something)
 });
 
-// Create a new book in the db
+// Add an entry to a book's secondary genres
 /* Input: {
-
+{
+  "genre": "Fantasy"
+  }
 } Output: {
   message: success or failure
 }
 */
-bookDataRouter.post("/:isbn", (req, res) => {
-  sendResponse(res, new SuccessResponse("dummy")); // await Config.bookDataHandler.something)
-});
+bookDataRouter.put('/genre-list/:isbn', async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.addGenreToBook(req.body.genre, req.params.isbn, req.auth.userRole.roleType))
+})
+
+// Delete an entry in a book's secondary genres
+/* Input: {
+{
+  "genre": "Fantasy"
+  }
+} Output: {
+  message: success or failure
+}
+*/
+bookDataRouter.delete('/genre-list/:isbn', async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.deleteGenreFromBook(req.body.genre, req.params.isbn, req.auth.userRole.roleType))
+})
+
+// Add an entry to a book's tag list
+/* Input: {
+{
+  "tag": "Harry Potter"
+  }
+} Output: {
+  message: success or failure
+}
+*/
+bookDataRouter.put('/tag-list/:isbn', async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.addTagToBook(req.body.tag, req.params.isbn, req.auth.userRole.roleType))
+})
+
+// Delete an entry from a book's tag list
+/* Input: {
+{
+  "tag": "Harry Potter"
+  }
+} Output: {
+  message: success or failure
+}
+*/
+bookDataRouter.delete('/tag-list/:isbn', async (req: JWTRequest, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.deleteTagFromBook(req.body.tag, req.params.isbn, req.auth.userRole.roleType))
+})
 
 module.exports = { bookDataRouter };
