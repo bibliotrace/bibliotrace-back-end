@@ -1,12 +1,8 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
-import BookManagementService, {
-  BookInsertRequest,
-} from "../service/BookManagementService";
+import BookManagementService from "../service/BookManagementService";
 import IsbnService from "../service/IsbnService";
 import {
-  isValidISBN,
-  parseQr,
-  parseRequiredFields
+  isValidISBN
 } from "../utils/utils";
 
 export class InventoryHandler {

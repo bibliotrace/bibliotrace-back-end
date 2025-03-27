@@ -205,7 +205,7 @@ class BookDao extends Dao<Book, number> {
       if (series_number === "") {
         series_number = 0;
       }
-      let insertQuery = this.db
+      const insertQuery = this.db
         .insertInto("books")
         .columns([
           "book_title",

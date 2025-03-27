@@ -3,7 +3,6 @@ import BookManagementService from "../service/BookManagementService";
 import IsbnService from "../service/IsbnService";
 import { isValidISBN, sanitizeISBN } from "../utils/utils";
 import Response from "../response/Response";
-import SuccessResponse from "../response/SuccessResponse";
 
 export default class BookDataHandler {
   private bookManagementService: BookManagementService;

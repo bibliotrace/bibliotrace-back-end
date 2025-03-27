@@ -1,17 +1,11 @@
+import DaoFactory from "../db/dao/DaoFactory";
 import { Book } from "../db/schema/Book";
-import { Campus } from "../db/schema/Campus";
-import { Checkout } from "../db/schema/Checkout";
-import { Inventory } from "../db/schema/Inventory";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
 import SuccessResponse from "../response/SuccessResponse";
 import Service from "./Service";
-import DaoFactory from "../db/dao/DaoFactory";
-import ServerErrorResponse from "../response/ServerErrorResponse";
-import { Genre } from "../db/schema/Genre";
-import { Audience } from "../db/schema/Audience";
-import RequestErrorResponse from "../response/RequestErrorResponse";
 
-const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
+// const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
 export default class BookManagementService extends Service {
   constructor(daoFactory: DaoFactory) {

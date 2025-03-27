@@ -1,8 +1,7 @@
 import express from "express";
-import { sendResponse } from "../utils/utils";
-import { Config } from "../config";
-import SuccessResponse from "../response/SuccessResponse";
 import { Request as JWTRequest } from "express-jwt";
+import { Config } from "../config";
+import { sendResponse } from "../utils/utils";
 
 export const bookDataRouter = express.Router();
 
