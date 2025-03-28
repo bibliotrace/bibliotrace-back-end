@@ -52,4 +52,11 @@ inventoryRouter.get("/audit", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.auditHandler.getCurrentAudit(req.auth));
 });
 
+inventoryRouter.post("/audit/completeLocation", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.auditHandler.completeLocation(req.body, req.auth));
+});
+
+inventoryRouter.post("/audit/complete", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.auditHandler.completeAudit(req.body));
+});
 module.exports = { inventoryRouter };

@@ -4,6 +4,7 @@ import { AuditEntry, State } from "../db/schema/AuditEntry";
 import { Book } from "../db/schema/Book";
 import { Campus } from "../db/schema/Campus";
 import { Inventory } from "../db/schema/Inventory";
+import { Location } from "../db/schema/Location";
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
 import ServerErrorResponse from "../response/ServerErrorResponse";
@@ -91,6 +92,11 @@ export default class AuditService extends Service {
       return new RequestErrorResponse(`Campus with name: ${campus_name} not found`);
     }
 
+    const locationResponse = await this.locationDao.setInAuditForCampus(campus_response.object.id);
+    if (locationResponse.statusCode !== 200) {
+      return locationResponse;
+    }
+
     const auditObj: Audit = {
       campus_id: campus_response.object.id,
     };
@@ -106,5 +112,23 @@ export default class AuditService extends Service {
     }
 
     return await this.auditDao.getCurrentAuditForCampus(campus_response.object.id);
+  }
+
+  public async completeLocation(
+    location_id: number,
+    campus_name: string
+  ): Promise<Response<Location | Campus>> {
+    const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
+    if (campus_response.statusCode !== 200) {
+      return campus_response;
+    } else if (!campus_response.object) {
+      return new RequestErrorResponse(`Campus with name: ${campus_name} not found`);
+    }
+
+    return await this.locationDao.update(location_id, { in_audit: 0 });
+  }
+
+  public async completeAudit(audit_id: number): Promise<Response<Audit>> {
+    return this.auditDao.update(audit_id, { completed_date: new Date() });
   }
 }

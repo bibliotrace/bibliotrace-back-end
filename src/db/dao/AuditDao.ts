@@ -26,7 +26,7 @@ class AuditDao extends Dao<Audit, number> {
           .selectFrom(this.tableName as keyof Database)
           .selectAll()
           .where("campus_id", "=", campus_id)
-          .where("complete_date", "is", null)
+          .where("completed_date", "is", null)
           .executeTakeFirst();
 
         if (!result) {
