@@ -22,7 +22,7 @@ class LocationDao extends Dao<Location, number> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        const result = await this.db
+        await this.db
           .updateTable(this.tableName as keyof Database)
           .set({ in_audit: 1 })
           .where("campus_id", "=", campus_id)

@@ -150,13 +150,13 @@ export default class AuditService extends Service {
     }
 
     for (const inventory of inventoryResponse.object) {
-      let auditEntryObj: AuditEntry = {
+      const auditEntryObj: AuditEntry = {
         audit_id: audit_id,
         qr: inventory.qr,
         state: State.MISSING,
       };
 
-      let auditEntryResponse = await this.auditEntryDao.create(auditEntryObj);
+      const auditEntryResponse = await this.auditEntryDao.create(auditEntryObj);
       if (auditEntryResponse.statusCode !== 200) {
         return auditEntryResponse;
       }
