@@ -21,8 +21,8 @@ inventoryRouter.delete("/genre", async (req: any, res) => {
 });
 
 inventoryRouter.get("/tag", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.genreTagHandler.getAllTags(req.auth))
-})
+  sendResponse(res, await Config.dependencies.genreTagHandler.getAllTags(req.auth));
+});
 
 inventoryRouter.post("/tag", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.genreTagHandler.addTag(req.body, req.auth));
@@ -37,6 +37,10 @@ inventoryRouter.post("/setLocation", async (req: any, res) => {
     res,
     await Config.dependencies.locationHandler.setBookLocationInInventory(req.body, req.auth)
   );
+
+  inventoryRouter.post("/auditEntry", async (req: any, res) => {
+    sendResponse(res, await Config.dependencies.auditHandler.auditBook(req.body, req.auth));
+  });
 });
 
 module.exports = { inventoryRouter };
