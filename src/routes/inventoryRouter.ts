@@ -37,10 +37,19 @@ inventoryRouter.post("/setLocation", async (req: any, res) => {
     res,
     await Config.dependencies.locationHandler.setBookLocationInInventory(req.body, req.auth)
   );
+});
 
-  inventoryRouter.post("/auditEntry", async (req: any, res) => {
-    sendResponse(res, await Config.dependencies.auditHandler.auditBook(req.body, req.auth));
-  });
+inventoryRouter.post("/auditEntry", async (req: any, res) => {
+  const [response, book_obj] = await Config.dependencies.auditHandler.auditBook(req.body, req.auth);
+  res.send({ message: response.message, object: book_obj });
+});
+
+inventoryRouter.post("/audit", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.auditHandler.startAudit(req.auth));
+});
+
+inventoryRouter.get("/audit", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.auditHandler.getCurrentAudit(req.auth));
 });
 
 module.exports = { inventoryRouter };

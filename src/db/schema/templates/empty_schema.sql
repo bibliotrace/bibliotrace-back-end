@@ -101,10 +101,10 @@ CREATE TABLE audit (
 );
 
 CREATE TABLE audit_entry (
-  id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   qr VARCHAR(15) NOT NULL,
   audit_id TINYINT UNSIGNED NOT NULL,
   state ENUM('Missing', 'Misplaced', 'Found', 'Extra'),
+  PRIMARY KEY (qr, audit_id),
   FOREIGN KEY (qr) REFERENCES inventory(qr),
   FOREIGN KEY (audit_id) REFERENCES audit(id)
 );
