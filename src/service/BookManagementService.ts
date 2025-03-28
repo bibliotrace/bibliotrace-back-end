@@ -1,16 +1,11 @@
+import DaoFactory from "../db/dao/DaoFactory";
 import { Book } from "../db/schema/Book";
-import { Campus } from "../db/schema/Campus";
-import { Checkout } from "../db/schema/Checkout";
-import { Inventory } from "../db/schema/Inventory";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
 import SuccessResponse from "../response/SuccessResponse";
 import Service from "./Service";
-import DaoFactory from "../db/dao/DaoFactory";
-import ServerErrorResponse from "../response/ServerErrorResponse";
-import { Genre } from "../db/schema/Genre";
-import { Audience } from "../db/schema/Audience";
 
-const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
+// const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
 export default class BookManagementService extends Service {
   constructor(daoFactory: DaoFactory) {
@@ -18,7 +13,22 @@ export default class BookManagementService extends Service {
   }
 
   public async getByIsbn(isbn: string): Promise<Response<Book>> {
-    return await this.bookDao.getBookByIsbn(isbn);
+    // Pull basic book data in a large base query
+    const bookDataResponse = (await this.bookDao.getBookByIsbn(isbn)) as Response<any>;
+    if (bookDataResponse.statusCode === 200 && bookDataResponse.object != null) {
+      // Pull external genres and tags to add to the book
+      const genresResponse = await this.bookGenreDao.getGenresByBookId(bookDataResponse.object.id);
+      if (genresResponse.statusCode === 200 && genresResponse.object != null) {
+        bookDataResponse._object.genre_list = genresResponse.object;
+      }
+
+      const tagsResponse = await this.bookTagDao.getTagsByBookId(bookDataResponse.object.id);
+      if (tagsResponse.statusCode === 200 && tagsResponse.object != null) {
+        bookDataResponse._object.tag_list = tagsResponse.object;
+      }
+    }
+
+    return bookDataResponse;
   }
 
   public async getByQr(qr: string): Promise<Response<any>> {
@@ -37,193 +47,237 @@ export default class BookManagementService extends Service {
     return await this.bookDao.getBookTagsByIsbn(isbn);
   }
 
-  private async updateBookByTitle(request: Book): Promise<Response<any>> {
+  public async updateBook(request: any): Promise<Response<any>> {
     const title = request.book_title;
+    const isbn_list = request.isbn_list;
+    const author = request.author;
+    const primary_genre_name = request.primary_genre_name;
+    const audience_name = request.audience_name;
+    const pages = request.pages;
+    const series_name = request.series_name;
+    const series_number = request.series_number;
+    const publish_date = request.publish_date;
+    const short_description = request.short_description;
+    const language = request.language;
+    const img_callback = request.img_callback;
+
+    // Get ids for reference names
+    let primary_genre_id, audience_id, series_id;
+    const genreResponse = await this.genreDao.getByKeyAndValue("genre_name", primary_genre_name);
+    if (genreResponse == null || genreResponse.statusCode != 200) {
+      return genreResponse;
+    } else if (genreResponse.object == null) {
+      return new RequestErrorResponse("Primary Genre ID Not Found", 404);
+    } else {
+      primary_genre_id = genreResponse.object.id;
+    }
+    const audienceResponse = await this.audienceDao.getByKeyAndValue("audience_name", audience_name);
+    if (audienceResponse == null || audienceResponse.statusCode != 200) {
+      return audienceResponse;
+    } else if (audienceResponse.object == null) {
+      return new RequestErrorResponse("Audience ID Not Found", 404);
+    } else {
+      audience_id = audienceResponse.object.id;
+    }
+    const seriesResponse = await this.seriesDao.getByKeyAndValue("series_name", series_name);
+    if (seriesResponse != null && seriesResponse.statusCode != 200) {
+      return seriesResponse;
+    } else if (seriesResponse.object != null) {
+      series_id = seriesResponse.object.id;
+    }
+
+    if (primary_genre_id == null || audience_id == null) {
+      return new RequestErrorResponse("Primary Genre and Audience Required, but Not Found", 400);
+    }
+
     const bookResponse = await this.getByTitle(title);
+
     if (bookResponse.statusCode !== 200) {
       return bookResponse;
     } else if (!bookResponse.object) {
-      return new ServerErrorResponse(`No book found with title ${title} to update`);
-    }
-    const book = bookResponse.object; // guaranteed to exist here
-    const updatedInformation: any = { ...request };
-    if (request.isbn_list != null && !book.isbn_list.includes(request.isbn_list)) {
-      // The isbn number from the request isn't in the book response
-      const updatedIsbnList = book.isbn_list + `|${request.isbn_list}`;
-      updatedInformation.isbn_list = updatedIsbnList;
-    } else if (request.isbn_list != null && book.isbn_list.includes(request.isbn_list)) {
-      updatedInformation.isbn_list = book.isbn_list;
-    }
-    return await this.bookDao.update(book.id, updatedInformation);
-  }
-
-  // TODO: this should roll back if any of the requests fail with transaction stuff
-  public async insertBook(request: BookInsertRequest) {
-    // check ISBN first because it's faster to match on than book name string
-    let bookResponse;
-    if (request.isbn) {
-      bookResponse = await this.bookDao.getBookByIsbn(this.parseIsbnList(request.isbn)[0]);
-      // check by title if the isbn doesn't work
-      if (bookResponse.statusCode !== 200 || !bookResponse.object) {
-        bookResponse = await this.bookDao.getBookByName(request.book_title);
+      // Create a new book
+      const response = await this.bookDao.createBook(
+        title,
+        isbn_list,
+        author,
+        primary_genre_id,
+        audience_id,
+        pages,
+        series_id,
+        series_number,
+        publish_date,
+        short_description,
+        language,
+        img_callback
+      );
+      if (response.statusCode !== 200) {
+        return response;
+      } else {
+        return new SuccessResponse("Completed Book Creation");
       }
     } else {
-      bookResponse = await this.bookDao.getBookByName(request.book_title);
+      // Do stuff to update the book
+      const book = bookResponse.object; // guaranteed to exist here
+      const updatedInformation: Book = {
+        book_title: title,
+        author,
+        isbn_list,
+        primary_genre_id,
+        audience_id,
+        pages,
+        series_id,
+        series_number,
+        publish_date,
+        short_description,
+        language,
+        img_callback,
+      };
+      return await this.bookDao.update(book.id, updatedInformation);
     }
-
-    if (bookResponse.statusCode === 500 || bookResponse.message.includes("No book found")) {
-      // book does not already exist in book table
-      bookResponse = await this.parseBook(request);
-      if (bookResponse.statusCode != 200) {
-        return bookResponse;
-      }
-      bookResponse = await this.bookDao.create(bookResponse.object);
-      if (bookResponse.statusCode != 200) {
-        return bookResponse;
-      }
-    } else if (bookResponse.statusCode === 200) {
-      // book already exists in book table
-      bookResponse = await this.parseBook(request);
-      if (bookResponse.statusCode != 200) {
-        return bookResponse;
-      }
-      const updateResponse = await this.updateBookByTitle(bookResponse.object as Book);
-      if (updateResponse.statusCode !== 200) {
-        return updateResponse;
-      }
-    }
-
-    // Get the target book
-    bookResponse = await this.bookDao.getBookByIsbn(this.parseIsbnList(request.isbn)[0]);
-    // Sconsole.log(bookResponse);
-    if (bookResponse.statusCode !== 200 || !bookResponse.object) {
-      // we can't find the book we just created lol
-      return new ServerErrorResponse(bookResponse.message);
-    }
-
-    const inventoryParseResponse = await this.parseInventory(request, bookResponse.object.id);
-    if (inventoryParseResponse.statusCode != 200) {
-      return inventoryParseResponse;
-    }
-
-    const inventoryResponse = (await this.inventoryDao.create(
-      inventoryParseResponse.object as Inventory
-    )) as Response<Inventory>;
-    if (inventoryResponse.message.includes("already exists")) {
-      return await this.inventoryDao.update(request.qr, inventoryParseResponse.object as Inventory);
-      // updating an existing inventory item should not trigger a new checkout, thus we return here
-    } else if (inventoryResponse.statusCode !== 200) {
-      return inventoryResponse;
-    }
-
-    const checkout: Checkout = {
-      // timestamp is autogenerated by the database
-      qr: request.qr,
-      book_id: bookResponse.object.id,
-      state: "First",
-    };
-
-    const checkoutResponse = await this.checkoutDao.create(checkout);
-    if (checkoutResponse.statusCode != 200) {
-      return checkoutResponse;
-    }
-
-    return new SuccessResponse(`Book ${bookResponse.object.book_title} successfully created`);
   }
 
-  private async parseBook(
-    bookRequest: BookInsertRequest
-  ): Promise<Response<Book | Genre[] | Audience[]>> {
-    console.log(bookRequest, "Book Request about to be parsed...");
-    const genreIdResponse = await this.genreDao.getAllMatchingOnIndex(
-      "genre_name",
-      bookRequest.primary_genre
-    );
-    if (genreIdResponse.statusCode !== 200) {
-      return genreIdResponse;
+  public async addGenreToBook(genreString: string, isbn: string): Promise<Response<any>> {
+    let genreId, bookId;
+    const genreResponse = await this.genreDao.getByKeyAndValue("genre_name", genreString);
+    if (genreResponse != null && genreResponse.statusCode !== 200) {
+      return genreResponse;
+    } else if (genreResponse != null && genreResponse.object != null) {
+      genreId = genreResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Genre Not Found", 404);
     }
-    const primary_genre_id = genreIdResponse.object[0].id;
-
-    const audienceIdResponse = await this.audienceDao.getAllMatchingOnIndex(
-      "audience_name",
-      bookRequest.audience
-    );
-    if (audienceIdResponse.statusCode !== 200) {
-      return audienceIdResponse;
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse != null && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse != null) {
+      bookId = bookResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Book Not Found by ISBN", 404);
     }
-    const audience_id = audienceIdResponse.object[0].id;
 
-    const book: Book = {
-      book_title: bookRequest.book_title,
-      isbn_list: bookRequest.isbn,
-      author: bookRequest.author,
-      primary_genre_id,
-      audience_id,
-    };
-
-    if (bookRequest.pages) {
-      book.pages = bookRequest.pages;
-    }
-    if (bookRequest.series_name) {
-      let seriesResponse: Response<any> = await this.seriesDao.getByKeyAndValue(
-        "series_name",
-        bookRequest.series_name
-      );
-      if (seriesResponse.statusCode !== 200) {
-        return seriesResponse;
-      } else if (!seriesResponse.object) {
-        // query executed successfully, but no series found
-        seriesResponse = await this.seriesDao.create({
-          series_name: bookRequest.series_name,
-        });
-        if (seriesResponse.statusCode !== 200) {
-          return seriesResponse;
+    const bookGenreResponse = await this.bookGenreDao.getAllByKeyAndValue("book_id", bookId);
+    if (bookGenreResponse != null && bookGenreResponse.statusCode !== 200) {
+      return bookGenreResponse;
+    } else if (bookGenreResponse != null && bookGenreResponse.object != null) {
+      // Secondary Genres exist, check through them to see if you can find the new insert
+      // If so, return before doing the create again
+      const bookGenrePairs = bookGenreResponse.object;
+      for (const bookGenrePair of bookGenrePairs) {
+        if (bookGenrePair.genre_id === genreId) {
+          return new SuccessResponse("No Change", bookGenrePair);
         }
       }
-      book.series_id = seriesResponse.object.id;
-    }
-    if (bookRequest.series_number) {
-      book.series_number = bookRequest.series_number;
-    }
-    if (bookRequest.publish_date) {
-      book.publish_date = bookRequest.publish_date;
-    }
-    if (bookRequest.short_description) {
-      book.short_description = bookRequest.short_description;
-    }
-    if (bookRequest.language) {
-      book.language = bookRequest.language;
-    }
-    if (bookRequest.img_callback) {
-      book.img_callback = bookRequest.img_callback;
     }
 
-    return new SuccessResponse<Book>("Successfully parsed book", book);
+    return await this.bookGenreDao.create({ book_id: bookId, genre_id: genreId });
   }
 
-  private async parseInventory(
-    request: BookInsertRequest,
-    book_id: number
-  ): Promise<Response<Campus | Inventory>> {
-    const campusResponse = await this.campusDao.getByKeyAndValue("campus_name", request.campus);
-    if (campusResponse.statusCode !== 200) {
-      return campusResponse;
+  public async deleteGenreFromBook(genreString: string, isbn: string): Promise<Response<any>> {
+    let genreId, bookId;
+    const genreResponse = await this.genreDao.getByKeyAndValue("genre_name", genreString);
+    if (genreResponse != null && genreResponse.statusCode !== 200) {
+      return genreResponse;
+    } else if (genreResponse != null && genreResponse.object != null) {
+      genreId = genreResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Genre Not Found", 404);
     }
-    const campus_id = campusResponse.object.id;
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse != null && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse != null) {
+      bookId = bookResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Book Not Found by ISBN", 404);
+    }
 
-    const inventory: Inventory = {
-      qr: request.qr,
-      book_id: book_id,
-      location_id: request.location_id,
-      campus_id: campus_id,
-      ttl: MAX_TTL,
-    };
+    const bookGenreResponse = await this.bookGenreDao.getAllByKeyAndValue("book_id", bookId);
+    if (bookGenreResponse != null && bookGenreResponse.statusCode !== 200) {
+      return bookGenreResponse;
+    } else if (bookGenreResponse != null && bookGenreResponse.object != null) {
+      // Secondary Genres exist, check through them to see if you can find the new insert
+      // If so, run the delete function
+      const bookGenrePairs = bookGenreResponse.object;
+      for (const bookGenrePair of bookGenrePairs) {
+        if (bookGenrePair.genre_id === genreId) {
+          return await this.bookGenreDao.delete(bookGenrePair.id);
+        }
+      }
+    }
 
-    return new SuccessResponse<Inventory>("Successfully parsed inventory", inventory);
+    return new SuccessResponse("No Change");
   }
 
-  private parseIsbnList(isbnList: string): string[] {
-    return isbnList.split("||");
+  public async addTagToBook(tagString: string, isbn: string): Promise<Response<any>> {
+    let tagId, bookId;
+    const tagResponse = await this.tagDao.getByKeyAndValue("tag_name", tagString);
+    if (tagResponse != null && tagResponse.statusCode !== 200) {
+      return tagResponse;
+    } else if (tagResponse != null && tagResponse.object != null) {
+      tagId = tagResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Tag Not Found", 404);
+    }
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse != null && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse != null) {
+      bookId = bookResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Book Not Found by ISBN", 404);
+    }
+
+    const bookTagResponse = await this.bookTagDao.getAllByKeyAndValue("book_id", bookId);
+    if (bookTagResponse != null && bookTagResponse.statusCode !== 200) {
+      return bookTagResponse;
+    } else if (bookTagResponse != null && bookTagResponse.object != null) {
+      // Secondary Tags exist, check through them to see if you can find the new insert
+      // If so, return before doing the create again
+      const bookTagPairs = bookTagResponse.object;
+      for (const bookTagPair of bookTagPairs) {
+        if (bookTagPair.tag_id === tagId) {
+          return new SuccessResponse("No Change", bookTagPair);
+        }
+      }
+    }
+
+    return await this.bookTagDao.create({ book_id: bookId, tag_id: tagId });
+  }
+
+  public async deleteTagFromBook(tagString: string, isbn: string): Promise<Response<any>> {
+    let tagId, bookId;
+    const tagResponse = await this.tagDao.getByKeyAndValue("tag_name", tagString);
+    if (tagResponse != null && tagResponse.statusCode !== 200) {
+      return tagResponse;
+    } else if (tagResponse != null && tagResponse.object != null) {
+      tagId = tagResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Tag Not Found", 404);
+    }
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse != null && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse != null) {
+      bookId = bookResponse.object.id;
+    } else {
+      return new RequestErrorResponse("Book Not Found by ISBN", 404);
+    }
+
+    const bookTagResponse = await this.bookTagDao.getAllByKeyAndValue("book_id", bookId);
+    if (bookTagResponse != null && bookTagResponse.statusCode !== 200) {
+      return bookTagResponse;
+    } else if (bookTagResponse != null && bookTagResponse.object != null) {
+      // Secondary Genres exist, check through them to see if you can find the new insert
+      // If so, run the delete function
+      const bookTagPairs = bookTagResponse.object;
+      for (const bookGenrePair of bookTagPairs) {
+        if (bookGenrePair.tag_id === tagId) {
+          return await this.bookTagDao.delete(bookGenrePair.id);
+        }
+      }
+    }
+
+    return new SuccessResponse("No Change");
   }
 }
 
@@ -240,7 +294,14 @@ export interface BookInsertRequest {
   short_description?: string;
   language?: string;
   img_callback?: string;
-  qr: string;
-  location_id: number;
-  campus: string;
+}
+
+export interface SecondaryGenreInsertRequest {
+  book_id: number;
+  genre_id: number;
+}
+
+export interface TagInsertRequest {
+  book_id: number;
+  tag_id: number;
 }

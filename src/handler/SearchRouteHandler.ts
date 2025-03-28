@@ -52,7 +52,11 @@ export default class SearchRouteHandler {
     const bookDataResult = [];
     const bookSet = new Set<string>();
     if (isbnResult == null) {
-      isbnResult = await this.searchService.retrieveAllISBNs(filterQueryList, campus);
+      isbnResult = (await this.searchService.retrieveAllISBNs(filterQueryList, campus)).object;
+    }
+
+    if (isbnResult == null) {
+      isbnResult = []
     }
 
     // Retrieve book set from metadata function for each matching isbn result. Discard the rest
@@ -148,13 +152,13 @@ export default class SearchRouteHandler {
         // maybe we should have a map of filter table names to their respective keys?
         if (targetKey == "Genre") {
           const genreStrings = targetVal.split(",");
-          console.log("Genre Strings: ", genreStrings);
+          // console.log("Genre Strings: ", genreStrings);
 
           output.push({ key: "genre.genre_name", value: genreStrings });
         }
         if (targetKey == "Audience") {
           const audienceStrings = targetVal.split(",");
-          console.log("Audience Strings: ", audienceStrings);
+          // console.log("Audience Strings: ", audienceStrings);
 
           output.push({ key: "audiences.audience_name", value: audienceStrings });
         }
@@ -166,7 +170,7 @@ export default class SearchRouteHandler {
 
 export interface FilterListItem {
   key: string;
-  value: string;
+  value: string | string[];
 }
 
 export interface ResultRow {

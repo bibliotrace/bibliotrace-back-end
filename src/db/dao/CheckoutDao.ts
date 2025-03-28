@@ -42,6 +42,12 @@ class CheckoutDao extends Dao<Checkout, string> {
       }
     }
   }
+
+
+  // For the popular report
+
+    // Get count by book_id where the timestamp is within a date range (start time and end time)
+    // 
 }
 
 export default CheckoutDao;
