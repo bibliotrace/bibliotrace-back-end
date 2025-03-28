@@ -1,7 +1,10 @@
-import { Kysely } from "kysely";
+import { Kysely, Transaction } from "kysely";
 import Database from "../schema/Database";
-import { AuditEntry } from "../schema/AuditEntry";
+import { AuditEntry, State } from "../schema/AuditEntry";
 import Dao from "./Dao";
+import Response from "../../response/Response";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
+import SuccessResponse from "../../response/SuccessResponse";
 
 class AuditEntryDao extends Dao<AuditEntry, number> {
   constructor(db: Kysely<Database>) {

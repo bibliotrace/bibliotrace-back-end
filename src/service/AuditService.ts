@@ -59,9 +59,9 @@ export default class AuditService extends Service {
     }
 
     if (inventoryResponse.object.location_id === location_id) {
-      state = State.Found;
+      state = State.FOUND;
     } else {
-      state = State.Misplaced;
+      state = State.MISPLACED;
 
       //update inventory location if misplaced
       inventoryResponse.object.location_id = location_id;
@@ -92,11 +92,13 @@ export default class AuditService extends Service {
       return new RequestErrorResponse(`Campus with name: ${campus_name} not found`);
     }
 
+    //mark all locations as in_audit
     const locationResponse = await this.locationDao.setInAuditForCampus(campus_response.object.id);
     if (locationResponse.statusCode !== 200) {
       return locationResponse;
     }
 
+    //create a new audit
     const auditObj: Audit = {
       campus_id: campus_response.object.id,
     };
@@ -128,7 +130,38 @@ export default class AuditService extends Service {
     return await this.locationDao.update(location_id, { in_audit: 0 });
   }
 
-  public async completeAudit(audit_id: number): Promise<Response<Audit>> {
+  public async completeAudit(
+    audit_id: number,
+    campus_name: string
+  ): Promise<Response<Audit | AuditEntry | Campus | Inventory[]>> {
+    const campusResponse = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
+    if (campusResponse.statusCode !== 200) {
+      return campusResponse;
+    } else if (!campusResponse.object) {
+      return new RequestErrorResponse(`Could not find campus with name: ${campus_name}`);
+    }
+
+    const inventoryResponse = await this.inventoryDao.getMissingInventoryForAudit(
+      audit_id,
+      campusResponse.object.id
+    );
+    if (inventoryResponse.statusCode !== 200) {
+      return inventoryResponse;
+    }
+
+    for (const inventory of inventoryResponse.object) {
+      let auditEntryObj: AuditEntry = {
+        audit_id: audit_id,
+        qr: inventory.qr,
+        state: State.MISSING,
+      };
+
+      let auditEntryResponse = await this.auditEntryDao.create(auditEntryObj);
+      if (auditEntryResponse.statusCode !== 200) {
+        return auditEntryResponse;
+      }
+    }
+
     return this.auditDao.update(audit_id, { completed_date: new Date() });
   }
 }

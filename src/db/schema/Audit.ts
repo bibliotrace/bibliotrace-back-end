@@ -1,5 +1,5 @@
 interface Audit {
-  id?: number | null;
+  id?: number;
   campus_id: number;
   start_date?: Date | null;
   completed_date?: Date | null;

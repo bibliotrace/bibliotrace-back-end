@@ -57,6 +57,6 @@ inventoryRouter.post("/audit/completeLocation", async (req: any, res) => {
 });
 
 inventoryRouter.post("/audit/complete", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.auditHandler.completeAudit(req.body));
+  sendResponse(res, await Config.dependencies.auditHandler.completeAudit(req.body, req.auth));
 });
 module.exports = { inventoryRouter };

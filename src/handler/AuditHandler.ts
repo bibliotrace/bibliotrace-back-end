@@ -68,11 +68,16 @@ export default class AuditHandler {
     return await this.auditService.completeLocation(reqBody.location_id, auth.userRole.campus);
   }
 
-  public async completeAudit(reqBody): Promise<Response<Audit>> {
+  public async completeAudit(
+    reqBody,
+    auth
+  ): Promise<Response<Audit | AuditEntry | Campus | Inventory[]>> {
     if (!reqBody.audit_id) {
       return new RequestErrorResponse("Missing audit_id");
+    } else if (!auth?.userRole?.campus) {
+      return new RequestErrorResponse("Missing campus");
     }
 
-    return await this.auditService.completeAudit(reqBody.audit_id);
+    return await this.auditService.completeAudit(reqBody.audit_id, auth.userRole.campus);
   }
 }

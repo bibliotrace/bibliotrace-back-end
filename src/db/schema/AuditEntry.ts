@@ -1,15 +1,15 @@
-export enum State {
-  "Missing",
-  "Misplaced",
-  "Found",
-  "Extra",
+export const enum State {
+  MISSING = "Missing",
+  MISPLACED = "Misplaced",
+  FOUND = "Found",
+  EXTRA = "Extra",
 }
 
 interface AuditEntry {
   id?: number;
   qr: string;
   audit_id: number;
-  state?: State;
+  state?: State | null;
 }
 
 export type { AuditEntry };

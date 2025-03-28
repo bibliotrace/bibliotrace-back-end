@@ -81,6 +81,43 @@ class InventoryDao extends Dao<Inventory, string> {
     }
   }
 
+  public async getMissingInventoryForAudit(
+    audit_id: number,
+    campus_id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<Inventory[]>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .select("qr")
+          .where("qr", "not in", (qb) =>
+            qb
+              .selectFrom("audit_entry" as keyof Database)
+              .select("qr")
+              .where("audit_id", "=", audit_id)
+          )
+          .where("campus_id", "=", campus_id)
+          .execute();
+
+        if (!result) {
+          return new SuccessResponse(`No missing inventory`, null);
+        }
+        return new SuccessResponse(
+          `Missing inventory for audit ${audit_id} found successfully`,
+          result as Inventory[]
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to find missing inventory with error ${error.message}`,
+          500
+        );
+      }
+    }
+  }
+
   public async getBookDataFromQr(
     qr: string,
     transaction?: Transaction<Database>
