@@ -35,7 +35,7 @@ server.use(
       console.log("EXPIREDDDD");
       throw err;
     },
-  }).unless({ path: ["/api/auth/login"] })
+  }).unless({ path: ["/api/auth/login", "/health"] })
 );
 
 const apiRouter = express.Router();
