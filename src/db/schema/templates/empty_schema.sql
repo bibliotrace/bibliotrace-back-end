@@ -1,15 +1,10 @@
 -- USE bibliotrace_v3_test;
 
-DROP TABLE IF EXISTS auth, genres, genre_types, tags, shopping_list, restock_list, location, audiences, audit, audit_states, campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles, books, book_tag, book_genre ;
+DROP TABLE IF EXISTS auth, audit_states, genres, genre_types, tags, shopping_list, restock_list, location, audiences, audit, audit_entry, campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles, books, book_tag, book_genre ;
 
 CREATE TABLE audiences (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   audience_name VARCHAR(255) NOT NULL
-);
-
-CREATE TABLE audit_states (
-  id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-  audit_state_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE series (
@@ -33,6 +28,7 @@ CREATE TABLE location (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   campus_id TINYINT UNSIGNED NOT NULL,
   location_name VARCHAR(255) NOT NULL,
+  in_audit BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (campus_id) REFERENCES campus(id)
 );
 
@@ -79,18 +75,8 @@ CREATE TABLE book_tag (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_id INT UNSIGNED NOT NULL,
   tag_id INT UNSIGNED NOT NULL,
-  FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
-  FOREIGN KEY (tag_id) REFERENCES tag(id) ON DELETE CASCADE
-);
-
-CREATE TABLE audit (
-  book_id INT UNSIGNED PRIMARY KEY,
-  last_audit_date DATE DEFAULT (CURRENT_DATE),
-  state_id TINYINT UNSIGNED NOT NULL,
-  expected_amount SMALLINT,
-  actual_amount SMALLINT,
   FOREIGN KEY (book_id) REFERENCES books(id),
-  FOREIGN KEY (state_id) REFERENCES audit_states(id)
+  FOREIGN KEY (tag_id) REFERENCES tag(id)
 );
 
 CREATE TABLE inventory (
@@ -106,6 +92,23 @@ CREATE TABLE inventory (
 CREATE INDEX idx_location ON inventory(location_id);
 CREATE INDEX idx_campus_id ON campus(id);
 CREATE INDEX idx_ttl ON inventory(ttl);
+
+CREATE TABLE audit (
+  id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  campus_id TINYINT UNSIGNED NOT NULL,
+  start_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_date DATETIME,
+  FOREIGN KEY (campus_id) REFERENCES campus(id)
+);
+
+CREATE TABLE audit_entry (
+  qr VARCHAR(15) NOT NULL,
+  audit_id TINYINT UNSIGNED NOT NULL,
+  state ENUM('Missing', 'Misplaced', 'Found', 'Extra'),
+  PRIMARY KEY (qr, audit_id),
+  FOREIGN KEY (qr) REFERENCES inventory(qr),
+  FOREIGN KEY (audit_id) REFERENCES audit(id)
+);
 
 CREATE TABLE checkout (
   checkout_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
