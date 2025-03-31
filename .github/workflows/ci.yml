@@ -182,8 +182,17 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: "bibliotrace"
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_TARGET_NAME: ${{ secrets.DB_TARGET_NAME }}
         run: |
           aws ecr describe-repositories --repository-names bibliotrace --region us-east-1 || \
           aws ecr create-repository --repository-name bibliotrace --region us-east-1
-          docker build --platform=linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY --push .
+          docker build --platform=linux/amd64 \
+          --build-arg DB_USER=$DB_USER \
+          --build-arg DB_PASSWORD=$DB_PASSWORD \
+          --build-arg DB_HOST=$DB_HOST \
+          --build-arg DB_TARGET_NAME=$DB_TARGET_NAME \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY --push .
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:latest" >>  $GITHUB_OUTPUT
