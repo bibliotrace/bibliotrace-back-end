@@ -155,10 +155,8 @@ jobs:
         with:
           name: package
 
-      - name: Debug Secrets
-        run: |
-          echo "AWS_ACCOUNT=${{ secrets.AWS_ACCOUNT }}"
-          echo "CI_IAM_ROLE=${{ secrets.CI_IAM_ROLE }}"
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Create OIDC token to AWS
         uses: aws-actions/configure-aws-credentials@v4
