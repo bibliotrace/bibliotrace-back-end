@@ -10,12 +10,7 @@ export default class DBConnectionManager {
 
   // This is effectively the constructor for the class but this way we can have async code in it
   async initialize(): Promise<void> {
-    try {
-      await this.createDatabase();
-    } catch (error) {
-      console.error("Error creating database:", error);
-      throw error;
-    }
+    await this.createDatabase();
 
     this.pool = createPool({
       host: process.env.DB_HOST ?? "localhost",
@@ -52,6 +47,7 @@ export default class DBConnectionManager {
         });
       });
     } catch (error) {
+      console.error("Error creating or using the database:", error);
       throw error; // we need a catch block so we have a catch block lol
     } finally {
       connection.end();
