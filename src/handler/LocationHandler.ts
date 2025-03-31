@@ -36,6 +36,9 @@ export default class LocationHandler {
     if (authData.userRole?.roleType !== "Admin") {
       return new RequestErrorResponse("Only Admins are allowed to do this", 403);
     }
+    if (newLocationName == null) {
+      return new RequestErrorResponse("Missing new location name in body {newLocationName}", 400)
+    }
 
     const locationResponse = await this.locationService.addNewLocationForCampus(
       newLocationName,

@@ -1,6 +1,7 @@
 import DaoFactory from "../db/dao/DaoFactory";
 import Response from "../response/Response";
 import ServerErrorResponse from "../response/ServerErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
 import { Campus } from "../db/schema/Campus";
 import { Location } from "../db/schema/Location";
 import Service from "./Service";
@@ -36,6 +37,7 @@ export default class LocationService extends Service {
         campus_id: campus_response.object.id,
         location_name: newLocationName,
       });
+      return new SuccessResponse(`Successfully Added ${newLocationName}`)
     } catch (error) {
       console.error(error)
       return new ServerErrorResponse('Error in locationCreate', 500)

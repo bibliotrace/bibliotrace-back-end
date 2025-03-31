@@ -1,6 +1,7 @@
 import express from "express";
 import { Config } from "../config";
 import { sendResponse } from "../utils/utils";
+import SuccessResponse from "../response/SuccessResponse";
 
 export const metadataRouter = express.Router();
 
@@ -52,3 +53,8 @@ metadataRouter.post("/locations", async (req: any, res) => {
   );
   sendResponse(res, response);
 });
+
+metadataRouter.put("/locations", async (req: any, res) => {
+  console.log(req.body)
+  sendResponse(res, new SuccessResponse('yipee'))
+})
