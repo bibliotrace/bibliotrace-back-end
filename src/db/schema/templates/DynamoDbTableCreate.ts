@@ -12,7 +12,7 @@ export async function createIsbnQueryCacheTable(
 
   let isCreated = false;
   let numConnectionFailures = 0;
-  const maxConnectionFailures = 10;
+  const maxConnectionFailures = 10; // doesn't really matter what this is, just here to ensure no infinite loop
 
   while (!isCreated) {
     try {
@@ -23,7 +23,7 @@ export async function createIsbnQueryCacheTable(
         console.log(`Starting ${tableName} table creation...`);
         isCreated = true;
       } else if (err.code && err.code === "ECONNREFUSED") {
-        setTimeout(() => {}, 1000); // stupid hack to wait for the connection to be established
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // stupid hack to wait for the connection to be established
         numConnectionFailures++;
         if (numConnectionFailures >= maxConnectionFailures) {
           console.log("Max connection failures reached. Exiting...");

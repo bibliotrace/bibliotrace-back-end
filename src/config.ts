@@ -82,10 +82,10 @@ export class Config {
 
     // Database Access Class Dependencies
     const dbConnectionManager = new DBConnectionManager();
+    await dbConnectionManager.initialize();
     dbConnectionManager.testConnection();
 
     if (process.env.NODE_ENV === "local") {
-      await dbConnectionManager.executeQuery("USE bibliotrace_v3");
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
     }
@@ -106,8 +106,14 @@ export class Config {
 
     // Route Handlers
     this.dependencies.authHandler = new AuthHandler(this.authService);
-    this.dependencies.inventoryHandler = new InventoryHandler(this.bookManagementService, this.isbnService);
-    this.dependencies.bookDataHandler = new BookDataHandler(this.bookManagementService, this.isbnService);
+    this.dependencies.inventoryHandler = new InventoryHandler(
+      this.bookManagementService,
+      this.isbnService
+    );
+    this.dependencies.bookDataHandler = new BookDataHandler(
+      this.bookManagementService,
+      this.isbnService
+    );
     this.dependencies.suggestionHandler = new SuggestionHandler(this.suggestionService);
     this.dependencies.searchRouteHandler = new SearchRouteHandler(
       this.isbnService,
@@ -117,7 +123,10 @@ export class Config {
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();
     this.dependencies.filterTypeRoutesHandler = new FilterTypeRoutesHandler(daoFactory);
     this.dependencies.checkoutHandler = new CheckoutHandler(this.checkoutService);
-    this.dependencies.locationHandler = new LocationHandler(this.locationService, this.bookManagementService);
+    this.dependencies.locationHandler = new LocationHandler(
+      this.locationService,
+      this.bookManagementService
+    );
     this.dependencies.reportHandler = new ReportHandler(this.reportService);
     this.dependencies.genreTagHandler = new GenreTagHandler(this.genreTagService);
 
