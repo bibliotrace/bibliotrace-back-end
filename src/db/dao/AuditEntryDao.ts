@@ -7,7 +7,7 @@ class AuditEntryDao extends Dao<AuditEntry, number> {
   constructor(db: Kysely<Database>) {
     super(db);
     this.tableName = "audit_entry";
-    this.keyName = "id";
+    this.keyName = "qr";
     this.entityName = "audit entry";
   }
 }
