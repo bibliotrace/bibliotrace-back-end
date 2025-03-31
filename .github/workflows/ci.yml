@@ -160,8 +160,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Test OIDC Authentication
-        run: aws sts get-caller-identity
+      - name: Debug OIDC Token and Test Role
+        run: |
+          echo "Testing OIDC Token and Role Assumption"
+          echo "OIDC Token: $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+          aws sts assume-role-with-web-identity \
+            --role-arn arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/${{ secrets.CI_IAM_ROLE }} \
+            --role-session-name test-session \
+            --web-identity-token $ACTIONS_ID_TOKEN_REQUEST_TOKEN
 
       - name: Create OIDC token to AWS
         uses: aws-actions/configure-aws-credentials@v4
