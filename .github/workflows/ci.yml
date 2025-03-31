@@ -8,6 +8,11 @@ on:
       - "src/**"
       - "docker-compose.yml"
       - ".github/workflows/ci.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
 env:
   node_version: "22.x"
   FORCE_COLOR: 3
@@ -144,9 +149,6 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     needs: build
 
     steps:
