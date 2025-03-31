@@ -19,7 +19,6 @@ const localPort = 8080;
 
 Config.setup();
 
-
 if (process.env.FRONT_END_ORIGIN) {
   server.use(cors({ origin: process.env.FRONT_END_ORIGIN })); //TODO: set this as our production front-end url when we do deployment
 } else {
@@ -50,8 +49,8 @@ apiRouter.use("/metadata", metadataRouter);
 apiRouter.use("/report", reportRouter);
 apiRouter.use("/suggest", suggestRouter);
 
-server.get("/dummy", (req, res) => {
-  res.json({ message: "json testing" });
+server.get("/health", (req, res) => {
+  res.status(200).json({ message: "OK" });
 });
 
 console.log(`Server Listening on Port ${localPort}`);
