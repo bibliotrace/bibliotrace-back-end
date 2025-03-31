@@ -20,10 +20,6 @@ inventoryRouter.delete("/genre", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.genreTagHandler.removeGenre(req.body));
 });
 
-inventoryRouter.get("/tag", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.genreTagHandler.getAllTags(req.auth))
-})
-
 inventoryRouter.post("/tag", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.genreTagHandler.addTag(req.body, req.auth));
 });
@@ -39,4 +35,24 @@ inventoryRouter.post("/setLocation", async (req: any, res) => {
   );
 });
 
+inventoryRouter.post("/auditEntry", async (req: any, res) => {
+  const [response, book_obj] = await Config.dependencies.auditHandler.auditBook(req.body, req.auth);
+  res.send({ message: response.message, object: book_obj });
+});
+
+inventoryRouter.post("/audit", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.auditHandler.startAudit(req.auth));
+});
+
+inventoryRouter.get("/audit", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.auditHandler.getCurrentAudit(req.auth));
+});
+
+inventoryRouter.post("/audit/completeLocation", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.auditHandler.completeLocation(req.body, req.auth));
+});
+
+inventoryRouter.post("/audit/complete", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.auditHandler.completeAudit(req.body, req.auth));
+});
 module.exports = { inventoryRouter };

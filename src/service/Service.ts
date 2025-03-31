@@ -1,6 +1,6 @@
 import AudienceDao from "../db/dao/AudienceDao";
 import AuditDao from "../db/dao/AuditDao";
-import AuditStateDao from "../db/dao/AuditStateDao";
+import AuditEntryDao from "../db/dao/AuditEntryDao";
 import BookDao from "../db/dao/BookDao";
 import BookGenreDao from "../db/dao/BookGenreDao";
 import BookTagDao from "../db/dao/BookTagDao";
@@ -21,7 +21,7 @@ import UserRoleDao from "../db/dao/UserRoleDao";
 abstract class Service {
   protected readonly audienceDao: AudienceDao;
   protected readonly auditDao: AuditDao;
-  protected readonly auditStateDao: AuditStateDao;
+  protected readonly auditEntryDao: AuditEntryDao;
   protected readonly bookDao: BookDao;
   protected readonly bookGenreDao: BookGenreDao;
   protected readonly bookTagDao: BookTagDao;
@@ -41,7 +41,7 @@ abstract class Service {
   constructor(daoFactory: DaoFactory) {
     this.audienceDao = daoFactory.getAudienceDao();
     this.auditDao = daoFactory.getAuditDao();
-    this.auditStateDao = daoFactory.getAuditStateDao();
+    this.auditEntryDao = daoFactory.getAuditEntryDao();
     this.bookDao = daoFactory.getBookDao();
     this.bookGenreDao = daoFactory.getBookGenreDao();
     this.bookTagDao = daoFactory.getBookTagDao();
