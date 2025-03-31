@@ -2,7 +2,7 @@ import { Kysely } from "kysely";
 import Database from "../schema/Database";
 import AudienceDao from "./AudienceDao";
 import AuditDao from "./AuditDao";
-import AuditStateDao from "./AuditStateDao";
+import AuditEntryDao from "./AuditEntryDao";
 import BookDao from "./BookDao";
 import CampusDao from "./CampusDao";
 import CheckoutDao from "./CheckoutDao";
@@ -22,7 +22,7 @@ import BookTagDao from "./BookTagDao";
 class DaoFactory {
   audienceDao: AudienceDao;
   auditDao: AuditDao;
-  auditStateDao: AuditStateDao;
+  auditEntryDao: AuditEntryDao;
   bookDao: BookDao;
   bookGenreDao: BookGenreDao;
   bookTagDao: BookTagDao;
@@ -42,7 +42,7 @@ class DaoFactory {
   constructor(db: Kysely<Database>) {
     this.audienceDao = new AudienceDao(db);
     this.auditDao = new AuditDao(db);
-    this.auditStateDao = new AuditStateDao(db);
+    this.auditEntryDao = new AuditEntryDao(db);
     this.bookDao = new BookDao(db);
     this.bookGenreDao = new BookGenreDao(db);
     this.bookTagDao = new BookTagDao(db);
@@ -68,8 +68,8 @@ class DaoFactory {
     return this.auditDao;
   }
 
-  getAuditStateDao(): AuditStateDao {
-    return this.auditStateDao;
+  getAuditEntryDao(): AuditEntryDao {
+    return this.auditEntryDao;
   }
 
   getBookDao(): BookDao {
