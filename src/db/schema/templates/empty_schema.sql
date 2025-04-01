@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS series (
   series_name VARCHAR(255) NOT NULL,
   max_count TINYINT UNSIGNED
 );
-CREATE INDEX idx_series_name ON series(series_name);
+CREATE INDEX IF NOT EXISTS idx_series_name ON series(series_name);
 
 CREATE TABLE IF NOT EXISTS user_roles (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -89,9 +89,9 @@ CREATE TABLE IF NOT EXISTS inventory (
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (location_id) REFERENCES location(id)
 );
-CREATE INDEX idx_location ON inventory(location_id);
-CREATE INDEX idx_campus_id ON campus(id);
-CREATE INDEX idx_ttl ON inventory(ttl);
+CREATE INDEX IF NOT EXISTS idx_location ON inventory(location_id);
+CREATE INDEX IF NOT EXISTS idx_campus_id ON campus(id);
+CREATE INDEX IF NOT EXISTS idx_ttl ON inventory(ttl);
 
 CREATE TABLE IF NOT EXISTS audit (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -118,8 +118,8 @@ CREATE TABLE IF NOT EXISTS checkout (
   state ENUM('First', 'In', 'Out') NOT NULL,
   FOREIGN KEY (book_id) REFERENCES books(id)
 );
-CREATE INDEX idx_qr ON checkout(qr);
-CREATE INDEX idx_book_id ON checkout(book_id);
+CREATE INDEX IF NOT EXISTS idx_qr ON checkout(qr);
+CREATE INDEX IF NOT EXISTS idx_book_id ON checkout(book_id);
 
 CREATE TABLE IF NOT EXISTS suggestions (
   suggestion_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
