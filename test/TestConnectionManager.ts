@@ -22,9 +22,9 @@ class TestConnectionManager {
     }
 
     this.pool = createPool({
-      host: process.env.DB_HOST ?? "localhost",
-      user: process.env.DB_USER ?? "root",
-      password: process.env.DB_PASSWORD ?? "password",
+      host: "localhost",
+      user: "root",
+      password: "password",
       database: "bibliotrace_v3_test",
     });
 
@@ -37,9 +37,9 @@ class TestConnectionManager {
 
   private async createTestDatabase(): Promise<void> {
     const connection = createPool({
-      host: process.env.DB_HOST ?? "localhost",
-      user: process.env.DB_USER ?? "root",
-      password: process.env.DB_PASSWORD ?? "password",
+      host: "localhost",
+      user: "root",
+      password: "password",
     });
 
     try {
