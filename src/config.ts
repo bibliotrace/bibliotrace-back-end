@@ -93,6 +93,7 @@ export class Config {
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
     } else {
+      console.log("Creating tables in prod...");
       await dbConnectionManager.runCreateSQL();
     }
 
