@@ -5,10 +5,13 @@ import fs from "fs";
 import path from "path";
 
 export default class DBConnectionManager {
-  private readonly pool: Pool;
+  private pool: Pool;
   kyselyDB: Kysely<Database>;
 
-  constructor() {
+  // This is effectively the constructor for the class but this way we can have async code in it
+  async initialize(): Promise<void> {
+    await this.createDatabase();
+
     this.pool = createPool({
       host: process.env.DB_HOST ?? "localhost",
       user: process.env.DB_USER ?? "admin",
@@ -21,6 +24,34 @@ export default class DBConnectionManager {
         pool: this.pool,
       }),
     });
+  }
+
+  private async createDatabase(): Promise<void> {
+    const connection = createPool({
+      host: process.env.DB_HOST ?? "localhost",
+      user: process.env.DB_USER ?? "root",
+      password: process.env.DB_PASSWORD ?? "password",
+    });
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_TARGET_NAME}`, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      await new Promise<void>((resolve, reject) => {
+        connection.query(`USE ${process.env.DB_TARGET_NAME}`, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    } catch (error) {
+      console.error("Error creating or using the database:", error);
+      throw error; // we need a catch block so we have a catch block lol
+    } finally {
+      connection.end();
+    }
   }
 
   async testConnection(): Promise<void> {
