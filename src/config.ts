@@ -93,8 +93,9 @@ export class Config {
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
     } else {
-      console.log("Creating tables in prod...");
       await dbConnectionManager.runCreateSQL();
+      await dbConnectionManager.runAddDummyData();
+      console.log("TODO: remove dummy data in production environment");
     }
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
