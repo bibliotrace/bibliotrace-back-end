@@ -89,8 +89,12 @@ export class Config {
     dbConnectionManager.testConnection();
 
     if (process.env.NODE_ENV === "local") {
+      await dbConnectionManager.resetTables();
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
+    } else {
+      console.log("Creating tables in prod...");
+      await dbConnectionManager.runCreateSQL();
     }
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
