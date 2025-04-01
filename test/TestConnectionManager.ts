@@ -23,8 +23,8 @@ class TestConnectionManager {
 
     this.pool = createPool({
       host: "localhost",
-      user: "root",
-      password: "password",
+      user: process.env.GITHUB_ACTIONS ? "root" : "admin",
+      password: process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025",
       database: "bibliotrace_v3_test",
     });
 
@@ -38,8 +38,8 @@ class TestConnectionManager {
   private async createTestDatabase(): Promise<void> {
     const connection = createPool({
       host: "localhost",
-      user: "root",
-      password: "password",
+      user: process.env.GITHUB_ACTIONS ? "root" : "admin",
+      password: process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025",
     });
 
     try {
@@ -55,12 +55,14 @@ class TestConnectionManager {
           else resolve();
         });
       });
-      await new Promise<void>((resolve, reject) => {
-        connection.query(`GRANT ALL PRIVILEGES ON bibliotrace_v3_test TO 'admin'`, (err) => {
-          if (err) reject(err);
-          else resolve();
+      if (process.env.GITHUB_ACTIONS) {
+        await new Promise<void>((resolve, reject) => {
+          connection.query(`GRANT ALL PRIVILEGES ON bibliotrace_v3_test TO 'admin'`, (err) => {
+            if (err) reject(err);
+            else resolve();
+          });
         });
-      });
+      }
     } catch (error) {
       console.error("Error ensuring test database exists:", error);
       throw error;
