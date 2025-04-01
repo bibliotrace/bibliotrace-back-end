@@ -1,4 +1,4 @@
-name: CI / App
+name: CI workflow
 
 on:
   pull_request:
@@ -8,6 +8,11 @@ on:
       - "src/**"
       - "docker-compose.yml"
       - ".github/workflows/ci.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
 env:
   node_version: "22.x"
   FORCE_COLOR: 3

@@ -22,9 +22,9 @@ class TestConnectionManager {
     }
 
     this.pool = createPool({
-      host: process.env.DB_HOST ?? "localhost",
-      user: process.env.DB_USER ?? "root",
-      password: process.env.DB_PASSWORD ?? "password",
+      host: "localhost",
+      user: process.env.GITHUB_ACTIONS ? "root" : "admin",
+      password: process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025",
       database: "bibliotrace_v3_test",
     });
 
@@ -37,9 +37,9 @@ class TestConnectionManager {
 
   private async createTestDatabase(): Promise<void> {
     const connection = createPool({
-      host: process.env.DB_HOST ?? "localhost",
-      user: process.env.DB_USER ?? "root",
-      password: process.env.DB_PASSWORD ?? "password",
+      host: "localhost",
+      user: process.env.GITHUB_ACTIONS ? "root" : "admin",
+      password: process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025",
     });
 
     try {
@@ -55,12 +55,14 @@ class TestConnectionManager {
           else resolve();
         });
       });
-      await new Promise<void>((resolve, reject) => {
-        connection.query(`GRANT ALL PRIVILEGES ON bibliotrace_v3_test TO 'admin'`, (err) => {
-          if (err) reject(err);
-          else resolve();
+      if (process.env.GITHUB_ACTIONS) {
+        await new Promise<void>((resolve, reject) => {
+          connection.query(`GRANT ALL PRIVILEGES ON bibliotrace_v3_test TO 'admin'`, (err) => {
+            if (err) reject(err);
+            else resolve();
+          });
         });
-      });
+      }
     } catch (error) {
       console.error("Error ensuring test database exists:", error);
       throw error;
@@ -130,6 +132,12 @@ class TestConnectionManager {
     } finally {
       connection.release();
     }
+  }
+
+  async resetTables(): Promise<void> {
+    await this.executeQuery(
+      "DROP TABLE IF EXISTS auth, audit_states, genres, genre_types, tags, shopping_list, restock_list, location, audiences, audit, audit_entry, campus, checkout, genre, tag, inventory, series, suggestions, users, user_roles, books, book_tag, book_genre"
+    );
   }
 
   async runCreateTestSQL() {
