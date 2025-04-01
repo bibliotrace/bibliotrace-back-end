@@ -55,12 +55,13 @@ class TestConnectionManager {
           else resolve();
         });
       });
-      await new Promise<void>((resolve, reject) => {
+
+      /*await new Promise<void>((resolve, reject) => {
         connection.query(`GRANT ALL PRIVILEGES ON bibliotrace_v3_test TO 'admin'`, (err) => {
           if (err) reject(err);
           else resolve();
         });
-      });
+      });*/
     } catch (error) {
       console.error("Error ensuring test database exists:", error);
       throw error;
