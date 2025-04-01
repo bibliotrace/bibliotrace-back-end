@@ -22,9 +22,9 @@ class TestConnectionManager {
     }
 
     this.pool = createPool({
-      host: process.env.DB_HOST ?? "localhost",
-      user: process.env.DB_USER ?? "root",
-      password: process.env.DB_PASSWORD ?? "password",
+      host: process.env.TEST_DB_HOST ?? "localhost",
+      user: process.env.TEST_DB_USER ?? "admin",
+      password: process.env.TEST_DB_PASSWORD ?? "Bibl!otrace_2025",
       database: "bibliotrace_v3_test",
     });
 
@@ -37,9 +37,9 @@ class TestConnectionManager {
 
   private async createTestDatabase(): Promise<void> {
     const connection = createPool({
-      host: process.env.DB_HOST ?? "localhost",
-      user: process.env.DB_USER ?? "root",
-      password: process.env.DB_PASSWORD ?? "password",
+      host: process.env.TEST_DB_HOST ?? "localhost",
+      user: process.env.TEST_DB_USER ?? "admin",
+      password: process.env.TEST_DB_PASSWORD ?? "Bibl!otrace_2025",
     });
 
     try {
@@ -51,12 +51,6 @@ class TestConnectionManager {
       });
       await new Promise<void>((resolve, reject) => {
         connection.query(`USE bibliotrace_v3_test`, (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
-      await new Promise<void>((resolve, reject) => {
-        connection.query(`GRANT ALL PRIVILEGES ON bibliotrace_v3_test TO 'admin'`, (err) => {
           if (err) reject(err);
           else resolve();
         });
