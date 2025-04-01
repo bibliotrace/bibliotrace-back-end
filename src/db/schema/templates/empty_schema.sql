@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS series (
   series_name VARCHAR(255) NOT NULL,
   max_count TINYINT UNSIGNED
 );
-ALTER TABLE series ADD INDEX idx_series_name (series_name);
+-- ALTER TABLE series ADD INDEX idx_series_name (series_name);
 
 CREATE TABLE IF NOT EXISTS user_roles (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS books (
   FOREIGN KEY (audience_id) REFERENCES audiences(id),
   FOREIGN KEY (series_id) REFERENCES series(id)
 );
-ALTER TABLE books ADD INDEX idx_name (book_title);
+-- ALTER TABLE books ADD INDEX idx_name (book_title);
 
 CREATE TABLE IF NOT EXISTS book_genre (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -88,9 +88,9 @@ CREATE TABLE IF NOT EXISTS inventory (
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (location_id) REFERENCES location(id)
 );
-ALTER TABLE inventory ADD INDEX idx_location (location_id);
-ALTER TABLE inventory ADD INDEX idx_campus_id (campus_id);
-ALTER TABLE inventory ADD INDEX idx_ttl (ttl);
+-- ALTER TABLE inventory ADD INDEX idx_location (location_id);
+-- ALTER TABLE inventory ADD INDEX idx_campus_id (campus_id);
+-- ALTER TABLE inventory ADD INDEX idx_ttl (ttl);
 
 CREATE TABLE IF NOT EXISTS audit (
   id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
@@ -117,8 +117,8 @@ CREATE TABLE IF NOT EXISTS checkout (
   state ENUM('First', 'In', 'Out') NOT NULL,
   FOREIGN KEY (book_id) REFERENCES books(id)
 );
-ALTER TABLE checkout ADD INDEX idx_qr (qr);
-ALTER TABLE checkout ADD INDEX idx_book_id (book_id);
+-- ALTER TABLE checkout ADD INDEX idx_qr (qr);
+-- ALTER TABLE checkout ADD INDEX idx_book_id (book_id);
 
 CREATE TABLE IF NOT EXISTS suggestions (
   suggestion_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
