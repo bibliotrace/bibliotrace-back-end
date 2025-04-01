@@ -39,8 +39,8 @@ class TestConnectionManager {
   private async createTestDatabase(): Promise<void> {
     const connection = createPool({
       host: process.env.TEST_DB_HOST ?? "localhost",
-      user: process.env.TEST_DB_USER ?? "admin",
-      password: process.env.TEST_DB_PASSWORD ?? "Bibl!otrace_2025",
+      user: process.env.TEST_DB_USER ?? "root",
+      password: process.env.TEST_DB_PASSWORD ?? "password",
     });
 
     try {
