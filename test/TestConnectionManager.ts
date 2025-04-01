@@ -16,6 +16,7 @@ class TestConnectionManager {
 
     try {
       await this.createTestDatabase();
+      await this.useTestDatabase();
     } catch (error) {
       console.error("Error creating test database:", error);
       throw error;
@@ -49,21 +50,35 @@ class TestConnectionManager {
           else resolve();
         });
       });
+    } catch (error) {
+      console.error("Error creating test database:", error);
+      throw error;
+    } finally {
+      connection.end();
+    }
+  }
+
+  private async useTestDatabase(): Promise<void> {
+    const connection = createPool({
+      host: process.env.TEST_DB_HOST ?? "localhost",
+      user: process.env.TEST_DB_USER ?? "admin",
+      password: process.env.TEST_DB_PASSWORD ?? "Bibl!otrace_2025",
+
+      database: "bibliotrace_v3_test",
+    });
+    try {
       await new Promise<void>((resolve, reject) => {
-        connection.query(`USE bibliotrace_v3_test`, (err) => {
-          if (err) reject(err);
-          else resolve();
+        connection.query("USE bibliotrace_v3_test", (err) => {
+          if (err) {
+            console.error("Error selecting test database:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
         });
       });
-
-      /*await new Promise<void>((resolve, reject) => {
-        connection.query(`GRANT ALL PRIVILEGES ON bibliotrace_v3_test TO 'admin'`, (err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      });*/
     } catch (error) {
-      console.error("Error ensuring test database exists:", error);
+      console.error("Error using test database:", error);
       throw error;
     } finally {
       connection.end();
