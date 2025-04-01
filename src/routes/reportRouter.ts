@@ -38,4 +38,14 @@ reportRouter.delete("/restock-list", async (req: any, res) => {
   sendResponse(res, response);
 });
 
+reportRouter.get("/audit", async (req: any, res) => {
+  const response = await Config.dependencies.reportHandler.getAllAudits(req.auth);
+  sendResponse(res, response);
+});
+
+reportRouter.get("/auditEntry/:audit_id", async (req: any, res) => {
+  const response = await Config.dependencies.reportHandler.getAuditReport(req.params);
+  sendResponse(res, response);
+});
+
 module.exports = { reportRouter };
