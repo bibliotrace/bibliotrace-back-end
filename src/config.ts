@@ -85,12 +85,17 @@ export class Config {
 
     // Database Access Class Dependencies
     const dbConnectionManager = new DBConnectionManager();
+    await dbConnectionManager.initialize();
     dbConnectionManager.testConnection();
 
     if (process.env.NODE_ENV === "local") {
-      await dbConnectionManager.executeQuery("USE bibliotrace_v3");
+      await dbConnectionManager.resetTables();
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
+    } else {
+      await dbConnectionManager.runCreateSQL();
+      await dbConnectionManager.runAddDummyData();
+      console.log("TODO: remove dummy data in production environment");
     }
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);

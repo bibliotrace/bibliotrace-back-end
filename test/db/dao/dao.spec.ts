@@ -582,6 +582,7 @@ describe("DAO testing suite", () => {
   beforeEach(async () => {
     // reset test database
     // console.log("Clearing Database For Next Test");
+    await TestConnectionManager.resetTables();
     await TestConnectionManager.runCreateTestSQL();
     // console.log("Completed Drop");
     for (const [entityName, { entity, dao }] of entityDaoMap) {
