@@ -21,9 +21,12 @@ class TestConnectionManager {
       throw error;
     }
 
-    const user = process.env.GITHUB_ACTIONS ? "root" : "admin"
-    const password = process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025"
+    // const user = process.env.GITHUB_ACTIONS ? "root" : "admin"
+    // const password = process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025"
     // console.log(user, password, 'Database Credentials Used')
+
+    const user = "root"
+    const password = "password"
 
     this.pool = createPool({
       host: "localhost",
@@ -42,8 +45,8 @@ class TestConnectionManager {
   private async createTestDatabase(): Promise<void> {
     const connection = createPool({
       host: "localhost",
-      user: process.env.GITHUB_ACTIONS ? "root" : "admin",
-      password: process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025",
+      user: "root",
+      password: "password",
     });
 
     try {
