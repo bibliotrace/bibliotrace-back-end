@@ -116,7 +116,7 @@ export default class CheckoutService extends Service {
     if (quantity_response.statusCode !== 200) {
       return [quantity_response, null];
     }
-    const quantity = quantity_response.object.length;
+    const quantity = quantity_response.object?.length ?? 0;
     if (quantity <= 0) {
       //delete from restock if in restock list
       const delete_restock_response = await this.restockListDao.delete(book_id);

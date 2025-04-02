@@ -99,11 +99,11 @@ export default class BookManagementService extends Service {
       return new RequestErrorResponse("Primary Genre and Audience Required, but Not Found", 400);
     }
 
-    const bookResponse = await this.getByTitle(title);
+    const bookResponse = await this.getByIsbn(isbn_list.split("||")[0]);
 
-    if (bookResponse.statusCode !== 200) {
+    if (bookResponse.statusCode !== 200 && bookResponse.statusCode !== 404) {
       return bookResponse;
-    } else if (!bookResponse.object) {
+    } else if (bookResponse.statusCode === 404 || !bookResponse.object) {
       // Create a new book
       const response = await this.bookDao.createBook(
         title,
