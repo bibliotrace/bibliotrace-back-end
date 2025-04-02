@@ -86,16 +86,15 @@ export default class BookManagementService extends Service {
       } else if (seriesResponse.object != null) {
         series_id = seriesResponse.object.id;
       } else {
-        seriesResponse = await this.seriesDao.create({series_name})
+        seriesResponse = await this.seriesDao.create({ series_name });
         if (seriesResponse.statusCode != 200) {
-          return seriesResponse
+          return seriesResponse;
         } else {
-          series_id = seriesResponse.object.id
+          series_id = seriesResponse.object.id;
         }
       }
-  
     }
-    
+
     if (primary_genre_id == null || audience_id == null) {
       return new RequestErrorResponse("Primary Genre and Audience Required, but Not Found", 400);
     }

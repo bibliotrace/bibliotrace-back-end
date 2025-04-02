@@ -1,7 +1,6 @@
 import express from "express";
 import { Config } from "../config";
 import { sendResponse } from "../utils/utils";
-import SuccessResponse from "../response/SuccessResponse"
 
 export const inventoryRouter = express.Router();
 
@@ -13,9 +12,9 @@ inventoryRouter.post("/checkin", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.checkoutHandler.checkin(req.body, req.auth));
 });
 
-inventoryRouter.post('/add-book', async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.checkoutHandler.addBookToInventory(req.body, req.auth))
-})
+inventoryRouter.post("/add-book", async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.checkoutHandler.addBookToInventory(req.body, req.auth));
+});
 
 inventoryRouter.post("/genre", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.genreTagHandler.addGenre(req.body));
@@ -34,10 +33,7 @@ inventoryRouter.delete("/tag", async (req: any, res) => {
 });
 
 inventoryRouter.post("/setLocation", async (req: any, res) => {
-  sendResponse(
-    res,
-    await Config.dependencies.locationHandler.setBookLocationInInventory(req.body, req.auth)
-  );
+  sendResponse(res, await Config.dependencies.locationHandler.setBookLocationInInventory(req.body, req.auth));
 });
 
 inventoryRouter.post("/auditEntry", async (req: any, res) => {

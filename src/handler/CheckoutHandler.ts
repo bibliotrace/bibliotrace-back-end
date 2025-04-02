@@ -49,11 +49,7 @@ export class CheckoutHandler {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
-    const [response, book_obj] = await this.checkoutService.checkin(
-      body.qr_code,
-      body.location_id,
-      campus
-    );
+    const [response, book_obj] = await this.checkoutService.checkin(body.qr_code, body.location_id, campus);
 
     if (response.statusCode !== 200) {
       return response;
@@ -66,7 +62,7 @@ export class CheckoutHandler {
   }
 
   public async addBookToInventory(body, authData) {
-    const requiredFields = ["isbn", "location_id", "qr"]
+    const requiredFields = ["isbn", "location_id", "qr"];
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
     if (requiredFieldsResponse) return requiredFieldsResponse;
 
@@ -78,12 +74,7 @@ export class CheckoutHandler {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
-    const response = await this.checkoutService.addBook(
-      body.qr,
-      body.location_id,
-      campus,
-      body.isbn
-    );
+    const response = await this.checkoutService.addBook(body.qr, body.location_id, campus, body.isbn);
 
     if (response.statusCode !== 200) {
       return response;

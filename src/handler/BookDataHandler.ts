@@ -1,8 +1,8 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
+import Response from "../response/Response";
 import BookManagementService from "../service/BookManagementService";
 import IsbnService from "../service/IsbnService";
 import { isValidISBN, sanitizeISBN } from "../utils/utils";
-import Response from "../response/Response";
 
 export default class BookDataHandler {
   private bookManagementService: BookManagementService;
@@ -53,7 +53,7 @@ export default class BookDataHandler {
       return new RequestErrorResponse("Admin User Type Required", 401);
     }
     if (book.book_title == null || book.isbn_list == null || book.primary_genre_name == null) {
-      console.log(book)
+      console.log(book);
       return new RequestErrorResponse("Missing book title, isbn_list, and/or primary_genre", 400);
     }
 
@@ -67,7 +67,11 @@ export default class BookDataHandler {
     return await this.bookManagementService.addGenreToBook(genreString, isbn);
   }
 
-  public async deleteGenreFromBook(genreString: string, isbn: string, authRole: string): Promise<Response<any>> {
+  public async deleteGenreFromBook(
+    genreString: string,
+    isbn: string,
+    authRole: string
+  ): Promise<Response<any>> {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin User Type Required", 401);
     }
@@ -80,7 +84,7 @@ export default class BookDataHandler {
     }
     return await this.bookManagementService.addTagToBook(tagString, isbn);
   }
-  
+
   public async deleteTagFromBook(tagString: string, isbn: string, authRole: string): Promise<Response<any>> {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin User Type Required", 401);
