@@ -7,6 +7,7 @@ import { Inventory } from "../db/schema/Inventory";
 import Service from "./Service";
 import { ShoppingList } from "../db/schema/ShoppingList";
 import { RestockList } from "../db/schema/RestockList";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 
 export default class CheckoutService extends Service {
   constructor(daoFactory: DaoFactory) {
@@ -159,5 +160,49 @@ export default class CheckoutService extends Service {
     }
 
     return [checkout_response, book_response.object];
+  }
+
+  public async addBook(
+    qr_code: string,
+    location_id: number,
+    campus_name: string,
+    isbn: string
+  ): Promise<Response<any>> {
+    //get campus
+    const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
+    if (campus_response.statusCode !== 200) {
+      return campus_response;
+    } else if (!campus_response.object) {
+      return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
+    }
+
+    //get book_id
+    const book_response = await this.bookDao.getBookByIsbn(isbn)
+    if (book_response.statusCode !== 200) return book_response
+    if (book_response.object == null) return new RequestErrorResponse(`Book with ISBN ${isbn} not found`)
+    const book_id = book_response.object.id
+
+    //add book to inventory
+    const inventory: Inventory = {
+      qr: qr_code,
+      book_id: book_id,
+      location_id: location_id,
+      campus_id: campus_response.object.id,
+      ttl: 10,
+    };
+    const inventory_response = await this.inventoryDao.create(inventory);
+    if (inventory_response.statusCode !== 200) {
+      if (inventory_response.message != null && !inventory_response.message.includes(`qr ${qr_code} already exists`)) {
+        return inventory_response
+      }
+    }
+
+    //remove book if in shopping_list because quantity is now > 0
+    const shopping_list_response = await this.shoppingListDao.delete(book_id);
+    if (shopping_list_response.statusCode !== 200) {
+      return shopping_list_response
+    }
+
+    return book_response
   }
 }

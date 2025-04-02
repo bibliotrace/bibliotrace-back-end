@@ -79,13 +79,23 @@ export default class BookManagementService extends Service {
     } else {
       audience_id = audienceResponse.object.id;
     }
-    const seriesResponse = await this.seriesDao.getByKeyAndValue("series_name", series_name);
-    if (seriesResponse != null && seriesResponse.statusCode != 200) {
-      return seriesResponse;
-    } else if (seriesResponse.object != null) {
-      series_id = seriesResponse.object.id;
+    if (series_name && series_name != "") {
+      let seriesResponse = await this.seriesDao.getByKeyAndValue("series_name", series_name);
+      if (seriesResponse != null && seriesResponse.statusCode != 200) {
+        return seriesResponse;
+      } else if (seriesResponse.object != null) {
+        series_id = seriesResponse.object.id;
+      } else {
+        seriesResponse = await this.seriesDao.create({series_name})
+        if (seriesResponse.statusCode != 200) {
+          return seriesResponse
+        } else {
+          series_id = seriesResponse.object.id
+        }
+      }
+  
     }
-
+    
     if (primary_genre_id == null || audience_id == null) {
       return new RequestErrorResponse("Primary Genre and Audience Required, but Not Found", 400);
     }
