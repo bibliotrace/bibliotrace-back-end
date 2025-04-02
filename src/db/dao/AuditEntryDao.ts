@@ -24,8 +24,15 @@ class AuditEntryDao extends Dao<AuditEntry, number> {
       try {
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
-          .select(["audit_entry.state", "books.book_title", "books.author", "audit_entry.qr"])
+          .select([
+            "audit_entry.state",
+            "books.book_title",
+            "books.author",
+            "audit_entry.qr",
+            "location.location_name",
+          ])
           .leftJoin("inventory", "audit_entry.qr", "inventory.qr")
+          .leftJoin("location", "inventory.location_id", "location.id")
           .leftJoin("books", "inventory.book_id", "books.id")
           .where("audit_id", "=", audit_id)
           .execute();
