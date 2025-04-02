@@ -21,10 +21,14 @@ class TestConnectionManager {
       throw error;
     }
 
+    const user = process.env.GITHUB_ACTIONS ? "root" : "admin"
+    const password = process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025"
+    // console.log(user, password, 'Database Credentials Used')
+
     this.pool = createPool({
       host: "localhost",
-      user: process.env.GITHUB_ACTIONS ? "root" : "admin",
-      password: process.env.GITHUB_ACTIONS ? "password" : "Bibl!otrace_2025",
+      user,
+      password,
       database: "bibliotrace_v3_test",
     });
 

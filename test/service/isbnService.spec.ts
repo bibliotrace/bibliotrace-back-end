@@ -252,7 +252,7 @@ describe("ISBN service testing suite", () => {
       author: "J.K. Rowling",
       book_title: "Harry Potter and the Prisoner of Azkaban",
       img_callback: "https://images.isbndb.com/covers/3705783482822.jpg",
-      isbn_list: "1781100519||9781781100516",
+      isbn_list: "9781781100516",
       language: "English",
       pages: 180,
       primary_genre_id: undefined,
