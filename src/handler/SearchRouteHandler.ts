@@ -162,6 +162,9 @@ export default class SearchRouteHandler {
 
           output.push({ key: "audiences.audience_name", value: audienceStrings });
         }
+        if (targetKey == "Special") {
+          output.push({ key: targetKey, value: targetVal})
+        }
       }
     }
     return output;
