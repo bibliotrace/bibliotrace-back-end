@@ -18,7 +18,7 @@ export default class AuditHandler {
   public async auditBook(
     reqBody,
     auth
-  ): Promise<[Response<AuditEntry | Inventory | Book | Campus>, Book]> {
+  ): Promise<[Response<AuditEntry | Inventory | Book | Campus> | RequestErrorResponse<any>, Book]> {
     if (!reqBody.qr_code) {
       return [new RequestErrorResponse("Missing qr_code"), null];
     } else if (!reqBody.location_id) {
@@ -29,8 +29,8 @@ export default class AuditHandler {
       return [new RequestErrorResponse("Missing campus"), null];
     }
 
-    //TODO: check if this returns
-    parseQr(reqBody.qr_code);
+    const qrResponse = parseQr(reqBody.qr_code);
+    if (qrResponse) return [qrResponse, null];
 
     return this.auditService.auditBook(
       reqBody.qr_code,

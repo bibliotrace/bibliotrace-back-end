@@ -34,13 +34,7 @@ export class AuthHandler {
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
     if (requiredFieldsResponse) return requiredFieldsResponse;
 
-    return this.authService.updateUser(
-      body.username,
-      body.password,
-      body.roleType,
-      body.email,
-      body.campus
-    );
+    return this.authService.updateUser(body.username, body.password, body.roleType, body.email, body.campus);
   }
 
   public async deleteUser(params): Promise<Response<string>> {

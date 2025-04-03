@@ -65,12 +65,10 @@ class IsbnService {
 
     const book_title: string = book.title ?? book.title_long ?? "Unknown title";
     let isbn_list: string = ""; // this should always exist given that we're querying by isbn here lol
-    if (book.isbn && !book.isbn13) {
-      isbn_list = book.isbn;
-    } else if (book.isbn13 && !book.isbn) {
+    if (book.isbn13) {
       isbn_list = book.isbn13;
-    } else {
-      isbn_list = `${book.isbn}||${book.isbn13}`;
+    } else if (book.isbn) {
+      isbn_list = book.isbn;
     }
     const author: string = book.authors ? book.authors.join(", ") : "Unknown author";
     const primary_genre_id: number = undefined; // unknown from just ISBN

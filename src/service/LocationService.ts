@@ -1,6 +1,7 @@
 import DaoFactory from "../db/dao/DaoFactory";
 import Response from "../response/Response";
 import ServerErrorResponse from "../response/ServerErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
 import { Campus } from "../db/schema/Campus";
 import { Location } from "../db/schema/Location";
 import Service from "./Service";
@@ -36,11 +37,23 @@ export default class LocationService extends Service {
         campus_id: campus_response.object.id,
         location_name: newLocationName,
       });
+      return new SuccessResponse(`Successfully Added ${newLocationName}`)
     } catch (error) {
       console.error(error)
       return new ServerErrorResponse('Error in locationCreate', 500)
     }
     
+  }
+
+  public async updateLocation(locationId, locationName) {
+    try {
+      await this.locationDao.update(locationId, {
+        location_name: locationName
+      })
+      return new SuccessResponse(`Successfully updated location ${locationId}: ${locationName}`)
+    } catch (error) {
+      return new ServerErrorResponse(`Error in updating Location: ${error.message}`, 500)
+    }
   }
 
   private async getCampus(campusName: string) {
