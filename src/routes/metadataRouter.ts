@@ -49,12 +49,17 @@ metadataRouter.post("/locations", async (req: any, res) => {
   console.log(req.body);
   const response = await Config.dependencies.locationHandler.addNewLocation(
     req.auth,
-    req.body.newLocationName
+    req.body.locationName
   );
   sendResponse(res, response);
 });
 
-metadataRouter.put("/locations", async (req: any, res) => {
+metadataRouter.put("/locations/:id", async (req: any, res) => {
   console.log(req.body)
-  sendResponse(res, new SuccessResponse('yipee'))
+  const response = await Config.dependencies.locationHandler.updateLocation(
+    req.auth,
+    req.params.id,
+    req.body.locationName
+  )
+  sendResponse(res, response)
 })

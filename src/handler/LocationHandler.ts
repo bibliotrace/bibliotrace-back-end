@@ -26,7 +26,7 @@ export default class LocationHandler {
     return locationResponse;
   }
 
-  public async addNewLocation(authData, newLocationName): Promise<Response<any>> {
+  public async addNewLocation(authData, locationName): Promise<Response<any>> {
     if (!authData.userRole?.campus) {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
@@ -36,16 +36,28 @@ export default class LocationHandler {
     if (authData.userRole?.roleType !== "Admin") {
       return new RequestErrorResponse("Only Admins are allowed to do this", 403);
     }
-    if (newLocationName == null) {
-      return new RequestErrorResponse("Missing new location name in body {newLocationName}", 400)
+    if (locationName == null) {
+      return new RequestErrorResponse("Missing new location name in body {locationName}", 400)
     }
 
-    const locationResponse = await this.locationService.addNewLocationForCampus(
-      newLocationName,
+    return await this.locationService.addNewLocationForCampus(
+      locationName,
       authData.userRole.campus
     );
+  }
 
-    return locationResponse;
+  public async updateLocation(authData, locationId, locationName): Promise<Response<any>> {
+    if (!authData.userRole?.roleType) {
+      return new RequestErrorResponse("Missing UserRole Auth Data", 400);
+    }
+    if (authData.userRole?.roleType !== "Admin") {
+      return new RequestErrorResponse("Only Admins are allowed to do this", 403);
+    }
+    if (locationName == null) {
+      return new RequestErrorResponse("Missing new location name in body {locationName}", 400)
+    }
+
+    return await this.locationService.updateLocation(locationId, locationName);
   }
 
   public async setBookLocationInInventory(body, auth): Promise<Response<any>> {

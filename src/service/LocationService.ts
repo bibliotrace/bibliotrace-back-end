@@ -45,6 +45,17 @@ export default class LocationService extends Service {
     
   }
 
+  public async updateLocation(locationId, locationName) {
+    try {
+      await this.locationDao.update(locationId, {
+        location_name: locationName
+      })
+      return new SuccessResponse(`Successfully updated location ${locationId}: ${locationName}`)
+    } catch (error) {
+      return new ServerErrorResponse("Error in updating Location", 500)
+    }
+  }
+
   private async getCampus(campusName: string) {
     const campus_response = await this.campusDao.getByKeyAndValue(
       "campus_name",
