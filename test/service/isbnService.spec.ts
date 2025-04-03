@@ -9,7 +9,7 @@ describe("ISBN service testing suite", () => {
 
   beforeEach(() => {
     isbnService = new IsbnService();
-    process.env.ISBN_HOST = "test.host";
+    process.env.ISBN_HOST = "https://api.isbndb.com";
     process.env.ISBN_KEY = "testKey";
 
     global.fetch = jest.fn(async (targetUrl, options) => {
@@ -19,14 +19,14 @@ describe("ISBN service testing suite", () => {
             return { error: "Auth Missing" };
           },
           text: async () => {
-            return '{ "error": "Auth Missing" }'
+            return '{ "error": "Auth Missing" }';
           },
           ok: false,
           status: 401,
         };
       }
 
-      if (targetUrl === "test.host/book/123456789") {
+      if (targetUrl === "https://api.isbndb.com/book/123456789") {
         return {
           json: async () => {
             return {
@@ -63,7 +63,7 @@ describe("ISBN service testing suite", () => {
           },
           ok: true,
         };
-      } else if (targetUrl === "test.host/book/987654321") {
+      } else if (targetUrl === "https://api.isbndb.com/book/987654321") {
         return {
           json: async () => {
             return {
@@ -99,7 +99,7 @@ describe("ISBN service testing suite", () => {
           },
           ok: true,
         };
-      } else if (targetUrl === "test.host/book/918273645") {
+      } else if (targetUrl === "https://api.isbndb.com/book/918273645") {
         return {
           json: async () => {
             return {
@@ -134,7 +134,7 @@ describe("ISBN service testing suite", () => {
           },
           ok: true,
         };
-      } else if (targetUrl === "test.host/books/Harry Potter?pageSize=1000") {
+      } else if (targetUrl === "https://api.isbndb.com/books/Harry Potter?pageSize=1000") {
         return {
           json: async () => {
             return {
@@ -266,16 +266,16 @@ describe("ISBN service testing suite", () => {
 
   test("retrieve metadata for valid book, testing limited isbn availability", async () => {
     // Missing isbn13
-    const response = await isbnService.retrieveMetadata("987654321") as any;
+    const response = (await isbnService.retrieveMetadata("987654321")) as any;
 
     expect(response.statusCode).toBe(200);
-    expect(response.object.isbn_list).toEqual('1781100519');
+    expect(response.object.isbn_list).toEqual("1781100519");
 
     // Missing isbn10/isbn
-    const response2 = await isbnService.retrieveMetadata("918273645") as any;
+    const response2 = (await isbnService.retrieveMetadata("918273645")) as any;
 
     expect(response2.statusCode).toBe(200);
-    expect(response2.object.isbn_list).toEqual('9781781100516');
+    expect(response2.object.isbn_list).toEqual("9781781100516");
   });
 
   test("retrieve metadata for invalid book", async () => {
@@ -308,6 +308,8 @@ describe("ISBN service testing suite", () => {
     const response = await isbnService.conductSearch("Nothing");
 
     expect(response.statusCode).toBe(401);
-    expect(response.message).toBe('Call to ISBNdb Not Ok, status: 401, body: { "error": "Auth Missing" }')
+    expect(response.message).toBe(
+      'Call to ISBNdb Not Ok, status: 401, body: { "error": "Auth Missing" }'
+    );
   });
 });

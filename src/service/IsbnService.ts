@@ -8,7 +8,7 @@ class IsbnService {
     inputQuery: string
   ): Promise<SuccessResponse<string[] | unknown> | RequestErrorResponse> {
     const result = await fetch(
-      `${process.env.ISBN_HOST}/books/${sanitizeUrl(inputQuery)}?pageSize=1000`,
+      `https://api.isbndb.com/books/${sanitizeUrl(inputQuery)}?pageSize=1000`,
       {
         method: "GET",
         headers: {
@@ -35,10 +35,9 @@ class IsbnService {
     resultJson.books.map((result) => {
       if (result.isbn10 != null) isbnList.push(`${result.isbn10}||${result.image}`);
       if (result.isbn13 != null) isbnList.push(`${result.isbn13}||${result.image}`);
-
     });
 
-    console.log(isbnList)
+    console.log(isbnList);
 
     return new SuccessResponse("Successfully Pulled in ISBNs", isbnList);
   }
@@ -46,8 +45,8 @@ class IsbnService {
   async retrieveMetadata(
     isbn: string
   ): Promise<SuccessResponse<Book | unknown> | RequestErrorResponse> {
-    console.log('FIRING OFF CALL TO ISBN FOR BOOK DATA')
-    const result = await fetch(`${process.env.ISBN_HOST}/book/${isbn}`, {
+    console.log("FIRING OFF CALL TO ISBN FOR BOOK DATA");
+    const result = await fetch(`https://api.isbndb.com/book/${isbn}`, {
       method: "GET",
       headers: {
         Authorization: process.env.ISBN_KEY,
@@ -61,7 +60,7 @@ class IsbnService {
     }
     const resultJson = await result.json();
     const book = resultJson.book;
-    console.log(resultJson)
+    console.log(resultJson);
 
     const book_title: string = book.title ?? book.title_long ?? "Unknown title";
     let isbn_list: string = ""; // this should always exist given that we're querying by isbn here lol
@@ -76,12 +75,15 @@ class IsbnService {
     const pages: number = book.pages ?? -1;
     const series_id: number = undefined; // unknown from just ISBN
     const series_number: number = undefined; // unknown from just ISBN
-    const publish_date: number = (book.date_published.length > 4) ? new Date(book.date_published).getFullYear() : book.date_published;
+    const publish_date: number =
+      book.date_published.length > 4
+        ? new Date(book.date_published).getFullYear()
+        : book.date_published;
     const short_description: string =
       book.synopsis.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " ") ??
       "No description found"; // sanitizeHtml does not replace self-closing tags
     const language: string = book.language ? this.parseLanguage(book.language) : "Unknown language";
-    const img_callback: string = book.image ?? "No image found"; 
+    const img_callback: string = book.image ?? "No image found";
 
     return new SuccessResponse(`Metadata retrieved for ISBN ${isbn}`, {
       book_title,
@@ -110,10 +112,10 @@ class IsbnService {
       nl: "Dutch",
       ja: "Japanese",
       zh: "Chinese",
-    }
+    };
 
-    const outputLanguage = languages[language]
-    return outputLanguage ?? "Unknown Language"
+    const outputLanguage = languages[language];
+    return outputLanguage ?? "Unknown Language";
   }
 }
 
