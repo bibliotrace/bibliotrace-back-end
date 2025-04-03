@@ -94,6 +94,9 @@ export class Config {
       await dbConnectionManager.runAddDummyData();
     } else {
       await dbConnectionManager.runCreateSQL();
+      if (process.env.NODE_ENV !== 'production') {
+        await dbConnectionManager.runAddDummyData();
+      }
     }
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
