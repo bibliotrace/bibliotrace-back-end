@@ -4,6 +4,7 @@ import { Campus } from "../db/schema/Campus";
 import ReportService from "../service/ReportService";
 import { ShoppingList } from "../db/schema/ShoppingList";
 import { RestockList } from "../db/schema/RestockList";
+import { Audit } from "../db/schema/Audit";
 
 export default class ReportHandler {
   reportService: ReportService;
@@ -64,5 +65,20 @@ export default class ReportHandler {
     }
 
     return await this.reportService.deleteRestockListItem(body.book_id, authData.userRole?.campus);
+  }
+
+  public async getAllAudits(authData): Promise<Response<Audit[] | Campus>> {
+    if (!authData.userRole?.campus) {
+      return new RequestErrorResponse("Missing campus");
+    }
+    return await this.reportService.getAllAudits(authData.userRole.campus);
+  }
+
+  public async getAuditReport(params): Promise<Response<any>> {
+    if (!params.audit_id) {
+      return new RequestErrorResponse("Missing audit_id");
+    }
+
+    return await this.reportService.getAuditReport(params.audit_id);
   }
 }
