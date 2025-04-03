@@ -52,7 +52,7 @@ export default class LocationService extends Service {
       })
       return new SuccessResponse(`Successfully updated location ${locationId}: ${locationName}`)
     } catch (error) {
-      return new ServerErrorResponse("Error in updating Location", 500)
+      return new ServerErrorResponse(`Error in updating Location: ${error.message}`, 500)
     }
   }
 
