@@ -5,6 +5,7 @@ import { Location } from "../db/schema/Location";
 import LocationService from "../service/LocationService";
 import SuccessResponse from "../response/SuccessResponse";
 import BookManagementService from "../service/BookManagementService";
+import { parseQr } from "../utils/utils";
 
 export default class LocationHandler {
   locationService: LocationService;
@@ -37,7 +38,7 @@ export default class LocationHandler {
       return new RequestErrorResponse("Only Admins are allowed to do this", 403);
     }
     if (locationName == null) {
-      return new RequestErrorResponse("Missing new location name in body {locationName}", 400)
+      return new RequestErrorResponse("Missing new location name in body {locationName}", 400);
     }
 
     return await this.locationService.addNewLocationForCampus(
@@ -54,7 +55,7 @@ export default class LocationHandler {
       return new RequestErrorResponse("Only Admins are allowed to do this", 403);
     }
     if (locationName == null) {
-      return new RequestErrorResponse("Missing new location name in body {locationName}", 400)
+      return new RequestErrorResponse("Missing new location name in body {locationName}", 400);
     }
 
     return await this.locationService.updateLocation(locationId, locationName);
@@ -62,6 +63,18 @@ export default class LocationHandler {
 
   public async setBookLocationInInventory(body, auth): Promise<Response<any>> {
     console.log(body, auth);
+    if (!body.qr_code) {
+      return new RequestErrorResponse("Request is missing QR", 400);
+    }
+    if (!body.location_id) {
+      return new RequestErrorResponse("Request is missing location ID", 400);
+    }
+    if (!auth.userRole?.roleType) {
+      return new RequestErrorResponse("Missing UserRole Auth Data", 400);
+    }
+
+    const qrResponse = parseQr(body.qr_code);
+    if (qrResponse) return qrResponse;
 
     const targetBook = await this.bookManagementService.getByQr(body.qr_code);
     if (auth.userRole.roleType === "Admin") {
