@@ -92,6 +92,8 @@ export class Config {
       await dbConnectionManager.resetTables();
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
+    } else {
+      await dbConnectionManager.runCreateSQL();
     }
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
