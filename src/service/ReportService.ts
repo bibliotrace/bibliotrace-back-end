@@ -5,6 +5,7 @@ import Service from "./Service";
 import { ShoppingList } from "../db/schema/ShoppingList";
 import { Campus } from "../db/schema/Campus";
 import { RestockList } from "../db/schema/RestockList";
+import { Audit } from "../db/schema/Audit";
 
 export default class ReportService extends Service {
   constructor(daoFactory: DaoFactory) {
@@ -111,5 +112,20 @@ export default class ReportService extends Service {
     }
 
     return await this.restockListDao.deleteRestockListItem(book_id, campus_response.object.id);
+  }
+
+  public async getAllAudits(campus_name: string): Promise<Response<Audit[] | Campus>> {
+    const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
+    if (campus_response.statusCode !== 200) {
+      return campus_response;
+    } else if (!campus_response.object?.id) {
+      return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
+    }
+
+    return await this.auditDao.getAllByKeyAndValue("campus_id", campus_response.object.id);
+  }
+
+  public async getAuditReport(audit_id: number): Promise<Response<any>> {
+    return await this.auditEntryDao.getAuditReport(audit_id);
   }
 }
