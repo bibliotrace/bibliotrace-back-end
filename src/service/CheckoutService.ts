@@ -24,7 +24,10 @@ export default class CheckoutService extends Service {
     if (campus_response.statusCode !== 200) {
       return [campus_response, null];
     } else if (!campus_response.object) {
-      return [new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500), null];
+      return [
+        new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500),
+        null,
+      ];
     }
 
     //get book_id
@@ -48,7 +51,6 @@ export default class CheckoutService extends Service {
       book_id: book_id,
       location_id: location_id,
       campus_id: campus_response.object.id,
-      ttl: 10,
     };
     const inventory_response = await this.inventoryDao.create(inventory);
     if (inventory_response.statusCode !== 200) {
@@ -76,7 +78,10 @@ export default class CheckoutService extends Service {
     if (campus_response.statusCode !== 200) {
       return [campus_response, null];
     } else if (!campus_response.object) {
-      return [new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500), null];
+      return [
+        new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500),
+        null,
+      ];
     }
 
     //check if book is in inventory and get book_id
@@ -112,7 +117,10 @@ export default class CheckoutService extends Service {
     }
 
     //get book quantity from inventory and add to shopping list if quantity = 0
-    const quantity_response = await this.inventoryDao.getAllByKeyAndValue("book_id", book_id.toString());
+    const quantity_response = await this.inventoryDao.getAllByKeyAndValue(
+      "book_id",
+      book_id.toString()
+    );
     if (quantity_response.statusCode !== 200) {
       return [quantity_response, null];
     }
@@ -170,7 +178,8 @@ export default class CheckoutService extends Service {
     //get book_id
     const book_response = await this.bookDao.getBookByIsbn(isbn);
     if (book_response.statusCode !== 200) return book_response;
-    if (book_response.object == null) return new RequestErrorResponse(`Book with ISBN ${isbn} not found`);
+    if (book_response.object == null)
+      return new RequestErrorResponse(`Book with ISBN ${isbn} not found`);
     const book_id = book_response.object.id;
 
     //add book to inventory
@@ -179,7 +188,6 @@ export default class CheckoutService extends Service {
       book_id: book_id,
       location_id: location_id,
       campus_id: campus_response.object.id,
-      ttl: 10,
     };
     const inventory_response = await this.inventoryDao.create(inventory);
     if (inventory_response.statusCode !== 200) {

@@ -327,7 +327,6 @@ describe("DAO testing suite", () => {
       book_id: 10,
       location_id: 10,
       campus_id: 10,
-      ttl: 10,
     };
 
     dummyInventory2 = {
@@ -335,7 +334,6 @@ describe("DAO testing suite", () => {
       book_id: 12,
       location_id: 12,
       campus_id: 12,
-      ttl: 20,
     };
 
     dummyInventoryNullable = {
@@ -1784,7 +1782,6 @@ describe("DAO testing suite", () => {
 
       describe("Get book data from QR tests", () => {
         test("Successful retrieval of book data with valid QR code", async () => {
-          dummyInventory.ttl = undefined; // we're getting rid of this field later anyways
           const response = await inventoryDao.getBookDataFromQr(dummyInventory.qr);
 
           expect(response).toBeDefined();
@@ -1806,8 +1803,6 @@ describe("DAO testing suite", () => {
           expect(response.message).toContain(
             `Book data successfully retrieved for QR code ${dummyInventory.qr}`
           );
-
-          dummyInventory.ttl = 10; // reset the field for now
         });
 
         test("Book data retrieval with invalid QR code is nonexistent", async () => {
