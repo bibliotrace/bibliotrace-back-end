@@ -1,0 +1,436 @@
+{
+  "name": "Bibliotrace Collection",
+  "version": "1",
+  "items": [
+    {
+      "type": "http",
+      "name": "Add Book",
+      "seq": 15,
+      "request": {
+        "url": "http://localhost:8080/api/inventory/add-book",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Add Tag To Book",
+      "seq": 9,
+      "request": {
+        "url": "http://localhost:8080/api/bookdata/tag-list/9781509828012",
+        "method": "PUT",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"tag\": \"Harry Potter\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Add a New Tag",
+      "seq": 16,
+      "request": {
+        "url": "http://localhost:8080/api/inventory/tag",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Add a new Location",
+      "seq": 14,
+      "request": {
+        "url": "http://localhost:8080/api/metadata/locations",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"newLocationName\": \"Your Moms House\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Add entry to Genre List",
+      "seq": 7,
+      "request": {
+        "url": "http://localhost:8080/api/bookdata/genre-list/9781509828012",
+        "method": "PUT",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"genre\": \"Romance\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Create A Book",
+      "seq": 6,
+      "request": {
+        "url": "http://localhost:8080/api/bookdata/9781509828012",
+        "method": "PUT",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"book_title\": \"Anne of Green Gables\",\n  \"isbn_list\": \"9781509828012\",\n  \"author\": \"Lucy Maude Montgomery\",\n  \"primary_genre_name\": \"Fiction\",\n  \"audience_name\": \"Middle Grade (8-12 Years)\",\n  \"pages\": 157,\n  \"series_name\": \"Harry Potter\",\n  \"series_number\": null,\n  \"publish_date\": \"1908\",\n  \"short_description\": \"Anne of Green Gables is a 1908 novel by Canadian author Lucy Maud Montgomery. Written for all ages, it has been considered a children's novel since the mid-twentieth century. It recounts the adventures of Anne Shirley, an 11-year-old orphan girl who is mistakenly sent to Matthew and Marilla Cuthbert, a middle-aged brother and sister who had intended to adopt a boy to help them on their farm in Prince Edward Island. The novel recounts how Anne makes her way with the Cuthberts, in school, and within the town.Since publication, Anne of Green Gables has sold more than 50 million copies and has been translated into 20 languages. Numerous sequels were written by Montgomery, and since her death another sequel has been published, as well as an authorized prequel. The original book is taught to students around the world.It has been adapted as film, made-for-television movies, and animated and live-action television series. Anne Shirley was played by Megan Follows in the 1985 Canadian produced movie. Plays and musicals have also been created, with productions annually in Canada since 1964 of the first musical production, which has toured in Canada, the United States, Europe and Japan.\",\n  \"language\": \"English\",\n  \"img_callback\": null\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Delete Genre from List",
+      "seq": 8,
+      "request": {
+        "url": "http://localhost:8080/api/bookdata/genre-list/9781509828012",
+        "method": "DELETE",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"genre\": \"Dystopian\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Delete Tag From Book",
+      "seq": 10,
+      "request": {
+        "url": "http://localhost:8080/api/bookdata/tag-list/9781509828012",
+        "method": "DELETE",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"tag\": \"Harry Potters\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Get All Genres",
+      "seq": 12,
+      "request": {
+        "url": "http://localhost:8080/api/inventory/tag",
+        "method": "GET",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Get All Tags",
+      "seq": 11,
+      "request": {
+        "url": "http://localhost:8080/api/inventory/tag",
+        "method": "GET",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Get Book Data Suggestion",
+      "seq": 4,
+      "request": {
+        "url": "http://localhost:8080/api/bookdata/suggest/9780590353427",
+        "method": "GET",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Get Book Information",
+      "seq": 3,
+      "request": {
+        "url": "http://localhost:8080/api/bookdata/9781509828012",
+        "method": "GET",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Login",
+      "seq": 2,
+      "request": {
+        "url": "http://localhost:8080/api/auth/login",
+        "method": "POST",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"username\": \"test\",\n  \"password\": \"test\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Search Query with Filters",
+      "seq": 5,
+      "request": {
+        "url": "http://localhost:8080/api/search/query/%7C%7CAudience:Young%20Adult%20(12-18%20Years),Middle%20Grade%20(8-12%20Years)%7C%7C",
+        "method": "GET",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Testing Deployment",
+      "seq": 13,
+      "request": {
+        "url": "https://bibliotrace-service.bibliotrace.com/api",
+        "method": "GET",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "none",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "none"
+        }
+      }
+    },
+    {
+      "type": "http",
+      "name": "Update a Location",
+      "seq": 17,
+      "request": {
+        "url": "http://localhost:8080/api/metadata/locations/1",
+        "method": "PUT",
+        "headers": [],
+        "params": [],
+        "body": {
+          "mode": "json",
+          "json": "{\n  \"locationName\": \"Storage\"\n}",
+          "formUrlEncoded": [],
+          "multipartForm": [],
+          "file": []
+        },
+        "script": {},
+        "vars": {},
+        "assertions": [],
+        "tests": "",
+        "docs": "",
+        "auth": {
+          "mode": "inherit"
+        }
+      }
+    }
+  ],
+  "environments": [],
+  "root": {
+    "request": {
+      "auth": {
+        "mode": "bearer",
+        "bearer": {
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyUm9sZSI6eyJjYW1wdXMiOiJMZWhpIiwicm9sZVR5cGUiOiJBZG1pbiIsImVtYWlsIjoidGVzdGluZ0BieXUuZWR1In0sImlhdCI6MTc0MzQ0Mjk4MiwiZXhwIjoxNzQzOTYxMzgyfQ.AwzuUGzw37CajQ8cH6IpHN-WX6ctOcB2d0K9X1Fdr9k"
+        }
+      }
+    }
+  },
+  "brunoConfig": {
+    "version": "1",
+    "name": "Bibliotrace Collection",
+    "type": "collection",
+    "ignore": [
+      "node_modules",
+      ".git"
+    ],
+    "size": 0.004534721374511719,
+    "filesCount": 17
+  }
+}
