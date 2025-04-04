@@ -53,5 +53,5 @@ server.get("/health", (req, res) => {
   res.status(200).json({ message: "OK" });
 });
 
-console.log(`Server Listening on Port ${localPort}`);
+console.log(`Server listening on port ${localPort}`);
 server.listen(localPort);
