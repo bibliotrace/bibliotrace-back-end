@@ -2,34 +2,15 @@
 
 This is a back-end server application for the BiblioTrace library manager.
 
-### Example of google books api
-```
-/*
-google example search for book by isbn number
-curl -X GET "localhost:3000/api/google/1338878921" -H 'Content-Type: application/json'
-*/
-app.get("/api/google/:isbn", async (req, res) => {
-  response = await fetch(
-    `https://www.googleapis.com/books/v1/volumes?q=+isbn:${req.params.isbn}&key=${google_api_key}`
-  );
+## Knowledge Tidbits
 
-  json = await response.json();
-  res.send(json);
-});
+### Search System
 
-/*
-google example search for general query
-curl -X GET "localhost:3000/api/google/query/harrypotter" -H 'Content-Type: application/json'
-*/
-app.get("/api/google/query/:query", async (req, res) => {
-  response = await fetch(
-    `https://www.googleapis.com/books/v1/volumes?q=${req.params.query}&key=${google_api_key}`
-  );
+Currently, the search system is designed to pull a cache of all book data once every 2 minutes. This cache is written into a FlexSearch index using 
+LatinExtra encoding, which allows for high fault tolerance (For example, the query "Hiry Poiter" will pull up all Harry Potter entries). If the book data
+becomes too large, you will notice memory bottlenecks and high latency. To speed up search, you can scale down the search options so it does more strict
+search optimizations by changing the searchOptions variable in the SearchDataService's callout to new Worker(searchOptions).
 
-  json = await response.json();
-  res.send(json);
-});
-```
 ## Database setup:
 If mysql is not installed on your device, you can install it using `sudo apt install mysql-server` on Linux or by following the [installation instructions](https://dev.mysql.com/downloads/) from Oracle.
 This README assumes that you are using Linux, but feel free to adapt the below instructions to your operating system.  
