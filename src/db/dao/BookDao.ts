@@ -165,7 +165,7 @@ class BookDao extends Dao<Book, number> {
           .leftJoin("audiences", "audiences.id", "books.audience_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
           .leftJoin("series", "series.id", "books.series_id")
-          .select(["books.id", "books.book_title", "books.author", "genre.genre_name", "series.series_name"])
+          .select(["books.id", "books.book_title", "books.author", "genre.genre_name", "series.series_name", "books.isbn_list"])
           .where("campus.campus_name", "=", campus);
 
         if (filterQueryList.length > 0) {
