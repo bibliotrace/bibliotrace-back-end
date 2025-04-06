@@ -57,7 +57,7 @@ export default class SearchDataService extends Service {
           author: dbResult.author ?? "Unknown",
           genre: dbResult.genre_name,
           series: dbResult.series_name ?? "None",
-          isbn: dbResult.isbn_list.split("|")[0] ?? "Unknown",
+          isbn: dbResult.isbn_list?.split("|")[0] ?? "Unknown",
           coverImageId: null,
         };
         return new SuccessResponse("Successfully grabbed book info", output);
@@ -130,9 +130,9 @@ export default class SearchDataService extends Service {
 
       };
 
-      // @ts-expect-error
+      // @ts-expect-error Types aren't set up properly for the options I selected
       this.titleSearchIndex = new Worker(searchOptions);
-      // @ts-expect-error
+      // @ts-expect-error Types aren't set up properly for the options I selected
       this.authorSearchIndex = new Worker(searchOptions);
 
       // Add all index addition function calls to a batch list for async processing

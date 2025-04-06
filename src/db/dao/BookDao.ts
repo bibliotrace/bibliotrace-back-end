@@ -197,7 +197,7 @@ class BookDao extends Dao<Book, number> {
 
   public async getAllBookTitlesAndAuthors(): Promise<Response<any>> {
     try {
-      let dbQuery = this.db
+      const dbQuery = this.db
         .selectFrom('books')
         .select(["books.id", "books.book_title", "books.author"])
 
