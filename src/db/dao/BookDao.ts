@@ -1,12 +1,12 @@
+import { Kysely, Transaction } from "kysely";
+import { FilterListItem } from "../../handler/SearchRouteHandler";
+import RequestErrorResponse from "../../response/RequestErrorResponse";
 import Response from "../../response/Response";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 import { Book } from "../schema/Book";
 import Database from "../schema/Database";
 import Dao from "./Dao";
-import ServerErrorResponse from "../../response/ServerErrorResponse";
-import { Kysely, Transaction } from "kysely";
-import { FilterListItem } from "../../handler/SearchRouteHandler";
-import RequestErrorResponse from "../../response/RequestErrorResponse";
 
 class BookDao extends Dao<Book, number> {
   constructor(db: Kysely<Database>) {
@@ -104,7 +104,7 @@ class BookDao extends Dao<Book, number> {
 
   public async getBasicBookByFilter(
     filterQueryList: FilterListItem[],
-    isbn: string,
+    bookId: number,
     campus: string,
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
@@ -120,9 +120,10 @@ class BookDao extends Dao<Book, number> {
           .leftJoin("audiences", "audiences.id", "books.audience_id")
           .leftJoin("series", "series.id", "books.series_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
-          .select(["books.id", "books.book_title", "books.author", "genre.genre_name", "series.series_name"])
+          .select(["books.id", "books.isbn_list","books.book_title", "books.author", "genre.genre_name", "series.series_name"])
           .where("campus.campus_name", "=", campus)
-          .where("books.isbn_list", "like", `%${isbn}%`);
+          .where("books.id", "=", bookId);
+
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
             // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
@@ -134,7 +135,9 @@ class BookDao extends Dao<Book, number> {
         if (dbResult) {
           return new SuccessResponse("successfully grabbed book", dbResult);
         } else {
-          return new SuccessResponse(`No book found with isbn ${isbn} and campus ${campus} matching filters`);
+          return new SuccessResponse(
+            `No book found with bookId ${bookId} and campus ${campus} matching filters`
+          );
         }
       } catch (error) {
         return new ServerErrorResponse(
@@ -145,7 +148,7 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
-  public async getAllISBNs(
+  public async getAllBooksMatchingFilter(
     filterQueryList: FilterListItem[],
     campus: string,
     transaction?: Transaction<Database>
@@ -157,17 +160,18 @@ class BookDao extends Dao<Book, number> {
         let dbQuery = this.db
           .selectFrom("books")
           .distinct()
-          .select("isbn_list")
           .innerJoin("inventory", "inventory.book_id", "books.id")
           .leftJoin("genre", "books.primary_genre_id", "genre.id")
           .leftJoin("audiences", "audiences.id", "books.audience_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
+          .leftJoin("series", "series.id", "books.series_id")
+          .select(["books.id", "books.book_title", "books.author", "genre.genre_name", "series.series_name"])
           .where("campus.campus_name", "=", campus);
 
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
             if (filter.key == "Special") {
-              console.log('doing some different query here... To be built soon')
+              console.log("doing some different query here... To be built soon");
             } else {
               // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
               dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
@@ -177,10 +181,10 @@ class BookDao extends Dao<Book, number> {
 
         const dbResult = await dbQuery.execute();
         if (!dbResult || dbResult.length === 0) {
-          return new SuccessResponse(`No isbns found on campus ${campus} matching provided filters`);
+          return new SuccessResponse(`No books found on campus ${campus} matching provided filters`);
         }
         return new SuccessResponse(
-          `Successfully retrieved all isbns on campus ${campus} matching filters`,
+          `Successfully retrieved all books on campus ${campus} matching filters`,
           dbResult
         );
       } catch (error) {
@@ -188,6 +192,21 @@ class BookDao extends Dao<Book, number> {
           `Failed to retrieve all isbns with filter queries: Error ${error.message}`
         );
       }
+    }
+  }
+
+  public async getAllBookTitlesAndAuthors(): Promise<Response<any>> {
+    try {
+      let dbQuery = this.db
+        .selectFrom('books')
+        .select(["books.id", "books.book_title", "books.author"])
+
+      const dbResult = await dbQuery.execute();
+
+      if (!dbResult || dbResult.length === 0) return new SuccessResponse('No Books exist in the table')
+      return new SuccessResponse('Successfully pulled all book titles and authors', dbResult);
+    } catch (error) {
+      return new ServerErrorResponse(`Failed to retrieve all book titles and authors. Error: ${error.message}`)
     }
   }
 

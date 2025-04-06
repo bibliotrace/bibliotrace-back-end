@@ -1,9 +1,6 @@
 import SearchDataService from "./service/SearchDataService";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import DaoFactory from "./db/dao/DaoFactory";
-import { DynamoDb } from "./db/dao/DynamoDb";
 import DBConnectionManager from "./db/dbConnection/DBConnectionManager";
-import { createIsbnQueryCacheTable } from "./db/schema/templates/DynamoDbTableCreate";
 import { AuthHandler } from "./handler/AuthHandler";
 import { CoverImageRouteHandler } from "./handler/CoverImageRouteHandler";
 import FilterTypeRoutesHandler from "./handler/FilterTypeRoutesHandler";
@@ -16,7 +13,6 @@ import SuggestionService from "./service/SuggestionService";
 import { AuthService } from "./service/AuthService";
 import { InventoryHandler } from "./handler/InventoryHandler";
 import { SuggestionHandler } from "./handler/SuggestionHandler";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { CheckoutHandler } from "./handler/CheckoutHandler";
 import LocationService from "./service/LocationService";
 import LocationHandler from "./handler/LocationHandler";
@@ -64,25 +60,6 @@ export class Config {
       return; // Prevent re-initialization
     }
 
-    // DynamoDB Stuff
-    const hasDynamoEndpoint = process.env.DYNAMO_ENDPOINT !== undefined;
-    const ddbClientConfig = hasDynamoEndpoint
-      ? {
-          region: "us-west-2",
-          endpoint: process.env.DYNAMO_ENDPOINT,
-          credentials: {
-            accessKeyId: "test",
-            secretAccessKey: "test",
-          },
-        }
-      : {};
-    const dynamoClient = new DynamoDBClient(ddbClientConfig);
-    const documentClient = DynamoDBDocumentClient.from(dynamoClient);
-    if (process.env.NODE_ENV === "local") {
-      await createIsbnQueryCacheTable(documentClient);
-    }
-    const dynamoDb = new DynamoDb(documentClient);
-
     // Database Access Class Dependencies
     const dbConnectionManager = new DBConnectionManager();
     await dbConnectionManager.initialize();
@@ -124,7 +101,6 @@ export class Config {
     this.dependencies.suggestionHandler = new SuggestionHandler(this.suggestionService);
     this.dependencies.searchRouteHandler = new SearchRouteHandler(
       this.isbnService,
-      dynamoDb,
       this.searchDataService
     );
     this.dependencies.coverImageRouteHandler = new CoverImageRouteHandler();

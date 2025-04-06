@@ -1,8 +1,8 @@
-import SearchDataService from "../../src/service/SearchDataService";
-import DaoFactory from "../../src/db/dao/DaoFactory";
-import SuccessResponse from "../../src/response/SuccessResponse";
-import ServerErrorResponse from "../../src/response/ServerErrorResponse";
 import BookDao from "../../src/db/dao/BookDao";
+import DaoFactory from "../../src/db/dao/DaoFactory";
+import ServerErrorResponse from "../../src/response/ServerErrorResponse";
+import SuccessResponse from "../../src/response/SuccessResponse";
+import SearchDataService from "../../src/service/SearchDataService";
 
 jest.mock("../../src/db/dao/DaoFactory");
 
@@ -57,7 +57,7 @@ describe("Search data service testing suite", () => {
           value: "",
         },
       ],
-      "12345||helloWorld",
+      1,
       "Lehi"
     );
 
@@ -68,7 +68,7 @@ describe("Search data service testing suite", () => {
           value: "",
         },
       ],
-      "12345",
+      1,
       "Lehi"
     );
     expect(result.statusCode).toBe(200);
@@ -86,13 +86,13 @@ describe("Search data service testing suite", () => {
   test("Retreive basic metadata call for a valid book, no filter match", async () => {
     const result = await searchDataService.retrieveBasicMetadata(
       [{ key: "genre_types.genre_name", value: "Fantasy" }],
-      "54321987||helloWorld",
+      1,
       "Lehi"
     );
 
     expect(daoFactoryMock.bookDao.getBasicBookByFilter).toHaveBeenCalledWith(
       [{ key: "genre_types.genre_name", value: "Fantasy" }],
-      "54321987",
+      1,
       "Lehi"
     );
     expect(result.statusCode).toBe(200);
@@ -103,13 +103,13 @@ describe("Search data service testing suite", () => {
   test("Retrieve basic metadata call, db freaks out", async () => {
     const result = await searchDataService.retrieveBasicMetadata(
       [{ key: "genre_types.genre_name", value: "Fantasy" }],
-      "freak out",
+      -1,
       "Lehi"
     );
 
     expect(daoFactoryMock.bookDao.getBasicBookByFilter).toHaveBeenCalledWith(
       [{ key: "genre_types.genre_name", value: "Fantasy" }],
-      "freak out",
+      -1,
       "Lehi"
     );
     expect(result.statusCode).toBe(500);
@@ -118,20 +118,20 @@ describe("Search data service testing suite", () => {
   });
 
   test("Retrieve all ISBNs with a valid querylist and campus", async () => {
-    const result = await searchDataService.retrieveAllISBNs([{}], "Lehi");
+    const result = await searchDataService.retrieveAllBooks([{}], "Lehi");
 
-    expect(daoFactoryMock.bookDao.getAllISBNs).toHaveBeenCalledWith([{}], "Lehi");
+    expect(daoFactoryMock.bookDao.getAllBooksMatchingFilter).toHaveBeenCalledWith([{}], "Lehi");
     expect(result.statusCode).toEqual(200);
     expect(result.object).toEqual(["987654321", "123456789"]);
   });
 
   test("Retrieve all ISBNs with valid everything, but nothing comes back", async () => {
-    const result = await searchDataService.retrieveAllISBNs(
+    const result = await searchDataService.retrieveAllBooks(
       [{ key: "genre", value: "impossible" }],
       "Salt Lake City"
     );
 
-    expect(daoFactoryMock.bookDao.getAllISBNs).toHaveBeenCalledWith(
+    expect(daoFactoryMock.bookDao.getAllBooksMatchingFilter).toHaveBeenCalledWith(
       [{ key: "genre", value: "impossible" }],
       "Salt Lake City"
     );
@@ -140,12 +140,12 @@ describe("Search data service testing suite", () => {
   });
 
   test("Retrieve all ISBNs with valid everything, but the db fails", async () => {
-    const result = await searchDataService.retrieveAllISBNs(
+    const result = await searchDataService.retrieveAllBooks(
       [{ key: "hello", value: "chaos" }],
       "Salt Lake City"
     );
 
-    expect(daoFactoryMock.bookDao.getAllISBNs).toHaveBeenCalledWith(
+    expect(daoFactoryMock.bookDao.getAllBooksMatchingFilter).toHaveBeenCalledWith(
       [{ key: "hello", value: "chaos" }],
       "Salt Lake City"
     );
