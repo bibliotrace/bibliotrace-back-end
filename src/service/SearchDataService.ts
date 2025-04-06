@@ -14,7 +14,7 @@ export default class SearchDataService extends Service {
     super(daoFactory);
     this.reSeedSearchIndexes().then(() => {
       // Set an interval so that the reSeed function is run every so often to update the search indexes
-      setInterval(this.reSeedSearchIndexes.bind(this), 1 * 60000); // 60000 = ms in a minute
+      setInterval(this.reSeedSearchIndexes.bind(this), 2 * 60000); // 60000 = ms in a minute
     });
   }
 
@@ -104,9 +104,10 @@ export default class SearchDataService extends Service {
 
   // --------------- Private Helper Methods ---------------
 
-  private async reSeedSearchIndexes(): Promise<void> {
+  async reSeedSearchIndexes(): Promise<void> {
     try {
       console.log("Beginning Search Re-Index");
+      const initTime = performance.now();
 
       // Pull all book data needed from the db...
       let allBooks = [];
@@ -122,7 +123,6 @@ export default class SearchDataService extends Service {
         allBooks = bookDaoResponse.object;
       }
 
-      const initTime = performance.now();
       // Type inference on these attributes aren't exported from fast
       const searchOptions = {
         tokenize: "forward",
