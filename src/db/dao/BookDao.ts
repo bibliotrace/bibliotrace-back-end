@@ -183,6 +183,13 @@ class BookDao extends Dao<Book, number> {
                   .groupBy("books.id")
                   .orderBy("checkouts" as any, "desc")
                   .as("cte1");
+              } else if (filter.value === "Newest") {
+                baseTable = this.db
+                  .selectFrom("books")
+                  .selectAll()
+                  .orderBy("books.id", "desc")
+                  .limit(50)
+                  .as("cte1");
               }
             }
           }
