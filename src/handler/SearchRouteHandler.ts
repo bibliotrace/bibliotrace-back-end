@@ -51,8 +51,6 @@ export default class SearchRouteHandler {
       }
     }
 
-    
-
     return bookDataResult;
   }
 

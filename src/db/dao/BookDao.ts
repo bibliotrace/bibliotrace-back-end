@@ -122,7 +122,7 @@ class BookDao extends Dao<Book, number> {
           .leftJoin("campus", "campus.id", "inventory.campus_id")
           .select(["books.id", "books.isbn_list","books.book_title", "books.author", "genre.genre_name", "series.series_name"])
           .where("campus.campus_name", "=", campus)
-          .where("books.id", "=", bookId);
+          .where("books.id", "=", bookId)
 
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {

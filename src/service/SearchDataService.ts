@@ -1,4 +1,4 @@
-import { Worker } from "flexsearch";
+import { Worker, Charset } from "flexsearch";
 import DaoFactory from "../db/dao/DaoFactory";
 import { FilterListItem, ResultRow } from "../handler/SearchRouteHandler";
 import Response from "../response/Response";
@@ -34,7 +34,7 @@ export default class SearchDataService extends Service {
     const resultSet = new Set([...titleResults, ...authorResults]);
 
     const finishedTime = performance.now();
-    console.log(`Completed search in ${finishedTime - initTime} ms`)
+    console.log(`Completed search in ${finishedTime - initTime} ms`);
     return Array.from(resultSet);
   }
 
@@ -57,7 +57,7 @@ export default class SearchDataService extends Service {
           author: dbResult.author ?? "Unknown",
           genre: dbResult.genre_name,
           series: dbResult.series_name ?? "None",
-          isbn: dbResult.isbn_list.split('||')[0] ?? "Unknown",
+          isbn: dbResult.isbn_list.split("|")[0] ?? "Unknown",
           coverImageId: null,
         };
         return new SuccessResponse("Successfully grabbed book info", output);
@@ -78,7 +78,17 @@ export default class SearchDataService extends Service {
         return daoResponse;
       }
 
-      const dbResult = daoResponse.object;
+      const dbResult = daoResponse.object.map((bookEntry) => {
+        return {
+          id: bookEntry.id,
+          title: bookEntry.book_title,
+          author: bookEntry.author ?? "Unknown",
+          genre: bookEntry.genre_name,
+          series: bookEntry.series_name ?? "None",
+          isbn: bookEntry.isbn_list.split("|")[0] ?? "Unknown",
+          coverImageId: null,
+        };
+      });
       if (dbResult != null && dbResult.length > 0) {
         return new SuccessResponse("Successfully retrieved book data", dbResult);
       } else {
@@ -113,8 +123,17 @@ export default class SearchDataService extends Service {
       }
 
       const initTime = performance.now();
-      this.titleSearchIndex = new Worker();
-      this.authorSearchIndex = new Worker();
+      // Type inference on these attributes aren't exported from fast
+      const searchOptions = {
+        tokenize: "forward",
+        encoder: Charset.LatinExtra,
+
+      };
+
+      // @ts-expect-error
+      this.titleSearchIndex = new Worker(searchOptions);
+      // @ts-expect-error
+      this.authorSearchIndex = new Worker(searchOptions);
 
       // Add all index addition function calls to a batch list for async processing
       const addCallBatch = [];
@@ -135,10 +154,3 @@ export default class SearchDataService extends Service {
     }
   }
 }
-
-// Current search plan, asynchronously set up a scheduled process to update an in-memory cache of books per campus that can be searched
-// Search by title and author
-
-// Kelly's solution, add a field to the inventory table that says whether the book is checked out, then use that field in a where clause to exclude checked out books
-
-// My solution, do an exclusive join to pull data in a CTE using existing relationships.
