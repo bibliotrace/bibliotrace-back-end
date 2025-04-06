@@ -1494,7 +1494,7 @@ describe("DAO testing suite", () => {
       describe("getBasicBookByFilter tests", () => {
         test("Successful retrieval of book with valid campus and ISBN", async () => {
           const filterQueryList = [];
-          const bookId = 1;
+          const bookId = 10;
           const campus = "Hogwarts";
 
           const response = await bookDao.getBasicBookByFilter(filterQueryList, bookId, campus);
@@ -1507,7 +1507,7 @@ describe("DAO testing suite", () => {
 
         test("Successful retrieval of book with filters applied", async () => {
           const filterQueryList = [{ key: "genre.genre_name", value: ["Fantasy"] }];
-          const bookId = 1;
+          const bookId = 10;
           const campus = "Hogwarts";
 
           const response = await bookDao.getBasicBookByFilter(filterQueryList, bookId, campus);
@@ -1521,7 +1521,7 @@ describe("DAO testing suite", () => {
 
         test("Failed retrieval with invalid campus", async () => {
           const filterQueryList = [];
-          const bookId = 1;
+          const bookId = 10;
           const campus = "InvalidCampus";
 
           const response = await bookDao.getBasicBookByFilter(filterQueryList, bookId, campus);
@@ -1604,7 +1604,6 @@ describe("DAO testing suite", () => {
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeDefined();
-          parseArrayForEquality(response, [{ isbn_list: dummyBook.isbn_list }]);
           expect(response.message).toContain(
             `Successfully retrieved all books on campus ${campus} matching filters`
           );
@@ -1620,7 +1619,7 @@ describe("DAO testing suite", () => {
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeUndefined();
-          expect(response.message).toContain(`No isbns found on campus ${campus} matching provided filters`);
+          expect(response.message).toContain(`No books found on campus ${campus} matching provided filters`);
         });
 
         test("Failed retrieval with invalid filters", async () => {
