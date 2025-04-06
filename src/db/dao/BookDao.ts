@@ -1,4 +1,4 @@
-import { Kysely, Transaction } from "kysely";
+import { Kysely, Transaction, sql } from "kysely";
 import { FilterListItem } from "../../handler/SearchRouteHandler";
 import RequestErrorResponse from "../../response/RequestErrorResponse";
 import Response from "../../response/Response";
@@ -120,9 +120,16 @@ class BookDao extends Dao<Book, number> {
           .leftJoin("audiences", "audiences.id", "books.audience_id")
           .leftJoin("series", "series.id", "books.series_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
-          .select(["books.id", "books.isbn_list","books.book_title", "books.author", "genre.genre_name", "series.series_name"])
+          .select([
+            "books.id",
+            "books.isbn_list",
+            "books.book_title",
+            "books.author",
+            "genre.genre_name",
+            "series.series_name",
+          ])
           .where("campus.campus_name", "=", campus)
-          .where("books.id", "=", bookId)
+          .where("books.id", "=", bookId);
 
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
@@ -157,22 +164,55 @@ class BookDao extends Dao<Book, number> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
+        let baseTable;
+
+        if (filterQueryList.length > 0) {
+          for (const filter of filterQueryList) {
+            if (filter.key === "Special") {
+              if (filter.value === "Popular") {
+                baseTable = this.db
+                  .selectFrom(
+                    this.db
+                      .selectFrom("checkout")
+                      .selectAll()
+                      .where("timestamp", ">", sql`DATE_SUB(NOW(), INTERVAL 30 DAY)` as any)
+                      .as("cte2")
+                  )
+                  .innerJoin("books", "books.id", "cte2.book_id" as any)
+                  .select([sql`books.*`, sql`COUNT(cte2.qr)`.as("checkouts")] as any)
+                  .groupBy("books.id")
+                  .orderBy("checkouts" as any, "desc")
+                  .as("cte1");
+              }
+            }
+          }
+        }
+
+        if (baseTable == null) {
+          baseTable = this.db.selectFrom("books").selectAll().as("cte1");
+        }
+
         let dbQuery = this.db
-          .selectFrom("books")
+          .selectFrom(baseTable)
           .distinct()
-          .innerJoin("inventory", "inventory.book_id", "books.id")
-          .leftJoin("genre", "books.primary_genre_id", "genre.id")
-          .leftJoin("audiences", "audiences.id", "books.audience_id")
+          .innerJoin("inventory", "inventory.book_id", "cte1.id")
+          .leftJoin("genre", "cte1.primary_genre_id", "genre.id")
+          .leftJoin("audiences", "audiences.id", "cte1.audience_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
-          .leftJoin("series", "series.id", "books.series_id")
-          .select(["books.id", "books.book_title", "books.author", "genre.genre_name", "series.series_name", "books.isbn_list"])
+          .leftJoin("series", "series.id", "cte1.series_id")
+          .select([
+            "cte1.id",
+            "cte1.book_title",
+            "cte1.isbn_list",
+            "cte1.author",
+            "genre.genre_name",
+            "series.series_name",
+          ])
           .where("campus.campus_name", "=", campus);
 
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
-            if (filter.key == "Special") {
-              console.log("doing some different query here... To be built soon");
-            } else {
+            if (filter.key != "Special") {
               // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
               dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
             }
@@ -188,6 +228,7 @@ class BookDao extends Dao<Book, number> {
           dbResult
         );
       } catch (error) {
+        console.error(error);
         return new ServerErrorResponse(
           `Failed to retrieve all isbns with filter queries: Error ${error.message}`
         );
@@ -197,16 +238,16 @@ class BookDao extends Dao<Book, number> {
 
   public async getAllBookTitlesAndAuthors(): Promise<Response<any>> {
     try {
-      const dbQuery = this.db
-        .selectFrom('books')
-        .select(["books.id", "books.book_title", "books.author"])
+      const dbQuery = this.db.selectFrom("books").select(["books.id", "books.book_title", "books.author"]);
 
       const dbResult = await dbQuery.execute();
 
-      if (!dbResult || dbResult.length === 0) return new SuccessResponse('No Books exist in the table')
-      return new SuccessResponse('Successfully pulled all book titles and authors', dbResult);
+      if (!dbResult || dbResult.length === 0) return new SuccessResponse("No Books exist in the table");
+      return new SuccessResponse("Successfully pulled all book titles and authors", dbResult);
     } catch (error) {
-      return new ServerErrorResponse(`Failed to retrieve all book titles and authors. Error: ${error.message}`)
+      return new ServerErrorResponse(
+        `Failed to retrieve all book titles and authors. Error: ${error.message}`
+      );
     }
   }
 
