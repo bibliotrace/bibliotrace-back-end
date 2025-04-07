@@ -79,9 +79,9 @@ export class Config {
     this.isbnService = new IsbnService();
     this.suggestionService = new SuggestionService(daoFactory);
     this.auditService = new AuditService(daoFactory);
-    this.bookManagementService = new BookManagementService(daoFactory);
     this.checkoutService = new CheckoutService(daoFactory);
     this.searchDataService = new SearchDataService(daoFactory);
+    this.bookManagementService = new BookManagementService(daoFactory, this.searchDataService);
     this.authService = new AuthService(daoFactory);
     this.locationService = new LocationService(daoFactory);
     this.reportService = new ReportService(daoFactory);
