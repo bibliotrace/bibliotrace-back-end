@@ -287,29 +287,4 @@ describe("ISBN service testing suite", () => {
       'Call to ISBNdb Not Ok, status: 404, body: {"errorType":"string","errorMessage":"Not Found","trace":[]}'
     );
   });
-
-  test("conduct search with a valid query, isbn returns multiple options", async () => {
-    const response = (await isbnService.conductSearch("Harry Potter")) as any;
-
-    expect(response.statusCode).toBe(200);
-    expect(response.object).not.toBeNull();
-    expect(response.object.length).toBe(6);
-  });
-
-  test("conduct search with a valid query, isbn returns nothing", async () => {
-    const response = await isbnService.conductSearch("Nothing");
-
-    expect(response.statusCode).toBe(200);
-    expect(response.message).toBe("No Books Found");
-  });
-
-  test("conduct search with invalid auth problem", async () => {
-    process.env.ISBN_KEY = "wrongKey";
-    const response = await isbnService.conductSearch("Nothing");
-
-    expect(response.statusCode).toBe(401);
-    expect(response.message).toBe(
-      'Call to ISBNdb Not Ok, status: 401, body: { "error": "Auth Missing" }'
-    );
-  });
 });

@@ -14,7 +14,7 @@ searchRouter.get("/query/:searchQuery?", async (req, res) => {
       req.params.searchQuery ?? "",
       authCampus
     );
-    res.send({ results });
+    res.send({ results: results ?? [] });
     console.log("Call to /search complete");
   } catch (error) {
     console.log(error);

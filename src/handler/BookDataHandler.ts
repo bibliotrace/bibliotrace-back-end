@@ -57,14 +57,10 @@ export default class BookDataHandler {
       return new RequestErrorResponse("Missing book title, isbn_list, and/or primary_genre", 400);
     }
 
-    return await this.bookManagementService.updateBook(book);
+    return await this.bookManagementService.createOrUpdateBookData(book);
   }
 
-  public async addGenreToBook(
-    genreString: string,
-    isbn: string,
-    authRole: string
-  ): Promise<Response<any>> {
+  public async addGenreToBook(genreString: string, isbn: string, authRole: string): Promise<Response<any>> {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin user type required", 401);
     }
@@ -82,22 +78,14 @@ export default class BookDataHandler {
     return await this.bookManagementService.deleteGenreFromBook(genreString, isbn);
   }
 
-  public async addTagToBook(
-    tagString: string,
-    isbn: string,
-    authRole: string
-  ): Promise<Response<any>> {
+  public async addTagToBook(tagString: string, isbn: string, authRole: string): Promise<Response<any>> {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin user type required", 401);
     }
     return await this.bookManagementService.addTagToBook(tagString, isbn);
   }
 
-  public async deleteTagFromBook(
-    tagString: string,
-    isbn: string,
-    authRole: string
-  ): Promise<Response<any>> {
+  public async deleteTagFromBook(tagString: string, isbn: string, authRole: string): Promise<Response<any>> {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin user type required", 401);
     }

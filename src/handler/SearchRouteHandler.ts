@@ -1,15 +1,12 @@
 import IsbnService from "../service/IsbnService";
-import { DynamoDb } from "../db/dao/DynamoDb";
 import SearchDataService from "../service/SearchDataService";
 
 export default class SearchRouteHandler {
   isbn: IsbnService;
-  dynamoDb: DynamoDb;
   searchService: SearchDataService;
 
-  constructor(isbn: IsbnService, dynamoDb: DynamoDb, searchService: SearchDataService) {
+  constructor(isbn: IsbnService, searchService: SearchDataService) {
     this.isbn = isbn;
-    this.dynamoDb = dynamoDb;
     this.searchService = searchService;
   }
 
@@ -19,59 +16,37 @@ export default class SearchRouteHandler {
     const extractedFilters = extractedObject.queryList;
     const extractedQuery = extractedObject.inputQuery;
 
-    // Get search results from the given query, either from ISBNdb or our query cache
-    let isbnResult;
+    // Get search results from the given query, using magic hehe
+    // We run the text string search if and only if the query exists
+    let bookIdsResult;
     if (extractedQuery != null && extractedQuery !== "") {
-      // First, get the target list of isbn numbers from the querystring.
-      const queryCacheResult = await this.dynamoDb.checkISBNQueryCache(extractedQuery);
-      if (queryCacheResult != null && queryCacheResult.statusCode === 200) {
-        isbnResult = queryCacheResult.object;
-      }
-      if (isbnResult == null) {
-        console.log(`Submitting Query to ISBN: ${extractedQuery}`);
-        const isbnDbCallResponse = await this.isbn.conductSearch(extractedQuery);
-        if (isbnDbCallResponse.object != null) {
-          isbnResult = isbnDbCallResponse.object;
-
-          await this.dynamoDb.updateISBNQueryCache(extractedQuery, isbnResult.toString());
-        } else {
-          console.log("Nothing came back from search to ISBN");
-          if (isbnDbCallResponse.statusCode !== null) {
-            console.error(
-              `Status code received was a ${isbnDbCallResponse.statusCode}. Message is ${isbnDbCallResponse.message}`
-            );
-          }
-        }
-      }
+      bookIdsResult = await this.searchService.runSearchForBookIds(extractedQuery);
     }
 
     // Turn the query list into actionable db query data
     const filterQueryList = await this.convertFilterStringToList(extractedFilters);
 
-    // If isbnResult is null, pull all books from the db matching our filters
-    const bookDataResult = [];
-    const bookSet = new Set<string>();
-    if (isbnResult == null) {
-      isbnResult = (await this.searchService.retrieveAllISBNs(filterQueryList, campus)).object;
-    }
+    // If bookIdsResult is null, pull all books from the db matching our filters
+    let bookDataResult = [];
 
-    if (isbnResult == null) {
-      isbnResult = []
-    }
-
-    // Retrieve book set from metadata function for each matching isbn result. Discard the rest
-    for (let i = 0; i < isbnResult.length; i++) {
-      const metadataResult = await this.searchService.retrieveBasicMetadata(
-        filterQueryList,
-        isbnResult[i],
-        campus
-      );
-      if (metadataResult.statusCode === 200 && metadataResult.object != null) {
-        const metadata = metadataResult.object;
-        if (!bookSet.has(metadata.id)) {
-          // If metadata comes back non-null, add it to the result list and the bookSet
-          bookDataResult.push(metadata);
-          bookSet.add(metadata.id);
+    if (bookIdsResult == null) {
+      bookDataResult = (await this.searchService.retrieveAllBooks(filterQueryList, campus)).object;
+    } else {
+      const bookSet = new Set<string>();
+      // Retrieve book set from metadata function for each matching isbn result. Discard the rest
+      for (let i = 0; i < bookIdsResult.length; i++) {
+        const metadataResult = await this.searchService.retrieveBasicMetadata(
+          filterQueryList,
+          bookIdsResult[i],
+          campus
+        );
+        if (metadataResult.statusCode === 200 && metadataResult.object != null) {
+          const metadata = metadataResult.object;
+          if (!bookSet.has(metadata.id)) {
+            // If metadata comes back non-null, add it to the result list and the bookSet
+            bookDataResult.push(metadata);
+            bookSet.add(metadata.id);
+          }
         }
       }
     }
@@ -87,14 +62,8 @@ export default class SearchRouteHandler {
     const queryList = [];
 
     while (queryIndexes != null) {
-      const queryKey = inputQuery.slice(
-        queryIndexes.firstDelimiterIndex + 1,
-        queryIndexes.separatorIndex
-      );
-      const queryValue = inputQuery.slice(
-        queryIndexes.separatorIndex + 1,
-        queryIndexes.secondDelimiterIndex
-      );
+      const queryKey = inputQuery.slice(queryIndexes.firstDelimiterIndex + 1, queryIndexes.separatorIndex);
+      const queryValue = inputQuery.slice(queryIndexes.separatorIndex + 1, queryIndexes.secondDelimiterIndex);
       queryList.push({ queryKey, queryValue });
 
       inputQuery = inputQuery.slice(queryIndexes.secondDelimiterIndex + 2, inputQuery.length);
@@ -163,7 +132,7 @@ export default class SearchRouteHandler {
           output.push({ key: "audiences.audience_name", value: audienceStrings });
         }
         if (targetKey == "Special") {
-          output.push({ key: targetKey, value: targetVal})
+          output.push({ key: targetKey, value: targetVal });
         }
       }
     }

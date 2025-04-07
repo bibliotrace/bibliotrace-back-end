@@ -3,13 +3,17 @@ import { Book } from "../db/schema/Book";
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
 import SuccessResponse from "../response/SuccessResponse";
+import SearchDataService from "./SearchDataService";
 import Service from "./Service";
 
 // const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
 export default class BookManagementService extends Service {
-  constructor(daoFactory: DaoFactory) {
+  private readonly searchDataService: SearchDataService
+
+  constructor(daoFactory: DaoFactory, searchDataServiceRef: SearchDataService) {
     super(daoFactory);
+    this.searchDataService = searchDataServiceRef;
   }
 
   public async getByIsbn(isbn: string): Promise<Response<Book>> {
@@ -47,7 +51,10 @@ export default class BookManagementService extends Service {
     return await this.bookDao.getBookTagsByIsbn(isbn);
   }
 
-  public async updateBook(request: any): Promise<Response<any>> {
+  // NOTE: This function will not update Secondary genres and tags for a given book. Those are done via separate calls because of the 
+  //       many-to-one relationship of the secondary genre list and the tags list. We can build in the ability to update those lists in 
+  //       this function, but I stopped including features with this one function after it got to a hundred lines haha.
+  public async createOrUpdateBookData(request: any): Promise<Response<any>> {
     const title = request.book_title;
     const isbn_list = request.isbn_list;
     const author = request.author;
@@ -122,10 +129,12 @@ export default class BookManagementService extends Service {
       if (response.statusCode !== 200) {
         return response;
       } else {
+        // Update the search cache with the new book
+        await this.searchDataService.reSeedSearchIndexes();
         return new SuccessResponse("Completed Book Creation");
       }
     } else {
-      // Do stuff to update the book
+      // Update the book data
       const book = bookResponse.object; // guaranteed to exist here
       const updatedInformation: Book = {
         book_title: title,
@@ -141,7 +150,12 @@ export default class BookManagementService extends Service {
         language,
         img_callback,
       };
-      return await this.bookDao.update(book.id, updatedInformation);
+      const result = await this.bookDao.update(book.id, updatedInformation);
+      if (result.statusCode === 200) {
+        // Update the search cache with new data
+        await this.searchDataService.reSeedSearchIndexes();
+      }
+      return result
     }
   }
 
