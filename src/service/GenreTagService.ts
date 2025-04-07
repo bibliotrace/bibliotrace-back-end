@@ -34,7 +34,7 @@ export default class GenreTagService extends Service {
       // depending on whether the genre is the primary genre or a secondary genre
     ) {
       return new ServerErrorResponse(
-        "This genre is still in use by at least one book. You must remove it from all books before deleting it."
+        `Genre ${genre_name}is still in use by at least one book. You must remove it from all books before deleting it.`
       );
     }
 
