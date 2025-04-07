@@ -18,8 +18,62 @@ export default class SearchDataService extends Service {
     });
   }
 
+  // The reseed function below takes a snapshot from the database of all books' titles and authors and stores
+  // that data in the flexsearch in-memory cache after running permutation functions on each word. Once the seed
+  // is complete, flexsearch is then ready to return book Id's given a query string, returning if and only if the
+  // seeded data matches a fuzzy select with the query.
+  public async reSeedSearchIndexes(): Promise<void> {
+    try {
+      console.log("Beginning Search Re-Index");
+      const initTime = performance.now();
+
+      // Pull all book data needed from the db...
+      let allBooks = [];
+      const bookDaoResponse = await this.bookDao.getAllBookTitlesAndAuthors();
+      if (bookDaoResponse.statusCode !== 200) {
+        console.error(
+          `Something happened with the book dao when pulling all book data to seed search: ${bookDaoResponse.message}`
+        );
+      } else if (bookDaoResponse.object == null) {
+        console.log("NOTICE: No books found in the books table. Cancelling Search Index update");
+        return;
+      } else {
+        allBooks = bookDaoResponse.object;
+      }
+
+      // Type inference on these attributes aren't exported from fast
+      const searchOptions = {
+        tokenize: "forward",
+        encoder: Charset.LatinExtra,
+
+      };
+
+      // @ts-expect-error Types aren't set up properly for the options I selected
+      this.titleSearchIndex = new Worker(searchOptions);
+      // @ts-expect-error Types aren't set up properly for the options I selected
+      this.authorSearchIndex = new Worker(searchOptions);
+
+      // Add all index addition function calls to a batch list for async processing
+      const addCallBatch = [];
+      for (const book of allBooks) {
+        if (book.id != null && book.book_title != null && book.book_title != "")
+          addCallBatch.push(this.titleSearchIndex.add(book.id, book.book_title));
+        if (book.id != null && book.author != null && book.author != "")
+          addCallBatch.push(this.authorSearchIndex.add(book.id, book.author));
+      }
+
+      // Run all add book calls asynchronously
+      await Promise.all(addCallBatch);
+
+      const endTime = performance.now();
+      console.log(`Indexed Search in ${endTime - initTime} ms`);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   // This function is designed to take in a query string, then return a list of bookIds that
-  // match the search query on book titles, authors, or both.
+  // match the search query on book titles, authors, or both, using flexsearch's in-memory cache.
   async runSearchForBookIds(searchQuery: string): Promise<number[]> {
     console.log("Beginning Search, Search Query", searchQuery);
     const initTime = performance.now();
@@ -71,6 +125,10 @@ export default class SearchDataService extends Service {
     }
   }
 
+  // This function queries the database for all books from the database that satisfy the following conditions:
+  // 1. The books pulled exist in the inventory table, or are otherwise not checked out. 
+  // 2. The books pulled match to the filters in the filterQueryList for things like primary genres and popularity
+  // 3. The books pulled have inventory rows in the caller's campus
   async retrieveAllBooks(filterQueryList, campus: string): Promise<Response<string[]>> {
     try {
       const daoResponse = await this.bookDao.getAllBooksMatchingFilter(filterQueryList, campus);
@@ -99,58 +157,6 @@ export default class SearchDataService extends Service {
         `Error trying to retreive all books given filters: ${error.message}`,
         500
       );
-    }
-  }
-
-  // --------------- Private Helper Methods ---------------
-
-  async reSeedSearchIndexes(): Promise<void> {
-    try {
-      console.log("Beginning Search Re-Index");
-      const initTime = performance.now();
-
-      // Pull all book data needed from the db...
-      let allBooks = [];
-      const bookDaoResponse = await this.bookDao.getAllBookTitlesAndAuthors();
-      if (bookDaoResponse.statusCode !== 200) {
-        console.error(
-          `Something happened with the book dao when pulling all book data to seed search: ${bookDaoResponse.message}`
-        );
-      } else if (bookDaoResponse.object == null) {
-        console.log("NOTICE: No books found in the books table. Cancelling Search Index update");
-        return;
-      } else {
-        allBooks = bookDaoResponse.object;
-      }
-
-      // Type inference on these attributes aren't exported from fast
-      const searchOptions = {
-        tokenize: "forward",
-        encoder: Charset.LatinExtra,
-
-      };
-
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.titleSearchIndex = new Worker(searchOptions);
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.authorSearchIndex = new Worker(searchOptions);
-
-      // Add all index addition function calls to a batch list for async processing
-      const addCallBatch = [];
-      for (const book of allBooks) {
-        if (book.id != null && book.book_title != null && book.book_title != "")
-          addCallBatch.push(this.titleSearchIndex.add(book.id, book.book_title));
-        if (book.id != null && book.author != null && book.author != "")
-          addCallBatch.push(this.authorSearchIndex.add(book.id, book.author));
-      }
-
-      // Run all add book calls asynchronously
-      await Promise.all(addCallBatch);
-
-      const endTime = performance.now();
-      console.log(`Indexed Search in ${endTime - initTime} ms`);
-    } catch (error) {
-      console.error(error);
     }
   }
 }
