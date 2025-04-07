@@ -102,6 +102,8 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
+  // ADD to this function a check for the Checkout table. If the book is checked out, don't return it
+
   public async getBasicBookByFilter(
     filterQueryList: FilterListItem[],
     bookId: number,
@@ -154,6 +156,8 @@ class BookDao extends Dao<Book, number> {
       }
     }
   }
+
+  // ADD to this function a check for the Checkout table. If a book is checked out, don't return it
 
   public async getAllBooksMatchingFilter(
     filterQueryList: FilterListItem[],
