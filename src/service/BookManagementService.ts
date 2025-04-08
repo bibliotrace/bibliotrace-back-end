@@ -9,7 +9,7 @@ import Service from "./Service";
 // const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
 export default class BookManagementService extends Service {
-  private readonly searchDataService: SearchDataService
+  private readonly searchDataService: SearchDataService;
 
   constructor(daoFactory: DaoFactory, searchDataServiceRef: SearchDataService) {
     super(daoFactory);
@@ -51,8 +51,8 @@ export default class BookManagementService extends Service {
     return await this.bookDao.getBookTagsByIsbn(isbn);
   }
 
-  // NOTE: This function will not update Secondary genres and tags for a given book. Those are done via separate calls because of the 
-  //       many-to-one relationship of the secondary genre list and the tags list. We can build in the ability to update those lists in 
+  // NOTE: This function will not update Secondary genres and tags for a given book. Those are done via separate calls because of the
+  //       many-to-one relationship of the secondary genre list and the tags list. We can build in the ability to update those lists in
   //       this function, but I stopped including features with this one function after it got to a hundred lines haha.
   public async createOrUpdateBookData(request: any): Promise<Response<any>> {
     const title = request.book_title;
@@ -78,7 +78,10 @@ export default class BookManagementService extends Service {
     } else {
       primary_genre_id = genreResponse.object.id;
     }
-    const audienceResponse = await this.audienceDao.getByKeyAndValue("audience_name", audience_name);
+    const audienceResponse = await this.audienceDao.getByKeyAndValue(
+      "audience_name",
+      audience_name
+    );
     if (audienceResponse == null || audienceResponse.statusCode != 200) {
       return audienceResponse;
     } else if (audienceResponse.object == null) {
@@ -155,7 +158,7 @@ export default class BookManagementService extends Service {
         // Update the search cache with new data
         await this.searchDataService.reSeedSearchIndexes();
       }
-      return result
+      return result;
     }
   }
 
