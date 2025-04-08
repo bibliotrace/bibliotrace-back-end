@@ -20,7 +20,7 @@ export class CheckoutHandler {
 
     const campus = authData.userRole.campus;
 
-    if (campus == null) {
+    if (!campus) {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
@@ -32,7 +32,7 @@ export class CheckoutHandler {
     return new SuccessResponse("Checked out successfully", {
       title: book_obj.book_title,
       author: book_obj.author,
-      isbn: book_obj.isbn_list,
+      isbn: book_obj.isbn_list, // TODO: this assumes that the book has only one ISBN
     });
   }
 
@@ -49,7 +49,11 @@ export class CheckoutHandler {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
-    const [response, book_obj] = await this.checkoutService.checkin(body.qr_code, body.location_id, campus);
+    const [response, book_obj] = await this.checkoutService.checkin(
+      body.qr_code,
+      body.location_id,
+      campus
+    );
 
     if (response.statusCode !== 200) {
       return response;
@@ -74,7 +78,12 @@ export class CheckoutHandler {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
-    const response = await this.checkoutService.addBook(body.qr, body.location_id, campus, body.isbn);
+    const response = await this.checkoutService.addBook(
+      body.qr,
+      body.location_id,
+      campus,
+      body.isbn
+    );
 
     if (response.statusCode !== 200) {
       return response;

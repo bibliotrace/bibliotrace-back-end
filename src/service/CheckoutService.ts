@@ -24,7 +24,10 @@ export default class CheckoutService extends Service {
     if (campus_response.statusCode !== 200) {
       return [campus_response, null];
     } else if (!campus_response.object) {
-      return [new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500), null];
+      return [
+        new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500),
+        null,
+      ];
     }
 
     //get book_id
@@ -76,7 +79,10 @@ export default class CheckoutService extends Service {
     if (campus_response.statusCode !== 200) {
       return [campus_response, null];
     } else if (!campus_response.object) {
-      return [new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500), null];
+      return [
+        new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500),
+        null,
+      ];
     }
 
     //check if book is in inventory and get book_id
@@ -88,6 +94,21 @@ export default class CheckoutService extends Service {
     }
 
     const book_id = get_inventory_response.object.book_id;
+
+    // Please delete this block once the checkout refactor is done
+    // Checking out a book that is part of an audit throws foreign key errors
+    // so this is a workaround as this function is used to shortcut some of the book deletion
+    // if this were an actual solution there would be a check for campus as well
+    // but given that this is a workaround it is not worth the effort
+    const audit_entry_response = await this.auditEntryDao.getAllByKeyAndValue("qr", qr_code);
+    if (audit_entry_response.statusCode === 200 && audit_entry_response.object) {
+      for (const entry of audit_entry_response.object) {
+        const audit_entry_delete_response = await this.auditEntryDao.delete(entry.qr);
+        if (audit_entry_delete_response.statusCode !== 200) {
+          return [audit_entry_delete_response, null];
+        }
+      }
+    }
 
     //checkout/remove book from inventory
     const inventory_response = await this.inventoryDao.checkout(qr_code, campus_response.object.id);
@@ -112,7 +133,10 @@ export default class CheckoutService extends Service {
     }
 
     //get book quantity from inventory and add to shopping list if quantity = 0
-    const quantity_response = await this.inventoryDao.getAllByKeyAndValue("book_id", book_id.toString());
+    const quantity_response = await this.inventoryDao.getAllByKeyAndValue(
+      "book_id",
+      book_id.toString()
+    );
     if (quantity_response.statusCode !== 200) {
       return [quantity_response, null];
     }
@@ -170,7 +194,8 @@ export default class CheckoutService extends Service {
     //get book_id
     const book_response = await this.bookDao.getBookByIsbn(isbn);
     if (book_response.statusCode !== 200) return book_response;
-    if (book_response.object == null) return new RequestErrorResponse(`Book with ISBN ${isbn} not found`);
+    if (book_response.object == null)
+      return new RequestErrorResponse(`Book with ISBN ${isbn} not found`);
     const book_id = book_response.object.id;
 
     //add book to inventory
