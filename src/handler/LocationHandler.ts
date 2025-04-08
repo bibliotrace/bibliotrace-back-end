@@ -78,7 +78,10 @@ export default class LocationHandler {
 
     const targetBook = await this.bookManagementService.getByQr(body.qr_code);
     if (!targetBook.object) {
-      return new RequestErrorResponse(`Book corresponding to QR code ${body.qr_code} not found`);
+      return new RequestErrorResponse(
+        `Book corresponding to QR code ${body.qr_code} not found. Please scan a valid QR code.`,
+        404
+      );
     }
 
     if (auth.userRole.roleType === "Admin") {
