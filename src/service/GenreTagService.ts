@@ -19,7 +19,13 @@ export default class GenreTagService extends Service {
       genre_name: genre_name,
     };
 
-    return await this.genreDao.create(genre_obj);
+    const response = await this.genreDao.create(genre_obj);
+    if (response.statusCode === 500 && response.message.includes("already exists")) {
+      return new ServerErrorResponse(
+        `Genre ${genre_name} already exists. Please use a different name.`
+      );
+    }
+    return response;
   }
 
   public async removeGenre(genre_name: string): Promise<Response<Genre>> {
@@ -61,7 +67,14 @@ export default class GenreTagService extends Service {
     const tag: Tag = {
       tag_name: tag_name,
     };
-    return await this.tagDao.create(tag);
+
+    const response = await this.tagDao.create(tag);
+    if (response.statusCode === 500 && response.message.includes("already exists")) {
+      return new ServerErrorResponse(
+        `Tag ${tag_name} already exists. Please use a different name.`
+      );
+    }
+    return response;
   }
 
   public async removeTag(tag_name: string): Promise<Response<Tag>> {
