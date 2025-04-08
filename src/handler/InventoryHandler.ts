@@ -1,12 +1,11 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import BookManagementService from "../service/BookManagementService";
-import IsbnService from "../service/IsbnService";
 import { isValidISBN, parseQr } from "../utils/utils";
 
 export class InventoryHandler {
   private bookManagementService: BookManagementService;
 
-  constructor(bookManagementService: BookManagementService, isbnService: IsbnService) {
+  constructor(bookManagementService: BookManagementService) {
     this.bookManagementService = bookManagementService;
   }
 
