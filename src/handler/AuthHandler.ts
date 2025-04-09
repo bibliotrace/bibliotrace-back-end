@@ -25,7 +25,7 @@ export class AuthHandler {
 
     // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(body.email)) {
+    if (body.email && !emailRegex.test(body.email)) {
       return new RequestErrorResponse("Email is not valid");
     }
 
