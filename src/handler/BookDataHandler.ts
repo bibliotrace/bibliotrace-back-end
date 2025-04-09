@@ -2,7 +2,7 @@ import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
 import BookManagementService from "../service/BookManagementService";
 import IsbnService from "../service/IsbnService";
-import { isValidISBN, sanitizeISBN } from "../utils/utils";
+import { isValidISBN, parseQr, sanitizeISBN } from "../utils/utils";
 
 export default class BookDataHandler {
   private bookManagementService: BookManagementService;
@@ -25,6 +25,19 @@ export default class BookDataHandler {
     }
 
     const localData = await this.bookManagementService.getByIsbn(sanitizeISBN(isbnString));
+
+    return localData;
+  }
+
+  public async getByQr(qrString: string) {
+    if (!qrString) {
+      return new RequestErrorResponse("QR code is required to search for book information", 400);
+    }
+
+    const qrResponse = parseQr(qrString);
+    if (qrResponse) return qrResponse;
+
+    const localData = await this.bookManagementService.getByQr(qrString);
 
     return localData;
   }
@@ -60,7 +73,11 @@ export default class BookDataHandler {
     return await this.bookManagementService.createOrUpdateBookData(book);
   }
 
-  public async addGenreToBook(genreString: string, isbn: string, authRole: string): Promise<Response<any>> {
+  public async addGenreToBook(
+    genreString: string,
+    isbn: string,
+    authRole: string
+  ): Promise<Response<any>> {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin user type required", 401);
     }
@@ -78,14 +95,22 @@ export default class BookDataHandler {
     return await this.bookManagementService.deleteGenreFromBook(genreString, isbn);
   }
 
-  public async addTagToBook(tagString: string, isbn: string, authRole: string): Promise<Response<any>> {
+  public async addTagToBook(
+    tagString: string,
+    isbn: string,
+    authRole: string
+  ): Promise<Response<any>> {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin user type required", 401);
     }
     return await this.bookManagementService.addTagToBook(tagString, isbn);
   }
 
-  public async deleteTagFromBook(tagString: string, isbn: string, authRole: string): Promise<Response<any>> {
+  public async deleteTagFromBook(
+    tagString: string,
+    isbn: string,
+    authRole: string
+  ): Promise<Response<any>> {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin user type required", 401);
     }

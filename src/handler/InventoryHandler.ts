@@ -1,6 +1,6 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import BookManagementService from "../service/BookManagementService";
-import { isValidISBN, parseQr } from "../utils/utils";
+import { isValidISBN, sanitizeISBN, parseQr } from "../utils/utils";
 
 export class InventoryHandler {
   private bookManagementService: BookManagementService;
@@ -26,7 +26,7 @@ export class InventoryHandler {
       return new RequestErrorResponse("Invalid ISBN provided");
     }
 
-    return this.bookManagementService.removeBookByIsbn(params.isbn);
+    return this.bookManagementService.removeBookByIsbn(sanitizeISBN(params.isbn));
   }
 
   public async removeBookByQr(params: any) {

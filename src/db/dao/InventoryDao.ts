@@ -238,7 +238,7 @@ class InventoryDao extends Dao<Inventory, string> {
           .executeTakeFirst();
         // console.log(result, "HEREs THE RESULTS");
         if (!result) {
-          return new SuccessResponse(`No book data found for QR code ${qr}`);
+          return new RequestErrorResponse(`No book data found for QR code ${qr}`, 404);
         }
         return new SuccessResponse(`Book data successfully retrieved for QR code ${qr}`, result);
       } catch (error) {
