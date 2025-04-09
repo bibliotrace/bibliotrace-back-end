@@ -1,4 +1,4 @@
-import { Kysely, Transaction, UpdateResult } from "kysely";
+import { Kysely, Transaction } from "kysely";
 import Database from "../schema/Database";
 import { Inventory } from "../schema/Inventory";
 import Dao from "./Dao";
