@@ -70,9 +70,7 @@ export class Config {
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
     } else {
-      await dbConnectionManager.resetTables();
       await dbConnectionManager.runCreateSQL();
-      await dbConnectionManager.runAddDummyData();
     }
 
     const daoFactory = new DaoFactory(dbConnectionManager.kyselyDB);
