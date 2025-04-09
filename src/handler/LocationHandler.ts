@@ -94,4 +94,14 @@ export default class LocationHandler {
 
     return new SuccessResponse("Completed", targetBook);
   }
+
+  public async deleteLocation(locationId: string): Promise<Response<any>> {
+    if (!locationId) {
+      return new RequestErrorResponse("Missing location ID");
+    } else if (Number.isNaN(Number(locationId))) {
+      return new RequestErrorResponse("Invalid location ID provided");
+    }
+
+    return await this.locationService.deleteLocation(Number(locationId));
+  }
 }
