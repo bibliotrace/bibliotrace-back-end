@@ -1,3 +1,4 @@
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
 import { AuthService } from "../service/AuthService";
 import { parseRequiredFields } from "../utils/utils";
@@ -22,6 +23,12 @@ export class AuthHandler {
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
     if (requiredFieldsResponse) return requiredFieldsResponse;
 
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(body.email)) {
+      return new RequestErrorResponse("Email is not valid");
+    }
+
     return this.authService.createUser(body.username, body.password, {
       campus: body.campus,
       roleType: body.roleType,
@@ -34,7 +41,13 @@ export class AuthHandler {
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
     if (requiredFieldsResponse) return requiredFieldsResponse;
 
-    return this.authService.updateUser(body.username, body.password, body.roleType, body.email, body.campus);
+    return this.authService.updateUser(
+      body.username,
+      body.password,
+      body.roleType,
+      body.email,
+      body.campus
+    );
   }
 
   public async deleteUser(params): Promise<Response<string>> {
