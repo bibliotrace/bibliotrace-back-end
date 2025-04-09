@@ -19,11 +19,32 @@ export default class GenreTagService extends Service {
       genre_name: genre_name,
     };
 
-    return await this.genreDao.create(genre_obj);
+    const response = await this.genreDao.create(genre_obj);
+    if (response.statusCode === 500 && response.message.includes("already exists")) {
+      return new ServerErrorResponse(
+        `Genre ${genre_name} already exists. Please use a different name.`
+      );
+    }
+    return response;
   }
 
   public async removeGenre(genre_name: string): Promise<Response<Genre>> {
-    return await this.genreDao.deleteOnIndexByValue("genre_name", genre_name);
+    const response = await this.genreDao.deleteOnIndexByValue("genre_name", genre_name);
+    if (
+      response.statusCode === 500 &&
+      response.message.includes(
+        "Cannot delete or update a parent row: a foreign key constraint fails"
+      ) // this is the beginning of the MySQL error message for when a genre is still in use
+      // note that we do not match on the whole message
+      // as this error can come from both the books table and the genres table
+      // depending on whether the genre is the primary genre or a secondary genre
+    ) {
+      return new ServerErrorResponse(
+        `Genre ${genre_name} is still in use by at least one book. You must remove it from all books before deleting it.`
+      );
+    }
+
+    return response;
   }
 
   public async getTags(campus_name: string): Promise<Response<any>> {
@@ -34,7 +55,7 @@ export default class GenreTagService extends Service {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
     const campusId = campusResponse.object.id;
-    console.log(campusId)
+    console.log(campusId);
     // TODO: Use this to keep tags by the campus?
 
     const daoResult = await this.tagDao.getAll();
@@ -46,10 +67,29 @@ export default class GenreTagService extends Service {
     const tag: Tag = {
       tag_name: tag_name,
     };
-    return await this.tagDao.create(tag);
+
+    const response = await this.tagDao.create(tag);
+    if (response.statusCode === 500 && response.message.includes("already exists")) {
+      return new ServerErrorResponse(
+        `Tag ${tag_name} already exists. Please use a different name.`
+      );
+    }
+    return response;
   }
 
   public async removeTag(tag_name: string): Promise<Response<Tag>> {
-    return await this.tagDao.deleteOnIndexByValue("tag_name", tag_name);
+    const response = await this.tagDao.deleteOnIndexByValue("tag_name", tag_name);
+    if (
+      response.statusCode === 500 &&
+      response.message.includes(
+        "Cannot delete or update a parent row: a foreign key constraint fails"
+      ) // this is the beginning of the MySQL error message for when a tag is still in use
+    ) {
+      return new ServerErrorResponse(
+        `Tag ${tag_name} is still in use by at least one book. You must remove it from all books before deleting it.`
+      );
+    }
+
+    return response;
   }
 }
