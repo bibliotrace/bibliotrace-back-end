@@ -36,6 +36,39 @@ export class CheckoutHandler {
     });
   }
 
+  public async bulkCheckout(body, authData) {
+    const requiredFields = ["qr_list"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
+
+    const campus = authData.userRole.campus;
+    if (!campus) {
+      return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
+    }
+
+    const qrList = body.qr_list;
+    const errorList = []
+    const successList = [];
+    for (const qr of qrList) {
+      const qrResponse = parseQr(qr);
+      if (qrResponse) return qrResponse;
+  
+      const [response, book_obj] = await this.checkoutService.checkout(qr, campus);
+      if (response.statusCode !== 200) {
+        errorList.push(response.message);
+      } else if (book_obj != null) {
+        successList.push(book_obj)
+      }
+    }
+
+    return new SuccessResponse(`Successfully Checked out ${successList.length} of ${qrList.length} Books`, {
+      report: {
+        successes: successList,
+        errors: errorList,
+      }
+    });  
+  }
+
   public async checkin(body, authData) {
     const requiredFields = ["qr_code", "location_id"];
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);

@@ -8,6 +8,10 @@ inventoryRouter.post("/checkout", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.checkoutHandler.checkout(req.body, req.auth));
 });
 
+inventoryRouter.post('/checkout/bulk', async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.checkoutHandler.bulkCheckout(req.body, req.auth));
+})
+
 inventoryRouter.post("/checkin", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.checkoutHandler.checkin(req.body, req.auth));
 });
