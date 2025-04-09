@@ -1,6 +1,6 @@
 import express from "express";
 import { Config } from "../config";
-import { sendResponse } from "../utils/utils";
+import { sendResponse, validateUserType } from "../utils/utils";
 
 export const metadataRouter = express.Router();
 
@@ -31,6 +31,7 @@ metadataRouter.get("/campuses", async (req: any, res) => {
   try {
     const response = await Config.dependencies.filterTypeRoutesHandler.getCampuses();
 
+    // This should probably be in the handler instead of here
     if (response != null && response.length > 0) {
       res.send({ results: response });
     }
@@ -40,14 +41,15 @@ metadataRouter.get("/campuses", async (req: any, res) => {
 });
 
 metadataRouter.get("/locations", async (req: any, res) => {
-  const response = await Config.dependencies.locationHandler.getLocationsForCampus(req.auth);
-  sendResponse(res, response);
+  sendResponse(res, await Config.dependencies.locationHandler.getLocationsForCampus(req.auth));
 });
 
 metadataRouter.post("/locations", async (req: any, res) => {
   console.log(req.body);
-  const response = await Config.dependencies.locationHandler.addNewLocation(req.auth, req.body.locationName);
-  sendResponse(res, response);
+  sendResponse(
+    res,
+    await Config.dependencies.locationHandler.addNewLocation(req.auth, req.body.locationName)
+  );
 });
 
 metadataRouter.put("/locations/:id", async (req: any, res) => {
@@ -58,4 +60,10 @@ metadataRouter.put("/locations/:id", async (req: any, res) => {
     req.body.locationName
   );
   sendResponse(res, response);
+});
+
+metadataRouter.delete("/locations/:id", async (req: any, res) => {
+  if (validateUserType(req, res, "Admin")) {
+    sendResponse(res, await Config.dependencies.locationHandler.deleteLocation(req.params.id));
+  }
 });
