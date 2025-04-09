@@ -1,4 +1,4 @@
-import { Worker, Charset } from "flexsearch";
+import { Charset, Worker } from "flexsearch";
 import DaoFactory from "../db/dao/DaoFactory";
 import { FilterListItem, ResultRow } from "../handler/SearchRouteHandler";
 import Response from "../response/Response";
@@ -9,6 +9,7 @@ import Service from "./Service";
 export default class SearchDataService extends Service {
   private titleSearchIndex: Worker;
   private authorSearchIndex: Worker;
+  private tagSearchIndex: Worker;
 
   constructor(daoFactory: DaoFactory) {
     super(daoFactory);
@@ -28,30 +29,42 @@ export default class SearchDataService extends Service {
       const initTime = performance.now();
 
       // Pull all book data needed from the db...
-      let allBooks = [];
       const bookDaoResponse = await this.bookDao.getAllBookTitlesAndAuthors();
       if (bookDaoResponse.statusCode !== 200) {
         console.error(
           `Something happened with the book dao when pulling all book data to seed search: ${bookDaoResponse.message}`
         );
+        return;
       } else if (bookDaoResponse.object == null) {
         console.log("NOTICE: No books found in the books table. Cancelling Search Index update");
         return;
-      } else {
-        allBooks = bookDaoResponse.object;
       }
+      const allBooks = bookDaoResponse.object;
+
+      const bookTagDaoResponse = await this.bookTagDao.getAllTagNamesByBookId();
+      if (bookTagDaoResponse.statusCode !== 200) {
+        console.error(
+          `Something happened with the book dao when pulling all book data to seed search: ${bookDaoResponse.message}`
+        );
+        return;
+      } else if (bookTagDaoResponse.object == null) {
+        console.log("NOTICE: No tags returned. Cancelling Search Index update");
+        return;
+      }
+      const bookTags = bookTagDaoResponse.object;      
 
       // Type inference on these attributes aren't exported from fast
       const searchOptions = {
         tokenize: "forward",
         encoder: Charset.LatinExtra,
-
       };
 
       // @ts-expect-error Types aren't set up properly for the options I selected
       this.titleSearchIndex = new Worker(searchOptions);
       // @ts-expect-error Types aren't set up properly for the options I selected
       this.authorSearchIndex = new Worker(searchOptions);
+      // @ts-expect-error Types aren't set up properly for the options I selected
+      this.tagSearchIndex = new Worker(searchOptions);
 
       // Add all index addition function calls to a batch list for async processing
       const addCallBatch = [];
@@ -60,6 +73,15 @@ export default class SearchDataService extends Service {
           addCallBatch.push(this.titleSearchIndex.add(book.id, book.book_title));
         if (book.id != null && book.author != null && book.author != "")
           addCallBatch.push(this.authorSearchIndex.add(book.id, book.author));
+      }
+
+      for (const bookId of Object.keys(bookTags)) {
+        const tagsList = bookTags[bookId];
+        for (const tag of tagsList) {
+          if (tag != null && tag != '') {
+            addCallBatch.push(this.tagSearchIndex.add(bookId, tag))
+          }
+        }
       }
 
       // Run all add book calls asynchronously
@@ -79,13 +101,14 @@ export default class SearchDataService extends Service {
     const initTime = performance.now();
 
     // Run searches
-    const [titleResults, authorResults] = await Promise.all([
+    const [titleResults, authorResults, tagResults] = await Promise.all([
       this.titleSearchIndex.search(searchQuery) as Promise<number[]>,
       this.authorSearchIndex.search(searchQuery) as Promise<number[]>,
+      this.tagSearchIndex.search(searchQuery) as Promise<number[]>,
     ]);
 
     // Combine and deduplicate results
-    const resultSet = new Set([...titleResults, ...authorResults]);
+    const resultSet = new Set([...titleResults, ...authorResults, ...tagResults]);
 
     const finishedTime = performance.now();
     console.log(`Completed search in ${finishedTime - initTime} ms`);
@@ -126,7 +149,7 @@ export default class SearchDataService extends Service {
   }
 
   // This function queries the database for all books from the database that satisfy the following conditions:
-  // 1. The books pulled exist in the inventory table, or are otherwise not checked out. 
+  // 1. The books pulled exist in the inventory table, or are otherwise not checked out.
   // 2. The books pulled match to the filters in the filterQueryList for things like primary genres and popularity
   // 3. The books pulled have inventory rows in the caller's campus
   async retrieveAllBooks(filterQueryList, campus: string): Promise<Response<string[]>> {
