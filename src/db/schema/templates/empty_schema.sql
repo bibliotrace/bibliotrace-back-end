@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS audiences (
 );
 
 CREATE TABLE IF NOT EXISTS series (
-  id TINYINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  id SMALLINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   series_name VARCHAR(255) NOT NULL,
   max_count TINYINT UNSIGNED
 );
@@ -50,9 +50,9 @@ CREATE TABLE IF NOT EXISTS books (
   primary_genre_id INT UNSIGNED NOT NULL,
   audience_id TINYINT UNSIGNED NOT NULL,
   pages SMALLINT,
-  series_id TINYINT UNSIGNED,
+  series_id SMALLINT UNSIGNED,
   series_number TINYINT UNSIGNED,
-  publish_date YEAR,
+  publish_date SMALLINT UNSIGNED,
   short_description TEXT,
   language VARCHAR(31),
   img_callback VARCHAR(255),
