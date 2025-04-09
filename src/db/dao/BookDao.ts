@@ -114,29 +114,65 @@ class BookDao extends Dao<Book, number> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        // Run SQL stuff
+        let baseTable;
+
+        if (filterQueryList.length > 0) {
+          for (const filter of filterQueryList) {
+            if (filter.key === "Special") {
+              if (filter.value === "Popular") {
+                baseTable = this.db
+                  .selectFrom(
+                    this.db
+                      .selectFrom("checkout")
+                      .selectAll()
+                      .where("timestamp", ">", sql`DATE_SUB(NOW(), INTERVAL 30 DAY)` as any)
+                      .as("cte2")
+                  )
+                  .innerJoin("books", "books.id", "cte2.book_id" as any)
+                  .select([sql`books.*`, sql`COUNT(cte2.qr)`.as("checkouts")] as any)
+                  .groupBy("books.id")
+                  .orderBy("checkouts" as any, "desc")
+                  .as("cte1");
+              } else if (filter.value === "Newest") {
+                baseTable = this.db
+                  .selectFrom("books")
+                  .selectAll()
+                  .orderBy("books.id", "desc")
+                  .limit(50)
+                  .as("cte1");
+              }
+            }
+          }
+        }
+
+        if (baseTable == null) {
+          baseTable = this.db.selectFrom("books").selectAll().as("cte1");
+        }
+
         let dbQuery = this.db
-          .selectFrom("books")
-          .innerJoin("inventory", "inventory.book_id", "books.id")
-          .leftJoin("genre", "books.primary_genre_id", "genre.id")
-          .leftJoin("audiences", "audiences.id", "books.audience_id")
-          .leftJoin("series", "series.id", "books.series_id")
+          .selectFrom(baseTable)
+          .innerJoin("inventory", "inventory.book_id", "cte1.id")
+          .leftJoin("genre", "cte1.primary_genre_id", "genre.id")
+          .leftJoin("audiences", "audiences.id", "cte1.audience_id")
+          .leftJoin("series", "series.id", "cte1.series_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
           .select([
-            "books.id",
-            "books.isbn_list",
-            "books.book_title",
-            "books.author",
+            "cte1.id",
+            "cte1.isbn_list",
+            "cte1.book_title",
+            "cte1.author",
             "genre.genre_name",
             "series.series_name",
           ])
           .where("campus.campus_name", "=", campus)
-          .where("books.id", "=", bookId);
+          .where("cte1.id", "=", bookId as any);
 
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
-            // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
-            dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
+            if (filter.key != "Special") {
+              // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
+              dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
+            }
           }
         }
 
