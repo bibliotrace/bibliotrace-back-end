@@ -83,6 +83,7 @@ CREATE TABLE IF NOT EXISTS inventory (
   book_id INT UNSIGNED NOT NULL,
   location_id INT UNSIGNED NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
+  is_checked_out BOOLEAN NOT  NULL DEFAULT 0,
   FOREIGN KEY (book_id) REFERENCES books(id),
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (location_id) REFERENCES location(id)
@@ -112,9 +113,10 @@ CREATE TABLE IF NOT EXISTS checkout (
   checkout_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   qr VARCHAR(15) NOT NULL,
+  campus_id TINYINT UNSIGNED NOT NULL,
   book_id INT UNSIGNED NOT NULL,
-  state ENUM('First', 'In', 'Out') NOT NULL,
-  FOREIGN KEY (book_id) REFERENCES books(id)
+  FOREIGN KEY (book_id) REFERENCES books(id),
+  FOREIGN KEY (campus_id) REFERENCES campus(id)
 );
 -- ALTER TABLE checkout ADD INDEX idx_qr (qr);
 -- ALTER TABLE checkout ADD INDEX idx_book_id (book_id);
@@ -139,8 +141,6 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS shopping_list (
   book_id INT UNSIGNED PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
-  author VARCHAR(255) NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (book_id) REFERENCES books(id)
@@ -148,8 +148,6 @@ CREATE TABLE IF NOT EXISTS shopping_list (
 
 CREATE TABLE IF NOT EXISTS restock_list (
   book_id INT UNSIGNED PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
-  author VARCHAR(255) NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
   quantity INT NOT NULL,
   FOREIGN KEY (campus_id) REFERENCES campus(id),

@@ -12,17 +12,7 @@ import { Inventory } from "../../src/db/schema/Inventory";
 import { RestockList } from "../../src/db/schema/RestockList";
 import SuccessResponse from "../../src/response/SuccessResponse";
 import CheckoutService from "../../src/service/CheckoutService";
-import {
-  when,
-  mock,
-  verify,
-  instance,
-  anyString,
-  anyOfClass,
-  anything,
-  reset,
-  resetCalls,
-} from "ts-mockito";
+import { when, mock, verify, instance, anyString, anything, reset, anyNumber } from "ts-mockito";
 
 describe("Checkout service testing suite", () => {
   let qr_code: string;
@@ -61,12 +51,13 @@ describe("Checkout service testing suite", () => {
       author: "J.K. Rowling",
       primary_genre_id: 1,
       audience_id: 1,
+      isbn_list: "9780439708180",
     };
     checkout_obj = {
       timestamp: new Date().toISOString().slice(0, 19).replace("T", " "),
       qr: qr_code,
       book_id: book_obj.id,
-      state: "Out",
+      campus_id: 1,
     };
 
     mockedDaoFactory = mock(DaoFactory);
@@ -102,44 +93,40 @@ describe("Checkout service testing suite", () => {
       new SuccessResponse<Campus>(`Campus retrieved successfully`, campus_obj)
     );
 
-    when(mockedCheckoutDao.getByKeyAndValue("qr", qr_code)).thenResolve(
-      new SuccessResponse(`Checkout retrieved successfully`, checkout_obj)
+    when(mockedInventoryDao.getBookByCampusAndQR(anyString(), anyNumber())).thenResolve(
+      new SuccessResponse<Book>("Book retrieved successfully", book_obj)
     );
 
-    when(mockedCheckoutDao.checkin(qr_code)).thenResolve(
+    when(mockedInventoryDao.getBookQuantity(book_obj.id, campus_obj.id)).thenResolve(
+      new SuccessResponse<number>("Quantity retrieved successfully", 1)
+    );
+    when(mockedCheckoutDao.checkin(qr_code, campus_obj.id)).thenResolve(
       new SuccessResponse(`Checkout deleted successfully`)
     );
 
-    const inventory_obj: Inventory = {
-      qr: qr_code,
-      book_id: book_obj.id,
-      location_id: location_id,
-      campus_id: campus_obj.id,
-    };
-
-    when(mockedInventoryDao.create(anything())).thenResolve(
-      new SuccessResponse<Inventory>(`Inventory created successfully`, inventory_obj)
+    when(mockedInventoryDao.updateCheckoutState(qr_code, campus_obj.id, false)).thenResolve(
+      new SuccessResponse<Inventory>("Inventory updated successfully")
     );
 
-    when(mockedShoppingListDao.delete(book_obj.id)).thenResolve(
+    when(mockedShoppingListDao.deleteShoppingListItem(book_obj.id, campus_obj.id)).thenResolve(
       new SuccessResponse(`No shopping item found with book_id ${book_obj.id} to delete`)
     );
 
-    when(mockedBookDao.getByKeyAndValue("id", inventory_obj.book_id.toString())).thenResolve(
-      new SuccessResponse<Book>(`Book retrieved successfully`, book_obj)
+    when(mockedRestockListDao.addRestockListItem(anything())).thenResolve(
+      new SuccessResponse<RestockList>("Success")
     );
 
-    const response = await service.checkin(qr_code, location_id, campus_name);
+    const response = await service.checkin(qr_code, campus_name);
 
     verify(mockedCampusDao.getByKeyAndValue("campus_name", campus_name)).once();
-    verify(mockedCheckoutDao.getByKeyAndValue("qr", qr_code)).once();
-    verify(mockedCheckoutDao.checkin(qr_code)).once();
-    verify(mockedInventoryDao.create(anything())).once();
-    verify(mockedShoppingListDao.delete(book_obj.id)).once();
-    verify(mockedBookDao.getByKeyAndValue("id", inventory_obj.book_id.toString())).once();
+    verify(mockedInventoryDao.getBookByCampusAndQR(anything(), anything())).once();
+    verify(mockedInventoryDao.getBookQuantity(anything(), anything())).once();
+    verify(mockedCheckoutDao.checkin(qr_code, campus_obj.id)).once();
+    verify(mockedInventoryDao.updateCheckoutState(qr_code, campus_obj.id, false)).once();
+    verify(mockedShoppingListDao.deleteShoppingListItem(book_obj.id, campus_obj.id)).once();
 
     expect(response).toStrictEqual([
-      new SuccessResponse<Inventory>(`Inventory created successfully`, inventory_obj),
+      new SuccessResponse<Inventory>(`Inventory updated successfully`, null),
       book_obj,
     ]);
   });
@@ -149,49 +136,32 @@ describe("Checkout service testing suite", () => {
       new SuccessResponse<Campus>(`Campus retrieved successfully`, campus_obj)
     );
 
-    when(mockedInventoryDao.getByKeyAndValue("qr", qr_code)).thenResolve(
-      new SuccessResponse<Inventory>(`Inventory retrieved successfully`, inventory_obj)
+    when(mockedInventoryDao.getBookByCampusAndQR(anyString(), anyNumber())).thenResolve(
+      new SuccessResponse<Book>("Book retrieved successfully", book_obj)
     );
 
     when(mockedCheckoutDao.create(anything())).thenResolve(
       new SuccessResponse(`Checkout created successfully`, checkout_obj)
     );
-    when(mockedInventoryDao.checkout(qr_code, campus_obj.id)).thenResolve(
-      new SuccessResponse(`${qr_code} checked out successfully`)
+
+    when(mockedInventoryDao.updateCheckoutState(qr_code, campus_obj.id, true)).thenResolve(
+      new SuccessResponse<Inventory>("Inventory updated successfully")
     );
 
-    when(mockedBookDao.getByKeyAndValue("id", inventory_obj.book_id.toString())).thenResolve(
-      new SuccessResponse<Book>(`Book retrieved successfully`, book_obj)
+    when(mockedInventoryDao.getBookQuantity(book_obj.id, campus_obj.id)).thenResolve(
+      new SuccessResponse<number>("Quantity retrieved successfully", 1)
     );
-
-    when(
-      mockedInventoryDao.getAllByKeyAndValue("book_id", inventory_obj.book_id.toString())
-    ).thenResolve(
-      new SuccessResponse<Inventory[]>(`Inventory retrieved successfully`, [inventory_obj])
-    );
-
-    const restock_item: RestockList = {
-      book_id: inventory_obj.book_id,
-      title: book_obj.book_title,
-      author: book_obj.author,
-      campus_id: campus_obj.id,
-      quantity: 1,
-    };
 
     when(mockedRestockListDao.addRestockListItem(anything())).thenResolve(
-      new SuccessResponse(`Restock item created successfully`, restock_item)
+      new SuccessResponse<RestockList>("Success")
     );
 
     const response = await service.checkout(qr_code, campus_name);
 
     verify(mockedCampusDao.getByKeyAndValue("campus_name", campus_name)).once();
-    verify(mockedInventoryDao.getByKeyAndValue("qr", qr_code)).once();
+    verify(mockedInventoryDao.getBookByCampusAndQR(qr_code, campus_obj.id)).once();
     verify(mockedCheckoutDao.create(anything())).once();
-    verify(mockedInventoryDao.checkout(qr_code, campus_obj.id)).once();
-    verify(mockedBookDao.getByKeyAndValue("id", inventory_obj.book_id.toString())).once();
-    verify(
-      mockedInventoryDao.getAllByKeyAndValue("book_id", inventory_obj.book_id.toString())
-    ).once();
+    verify(mockedInventoryDao.getBookQuantity(book_obj.id, campus_obj.id)).once();
     verify(mockedRestockListDao.addRestockListItem(anything())).once();
 
     expect(response).toStrictEqual([

@@ -22,10 +22,7 @@ export default class ReportService extends Service {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
 
-    return await this.shoppingListDao.getAllByKeyAndValue(
-      "campus_id",
-      campus_response.object.id.toString()
-    );
+    return await this.shoppingListDao.getShoppingList(campus_response.object.id);
   }
 
   public async deleteShoppingListItem(
@@ -52,17 +49,6 @@ export default class ReportService extends Service {
     } else if (!campus_response.object?.id) {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
-
-    //get shopping list item
-    const get_shopping_response = await this.shoppingListDao.getByKeyAndValue(
-      "book_id",
-      book_id.toString()
-    );
-    if (get_shopping_response.statusCode !== 200) {
-      return get_shopping_response;
-    }
-    const shopping_item = get_shopping_response.object;
-
     //delete from shopping list
     const delete_shopping_response = await this.shoppingListDao.deleteShoppingListItem(
       book_id,
@@ -75,8 +61,6 @@ export default class ReportService extends Service {
     //add to restock list
     const restock_item: RestockList = {
       book_id: book_id,
-      title: shopping_item.title,
-      author: shopping_item.author,
       campus_id: campus_response.object.id,
       quantity: 0,
     };

@@ -1,11 +1,12 @@
-import { Kysely, Transaction } from "kysely";
+import { Kysely, Transaction, UpdateResult } from "kysely";
 import Database from "../schema/Database";
 import { Inventory } from "../schema/Inventory";
 import Dao from "./Dao";
 import Response from "../../response/Response";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
-import { Checkout } from "../schema/Checkout";
+import { Book } from "../schema/Book";
+import RequestErrorResponse from "../../response/RequestErrorResponse";
 
 class InventoryDao extends Dao<Inventory, string> {
   constructor(db: Kysely<Database>) {
@@ -15,31 +16,74 @@ class InventoryDao extends Dao<Inventory, string> {
     this.entityName = "inventory";
   }
 
-  public async checkout(
-    qr_code: string,
+  public async updateCheckoutState(
+    qr: string,
     campus_id: number,
+    is_checked_out: boolean,
     transaction?: Transaction<Database>
-  ): Promise<Response<Checkout>> {
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
         const result = await this.db
-          .deleteFrom(this.tableName as keyof Database)
+          .updateTable(this.tableName as keyof Database)
+          .set({ is_checked_out: is_checked_out ? 1 : 0 })
+          .where("qr", "=", qr)
           .where("campus_id", "=", campus_id)
-          .where("qr", "=", qr_code)
-          .execute();
+          .executeTakeFirst();
 
-        if (result[0].numDeletedRows === 0n) {
-          return new SuccessResponse(
-            `Inventory with qr ${qr_code} and campus id ${campus_id} not found to check out`
+        if (result.numUpdatedRows > 0) {
+          if (result.numChangedRows <= 0) {
+            return new SuccessResponse(
+              `No inventory items were updated` // TODO: add the updated entity to the response
+            );
+          } else {
+            return new SuccessResponse(
+              `${this.capitalizeFirstLetter(this.entityName)} updated successfully` // TODO: add the updated entity to the response
+            );
+          }
+        } else {
+          return new RequestErrorResponse(
+            `No inventory with qr ${qr} and campus ${campus_id} found`
           );
         }
+      } catch (error) {
+        if (error.message.includes("Unknown column") && error.message.includes("in 'field list'")) {
+          return this.parseUnknownFieldError(error.message);
+        }
+        return new ServerErrorResponse(
+          `Failed to update ${this.entityName} with error ${error.message}`,
+          500
+        );
+      }
+    }
+  }
 
-        return new SuccessResponse(`${qr_code} checked out successfully`);
+  public async getBookQuantity(
+    book_id: number,
+    campus_id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<number>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .where("campus_id", "=", campus_id)
+          .where("book_id", "=", book_id)
+          .where("is_checked_out", "=", 0)
+          .execute();
+
+        return new SuccessResponse(
+          `Inventory with book_id: ${book_id} and campus_id: ${campus_id} found successfully`,
+          result.length
+        );
       } catch (error) {
         return new ServerErrorResponse(
-          `Failed to check out ${qr_code} with error ${error.message}`,
+          `Failed to find inventory with book_id: ${book_id} and campus_id: ${campus_id} with error ${error.message}`,
           500
         );
       }
@@ -81,6 +125,48 @@ class InventoryDao extends Dao<Inventory, string> {
     }
   }
 
+  public async getBookByCampusAndQR(
+    qr_code: string,
+    campus_id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<Book>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .select([
+            "books.id",
+            "books.book_title",
+            "books.author",
+            "books.isbn_list",
+            "books.primary_genre_id",
+            "books.audience_id",
+          ])
+          .leftJoin("books", "books.id", "inventory.book_id")
+          .where("campus_id", "=", campus_id)
+          .where("qr", "=", qr_code)
+          .executeTakeFirst();
+
+        if (!result) {
+          return new SuccessResponse(
+            `No inventory with qr: ${qr_code} and campus_id: ${campus_id} found`,
+            null
+          );
+        }
+        return new SuccessResponse(
+          `Inventory with qr: ${qr_code} and campus_id: ${campus_id} found successfully`,
+          result
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to find inventory with qr: ${qr_code} and campus_id: ${campus_id} with error ${error.message}`,
+          500
+        );
+      }
+    }
+  }
   public async getMissingInventoryForAudit(
     audit_id: number,
     campus_id: number,

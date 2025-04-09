@@ -16,6 +16,7 @@ class CheckoutDao extends Dao<Checkout, string> {
 
   public async checkin(
     qr_code: string,
+    campus_id: number,
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
@@ -25,6 +26,7 @@ class CheckoutDao extends Dao<Checkout, string> {
         const result = await this.db
           .deleteFrom(this.tableName as keyof Database)
           .where("qr", "=", qr_code)
+          .where("campus_id", "=", campus_id)
           .execute();
 
         if (result[0].numDeletedRows === 0n) {
@@ -43,11 +45,10 @@ class CheckoutDao extends Dao<Checkout, string> {
     }
   }
 
-
   // For the popular report
 
-    // Get count by book_id where the timestamp is within a date range (start time and end time)
-    // 
+  // Get count by book_id where the timestamp is within a date range (start time and end time)
+  //
 }
 
 export default CheckoutDao;

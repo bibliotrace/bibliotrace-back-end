@@ -14,11 +14,7 @@ export default class CheckoutService extends Service {
     super(daoFactory);
   }
 
-  public async checkin(
-    qr_code: string,
-    location_id: number,
-    campus_name: string
-  ): Promise<[Response<any>, Book]> {
+  public async checkin(qr_code: string, campus_name: string): Promise<[Response<any>, Book]> {
     //get campus
     const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
     if (campus_response.statusCode !== 200) {
@@ -30,43 +26,62 @@ export default class CheckoutService extends Service {
       ];
     }
 
-    //get book_id
-    const checkout_response = await this.checkoutDao.getByKeyAndValue("qr", qr_code);
-    if (checkout_response.statusCode !== 200) {
-      return [checkout_response, null];
-    } else if (!checkout_response.object) {
+    //get checkedin book information
+    const book_response = await this.inventoryDao.getBookByCampusAndQR(
+      qr_code,
+      campus_response.object.id
+    );
+    if (book_response.statusCode !== 200) {
+      return [book_response, null];
+    } else if (!book_response.object) {
       return [new ServerErrorResponse(`Could not find book with qr: ${qr_code}`, 500), null];
     }
-    const book_id = checkout_response.object.book_id;
+
+    //get quantity of book
+    const quantity_response = await this.inventoryDao.getBookQuantity(
+      book_response.object.id,
+      campus_response.object.id
+    );
+    if (quantity_response.statusCode !== 200) {
+      return [quantity_response, null];
+    }
 
     //remove checkout from checkout table
-    const checkin_response = await this.checkoutDao.checkin(qr_code);
+    const checkin_response = await this.checkoutDao.checkin(qr_code, campus_response.object.id);
     if (checkin_response.statusCode !== 200) {
       return [checkin_response, null];
     }
 
-    //add book to inventory
-    const inventory: Inventory = {
-      qr: qr_code,
-      book_id: book_id,
-      location_id: location_id,
-      campus_id: campus_response.object.id,
-    };
-    const inventory_response = await this.inventoryDao.create(inventory);
+    //update checkout state of inventory object
+    const inventory_response = await this.inventoryDao.updateCheckoutState(
+      qr_code,
+      campus_response.object.id,
+      false
+    );
     if (inventory_response.statusCode !== 200) {
       return [inventory_response, null];
     }
 
     //remove book if in shopping_list because quantity is now > 0
-    const shopping_list_response = await this.shoppingListDao.delete(book_id);
+    const shopping_list_response = await this.shoppingListDao.deleteShoppingListItem(
+      book_response.object.id,
+      campus_response.object.id
+    );
     if (shopping_list_response.statusCode !== 200) {
       return [shopping_list_response, null];
     }
 
-    //get checkedin book information and return
-    const book_response = await this.bookDao.getByKeyAndValue("id", book_id.toString());
-    if (book_response.statusCode !== 200) {
-      return [book_response, null];
+    //update quantity in restock list
+    const updated_restock_item: RestockList = {
+      book_id: book_response.object.id,
+      campus_id: campus_response.object.id,
+      quantity: (quantity_response.object ?? 0) + 1,
+    };
+    const restock_list_response = await this.restockListDao.addRestockListItem(
+      updated_restock_item
+    );
+    if (restock_list_response.statusCode !== 200) {
+      return [restock_list_response, null];
     }
 
     return [inventory_response, book_response.object];
@@ -84,77 +99,75 @@ export default class CheckoutService extends Service {
       ];
     }
 
-    //check if book is in inventory and get book_id
-    const get_inventory_response = await this.inventoryDao.getByKeyAndValue("qr", qr_code);
-    if (get_inventory_response.statusCode !== 200) {
-      return [get_inventory_response, null];
-    } else if (!get_inventory_response.object) {
-      return [new ServerErrorResponse(`Could not find book with qr: ${qr_code}`, 500), null];
-    }
-
-    const book_id = get_inventory_response.object.book_id;
-
-    //checkout/remove book from inventory
-    const inventory_response = await this.inventoryDao.checkout(qr_code, campus_response.object.id);
-    if (inventory_response.statusCode !== 200) {
-      return [inventory_response, null];
-    }
-
-    const checkout_obj: Checkout = {
-      timestamp: new Date().toISOString().slice(0, 19).replace("T", " "),
-      qr: qr_code,
-      book_id: book_id,
-      state: "Out",
-    };
-    const checkout_response = await this.checkoutDao.create(checkout_obj);
-
-    //get checked out book information
-    const book_response = await this.bookDao.getByKeyAndValue("id", book_id.toString());
+    //get book information
+    const book_response = await this.inventoryDao.getBookByCampusAndQR(
+      qr_code,
+      campus_response.object.id
+    );
     if (book_response.statusCode !== 200) {
       return [book_response, null];
     } else if (!book_response.object) {
-      return [new ServerErrorResponse(`Could not find book with id: ${book_id}`, 500), null];
+      return [new ServerErrorResponse(`Could not find book with qr: ${qr_code}`, 500), null];
     }
 
-    //get book quantity from inventory and add to shopping list if quantity = 0
-    const quantity_response = await this.inventoryDao.getAllByKeyAndValue(
-      "book_id",
-      book_id.toString()
+    const checkout_obj: Checkout = {
+      qr: qr_code,
+      book_id: book_response.object.id,
+      campus_id: campus_response.object.id,
+    };
+    const checkout_response = await this.checkoutDao.create(checkout_obj);
+
+    //update checkout state of inventory object
+    const inventory_response = await this.inventoryDao.updateCheckoutState(
+      qr_code,
+      campus_response.object.id,
+      true
+    );
+    if (
+      inventory_response.statusCode !== 200 ||
+      inventory_response.message.includes("No inventory items were updated")
+    ) {
+      return [inventory_response, null];
+    }
+
+    //get book quantity from inventory
+    const quantity_response = await this.inventoryDao.getBookQuantity(
+      book_response.object.id,
+      campus_response.object.id
     );
     if (quantity_response.statusCode !== 200) {
       return [quantity_response, null];
     }
-    const quantity = quantity_response.object?.length ?? 0;
-    if (quantity <= 0) {
-      //delete from restock if in restock list
-      const delete_restock_response = await this.restockListDao.delete(book_id);
+
+    //add to restock list if quantity > 0
+    if (quantity_response.object && quantity_response.object > 0) {
+      const restock_item: RestockList = {
+        book_id: book_response.object.id,
+        campus_id: campus_response.object.id,
+        quantity: quantity_response.object,
+      };
+      const restock_list_response = await this.restockListDao.addRestockListItem(restock_item);
+      if (restock_list_response.statusCode !== 200) {
+        return [restock_list_response, null];
+      }
+    }
+    //add to shopping list if quantity = 0 and delete from restock list
+    else {
+      const delete_restock_response = await this.restockListDao.deleteRestockListItem(
+        book_response.object.id,
+        campus_response.object.id
+      );
       if (delete_restock_response.statusCode !== 200) {
         return [delete_restock_response, null];
       }
 
       const shopping_item: ShoppingList = {
-        book_id: book_id,
-        title: book_response.object.book_title,
-        author: book_response.object.author,
+        book_id: book_response.object.id,
         campus_id: campus_response.object.id,
       };
-      const shopping_list_response = await this.shoppingListDao.create(shopping_item);
+      const shopping_list_response = await this.shoppingListDao.addShoppingListItem(shopping_item);
       if (shopping_list_response.statusCode !== 200) {
         return [shopping_list_response, null];
-      }
-    }
-    //add to restock list if quantity > 0
-    else {
-      const restock_item: RestockList = {
-        book_id: book_id,
-        title: book_response.object.book_title,
-        author: book_response.object.author,
-        campus_id: campus_response.object.id,
-        quantity: quantity,
-      };
-      const restock_list_response = await this.restockListDao.addRestockListItem(restock_item);
-      if (restock_list_response.statusCode !== 200) {
-        return [restock_list_response, null];
       }
     }
 
@@ -200,7 +213,10 @@ export default class CheckoutService extends Service {
     }
 
     //remove book if in shopping_list because quantity is now > 0
-    const shopping_list_response = await this.shoppingListDao.delete(book_id);
+    const shopping_list_response = await this.shoppingListDao.deleteShoppingListItem(
+      book_id,
+      campus_response.object.id
+    );
     if (shopping_list_response.statusCode !== 200) {
       return shopping_list_response;
     }

@@ -14,6 +14,60 @@ class ShoppingListDao extends Dao<ShoppingList, number> {
     this.entityName = "shopping item";
   }
 
+  public async getShoppingList(
+    campus_id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .select(["books.id", "books.book_title", "books.author"])
+          .leftJoin("books", "books.id", "shopping_list.book_id")
+          .where("campus_id", "=", campus_id)
+          .execute();
+
+        if (!result) {
+          return new SuccessResponse(`No ${this.entityName} found with campus_id ${campus_id}`);
+        }
+
+        return new SuccessResponse<any>(
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          result as any
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve ${this.entityName} with error ${error}`,
+          500
+        );
+      }
+    }
+  }
+
+  public async addShoppingListItem(entity: ShoppingList, transaction?: Transaction<Database>) {
+    if (transaction) {
+      return new ServerErrorResponse<ShoppingList>("Transactions are not supported yet");
+    } else {
+      try {
+        await this.db
+          .insertInto(this.tableName as keyof Database)
+          .ignore()
+          .values(entity)
+          .execute();
+        return new SuccessResponse(
+          `${this.capitalizeFirstLetter(this.entityName)} created/updated successfully`,
+          entity
+        );
+      } catch (error) {
+        return new ServerErrorResponse<ShoppingList>(
+          `Failed to create ${this.entityName} with error ${error.message}`
+        );
+      }
+    }
+  }
+
   public async deleteShoppingListItem(
     book_id: number,
     campus_id: number,
