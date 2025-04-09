@@ -33,16 +33,16 @@ class IsbnService {
     const author: string = book.authors ? book.authors.join(", ") : "Unknown author";
     const primary_genre_id: number = undefined; // unknown from just ISBN
     const audience_id: number = undefined; // unknown from just ISBN
-    const pages: number = book.pages ?? -1;
+    const pages: number = book.pages;
     const series_id: number = undefined; // unknown from just ISBN
     const series_number: number = undefined; // unknown from just ISBN
     const publish_date: number =
-      book.date_published.length > 4
+      (book.date_published?.length > 4
         ? new Date(book.date_published).getFullYear()
-        : book.date_published;
+        : book.date_published);
     const short_description: string =
-      book.synopsis.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " ") ??
-      "No description found"; // sanitizeHtml does not replace self-closing tags
+      book.synopsis?.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " ") ??
+      "No synopsis found"; // sanitizeHtml does not replace self-closing tags
     const language: string = book.language ? this.parseLanguage(book.language) : "Unknown language";
     const img_callback: string = book.image ?? "No image found";
 
