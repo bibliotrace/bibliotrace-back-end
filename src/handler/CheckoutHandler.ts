@@ -51,14 +51,16 @@ export class CheckoutHandler {
     const successList = [];
     for (const qr of qrList) {
       const qrResponse = parseQr(qr);
-      if (qrResponse) return qrResponse;
-  
-      const [response, book_obj] = await this.checkoutService.checkout(qr, campus);
-      if (response.statusCode !== 200) {
-        errorList.push(response.message);
-      } else if (book_obj != null) {
-        successList.push(book_obj)
-      }
+      if (qrResponse) {
+        errorList.push(qr)
+      } else {
+        const [response, book_obj] = await this.checkoutService.checkout(qr, campus);
+        if (response.statusCode !== 200) {
+          errorList.push(qr);
+        } else if (book_obj != null) {
+          successList.push(book_obj)
+        }
+      }      
     }
 
     return new SuccessResponse(`Successfully Checked out ${successList.length} of ${qrList.length} Books`, {
