@@ -1801,8 +1801,8 @@ describe("DAO testing suite", () => {
           const response = await inventoryDao.getBookDataFromQr("invalid_qr");
 
           expect(response).toBeDefined();
-          expect(response).toBeInstanceOf(SuccessResponse);
-          expect(response.statusCode).toBe(200);
+          expect(response).toBeInstanceOf(RequestErrorResponse);
+          expect(response.statusCode).toBe(404);
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(`No book data found for QR code invalid_qr`);
         });

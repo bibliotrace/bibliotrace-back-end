@@ -34,6 +34,11 @@ bookDataRouter.get("/:isbn", async (req, res) => {
   sendResponse(res, await Config.dependencies.bookDataHandler.getByIsbn(req.params.isbn));
 });
 
+// Can't have two mappings for a :params string, hence this workaround
+bookDataRouter.get("/qr/:qr", async (req, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.getByQr(req.params.qr));
+});
+
 // Ask the ISBNdb for data associated with an isbn number
 /* Output: {
   "message": "success or otherwise", 
@@ -53,7 +58,10 @@ bookDataRouter.get("/suggest/:isbn", async (req: JWTRequest, res) => {
   console.log(req.auth);
   sendResponse(
     res,
-    await Config.dependencies.bookDataHandler.getIsbnDbSuggestion(req.params.isbn, req.auth.userRole.roleType)
+    await Config.dependencies.bookDataHandler.getIsbnDbSuggestion(
+      req.params.isbn,
+      req.auth.userRole.roleType
+    )
   );
 });
 

@@ -430,23 +430,32 @@ export default class BookManagementService extends Service {
       console.log(`Audit entries associated with qr ${qr}`, audits);
       for (const audit of audits) {
         const auditEntryDeleteResponse = await this.auditEntryDao.delete(audit.qr);
-        if (!auditEntryDeleteResponse.object) return auditEntryDeleteResponse;
+        if (auditEntryDeleteResponse.statusCode != 200) return auditEntryDeleteResponse;
+      }
+    }
+
+    // delete checkout entries associated with current qr
+    const checkoutsResponse = await this.checkoutDao.getAllByKeyAndValue("qr", qr);
+    if (
+      checkoutsResponse &&
+      checkoutsResponse.statusCode === 200 &&
+      checkoutsResponse.object != null
+    ) {
+      const checkouts = checkoutsResponse.object;
+      for (const checkout of checkouts) {
+        const deleteCheckoutResponse = await this.checkoutDao.delete(checkout.checkout_id);
+        if (deleteCheckoutResponse.statusCode != 200) return deleteCheckoutResponse;
       }
     }
 
     // delete the inventory entry associated with the qr
     const response = await this.inventoryDao.delete(qr);
-    // TODO: uncomment this once the checkout refactor is done
-    // the frontend calls checkout to get the book information before deletion
-    // but given that current checkout actually deletes from inventory
-    // this will always return a 404 even though we managed to delete the book
-    // so this is a workaround for now
-    /*if (response.message.includes("No inventory found with qr")) {
+    if (response.message.includes("No inventory found with qr")) {
       return new RequestErrorResponse(
         `No inventory found with qr code ${qr}. Please scan a valid QR code.`,
         404
       );
-    }*/
+    }
 
     if (response.statusCode === 200) {
       await this.searchDataService.reSeedSearchIndexes();
