@@ -6,7 +6,7 @@ import Response from "../../response/Response";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 
-class AuditEntryDao extends Dao<AuditEntry, number> {
+class AuditEntryDao extends Dao<AuditEntry, string> {
   constructor(db: Kysely<Database>) {
     super(db);
     this.tableName = "audit_entry";

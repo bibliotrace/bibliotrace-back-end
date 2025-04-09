@@ -64,19 +64,26 @@ export default class LocationHandler {
   public async setBookLocationInInventory(body, auth): Promise<Response<any>> {
     console.log(body, auth);
     if (!body.qr_code) {
-      return new RequestErrorResponse("Request is missing QR", 400);
+      return new RequestErrorResponse("Request is missing QR");
     }
     if (!body.location_id) {
-      return new RequestErrorResponse("Request is missing location ID", 400);
+      return new RequestErrorResponse("Request is missing location ID");
     }
     if (!auth.userRole?.roleType) {
-      return new RequestErrorResponse("Missing UserRole Auth Data", 400);
+      return new RequestErrorResponse("Missing UserRole Auth Data");
     }
 
     const qrResponse = parseQr(body.qr_code);
     if (qrResponse) return qrResponse;
 
     const targetBook = await this.bookManagementService.getByQr(body.qr_code);
+    if (!targetBook.object) {
+      return new RequestErrorResponse(
+        `Book corresponding to QR code ${body.qr_code} not found. Please scan a valid QR code.`,
+        404
+      );
+    }
+
     if (auth.userRole.roleType === "Admin") {
       return new SuccessResponse(
         // TODO: if this breaks make sure that the location_id is a number cause I changed the function signatures to match that assumption

@@ -6,7 +6,7 @@ import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 import Response from "../../response/Response";
 
-class CheckoutDao extends Dao<Checkout, string> {
+class CheckoutDao extends Dao<Checkout, number> {
   constructor(db: Kysely<Database>) {
     super(db);
     this.tableName = "checkout";
@@ -43,11 +43,10 @@ class CheckoutDao extends Dao<Checkout, string> {
     }
   }
 
-
   // For the popular report
 
-    // Get count by book_id where the timestamp is within a date range (start time and end time)
-    // 
+  // Get count by book_id where the timestamp is within a date range (start time and end time)
+  //
 }
 
 export default CheckoutDao;

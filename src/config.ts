@@ -90,10 +90,7 @@ export class Config {
 
     // Route Handlers
     this.dependencies.authHandler = new AuthHandler(this.authService);
-    this.dependencies.inventoryHandler = new InventoryHandler(
-      this.bookManagementService,
-      this.isbnService
-    );
+    this.dependencies.inventoryHandler = new InventoryHandler(this.bookManagementService);
     this.dependencies.bookDataHandler = new BookDataHandler(
       this.bookManagementService,
       this.isbnService
