@@ -10,6 +10,7 @@ export default class SearchDataService extends Service {
   private titleSearchIndex: Worker;
   private authorSearchIndex: Worker;
   private tagSearchIndex: Worker;
+  private seriesSearchIndex: Worker;
 
   constructor(daoFactory: DaoFactory) {
     super(daoFactory);
@@ -36,7 +37,7 @@ export default class SearchDataService extends Service {
         );
         return;
       } else if (bookDaoResponse.object == null) {
-        console.log("NOTICE: No books found in the books table. Cancelling Search Index update");
+        console.warn("NOTICE: No books found in the books table. Cancelling Search Index update");
         return;
       }
       const allBooks = bookDaoResponse.object;
@@ -48,10 +49,20 @@ export default class SearchDataService extends Service {
         );
         return;
       } else if (bookTagDaoResponse.object == null) {
-        console.log("NOTICE: No tags returned. Cancelling Search Index update");
-        return;
+        console.warn("No tags found to add to the search.");
       }
-      const bookTags = bookTagDaoResponse.object;      
+      const bookTags = bookTagDaoResponse.object;
+
+      const seriesDaoResponse = await this.seriesDao.getSeriesNamePerBookId();
+      if (seriesDaoResponse.statusCode !== 200) {
+        console.error(
+          `Something happened to the Series Dao when pulling all book data to seed search: ${seriesDaoResponse.message}`
+        )
+        return;
+      } else if (seriesDaoResponse.object == null) {
+        console.warn("No Series Data found to add to the search.")
+      }
+      const seriesData = seriesDaoResponse.object;
 
       // Type inference on these attributes aren't exported from fast
       const searchOptions = {
@@ -65,6 +76,8 @@ export default class SearchDataService extends Service {
       this.authorSearchIndex = new Worker(searchOptions);
       // @ts-expect-error Types aren't set up properly for the options I selected
       this.tagSearchIndex = new Worker(searchOptions);
+      // @ts-expect-error Types aren't set up properly for the options I selected
+      this.seriesSearchIndex = new Worker(searchOptions);
 
       // Add all index addition function calls to a batch list for async processing
       const addCallBatch = [];
@@ -78,9 +91,15 @@ export default class SearchDataService extends Service {
       for (const bookId of Object.keys(bookTags)) {
         const tagsList = bookTags[bookId];
         for (const tag of tagsList) {
-          if (tag != null && tag != '') {
-            addCallBatch.push(this.tagSearchIndex.add(bookId, tag))
+          if (tag != null && tag != "") {
+            addCallBatch.push(this.tagSearchIndex.add(bookId, tag));
           }
+        }
+      }
+
+      for (const series of seriesData) {
+        if (typeof series == 'object' && series.id && series.seriesName) {
+          addCallBatch.push(this.seriesSearchIndex.add(series.id, series.seriesName))
         }
       }
 
@@ -101,14 +120,15 @@ export default class SearchDataService extends Service {
     const initTime = performance.now();
 
     // Run searches
-    const [titleResults, authorResults, tagResults] = await Promise.all([
+    const [titleResults, authorResults, tagResults, seriesResults] = await Promise.all([
       this.titleSearchIndex.search(searchQuery) as Promise<number[]>,
       this.authorSearchIndex.search(searchQuery) as Promise<number[]>,
       this.tagSearchIndex.search(searchQuery) as Promise<number[]>,
+      this.seriesSearchIndex.search(searchQuery) as Promise<number[]>,
     ]);
 
     // Combine and deduplicate results
-    const resultSet = new Set([...titleResults, ...authorResults, ...tagResults]);
+    const resultSet = new Set([...titleResults, ...authorResults, ...tagResults, ...seriesResults]);
 
     const finishedTime = performance.now();
     console.log(`Completed search in ${finishedTime - initTime} ms`);
