@@ -33,13 +33,13 @@ class IsbnService {
     const author: string = book.authors ? book.authors.join(", ") : "Unknown author";
     const primary_genre_id: number = undefined; // unknown from just ISBN
     const audience_id: number = undefined; // unknown from just ISBN
-    const pages: number = book.pages ?? 'Not Found';
+    const pages: number = book.pages;
     const series_id: number = undefined; // unknown from just ISBN
     const series_number: number = undefined; // unknown from just ISBN
     const publish_date: number =
       (book.date_published?.length > 4
         ? new Date(book.date_published).getFullYear()
-        : book.date_published) ?? 'Not Found';
+        : book.date_published);
     const short_description: string =
       book.synopsis?.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, " ") ??
       "No synopsis found"; // sanitizeHtml does not replace self-closing tags
