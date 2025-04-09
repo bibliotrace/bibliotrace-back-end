@@ -52,9 +52,9 @@ export default class BookDataHandler {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin user type required", 401);
     }
-    if (book.book_title == null || book.book_title === "" ||
-        book.isbn_list == null || book.isbn_list === "" || 
-        book.primary_genre_name == null || book.primary_genre_name == "") {
+    if (!book.book_title ||
+        !book.isbn_list || 
+        !book.primary_genre_name) {
       console.log(book);
       return new RequestErrorResponse("Missing book title, isbn_list, and/or primary_genre", 400);
     }
