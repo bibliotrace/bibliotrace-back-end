@@ -3,6 +3,8 @@ import AudienceDao from "../../../src/db/dao/AudienceDao";
 import AuditDao from "../../../src/db/dao/AuditDao";
 import AuditEntryDao from "../../../src/db/dao/AuditEntryDao";
 import BookDao from "../../../src/db/dao/BookDao";
+import BookGenreDao from "../../../src/db/dao/BookGenreDao";
+import BookTagDao from "../../../src/db/dao/BookTagDao";
 import CampusDao from "../../../src/db/dao/CampusDao";
 import CheckoutDao from "../../../src/db/dao/CheckoutDao";
 import Dao from "../../../src/db/dao/Dao";
@@ -21,8 +23,11 @@ import { Audience } from "../../../src/db/schema/Audience";
 import { Audit } from "../../../src/db/schema/Audit";
 import { AuditEntry } from "../../../src/db/schema/AuditEntry";
 import { Book } from "../../../src/db/schema/Book";
+import { BookGenre } from "../../../src/db/schema/BookGenre";
+import { BookTag } from "../../../src/db/schema/BookTag";
 import { Campus } from "../../../src/db/schema/Campus";
 import { Checkout } from "../../../src/db/schema/Checkout";
+import Database from "../../../src/db/schema/Database";
 import { Genre } from "../../../src/db/schema/Genre";
 import { Inventory } from "../../../src/db/schema/Inventory";
 import { Location } from "../../../src/db/schema/Location";
@@ -33,16 +38,11 @@ import { Suggestion } from "../../../src/db/schema/Suggestion";
 import { Tag } from "../../../src/db/schema/Tag";
 import { User } from "../../../src/db/schema/User";
 import { UserRole } from "../../../src/db/schema/UserRole";
+import RequestErrorResponse from "../../../src/response/RequestErrorResponse";
 import Response from "../../../src/response/Response";
 import ServerErrorResponse from "../../../src/response/ServerErrorResponse";
 import SuccessResponse from "../../../src/response/SuccessResponse";
 import TestConnectionManager from "../../TestConnectionManager";
-import Database from "../../../src/db/schema/Database";
-import { BookGenre } from "../../../src/db/schema/BookGenre";
-import { BookTag } from "../../../src/db/schema/BookTag";
-import BookGenreDao from "../../../src/db/dao/BookGenreDao";
-import BookTagDao from "../../../src/db/dao/BookTagDao";
-import RequestErrorResponse from "../../../src/response/RequestErrorResponse";
 
 // NOTE: This testing suite assumes that data already comes in with the right fields, which should largely be parsed/checked in the handlers
 
@@ -1525,10 +1525,10 @@ describe("DAO testing suite", () => {
       describe("getBasicBookByFilter tests", () => {
         test("Successful retrieval of book with valid campus and ISBN", async () => {
           const filterQueryList = [];
-          const isbn = "9780747532743";
+          const bookId = 10;
           const campus = "Hogwarts";
 
-          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, bookId, campus);
 
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
@@ -1538,10 +1538,10 @@ describe("DAO testing suite", () => {
 
         test("Successful retrieval of book with filters applied", async () => {
           const filterQueryList = [{ key: "genre.genre_name", value: ["Fantasy"] }];
-          const isbn = "9780747532743";
+          const bookId = 10;
           const campus = "Hogwarts";
 
-          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, bookId, campus);
 
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
@@ -1551,41 +1551,37 @@ describe("DAO testing suite", () => {
 
         test("Failed retrieval with invalid campus", async () => {
           const filterQueryList = [];
-          const isbn = "9780747532743";
+          const bookId = 10;
           const campus = "InvalidCampus";
 
-          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, bookId, campus);
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeUndefined();
-          expect(response.message).toContain(
-            `No book found with isbn ${isbn} and campus ${campus} matching filters`
-          );
+          expect(response.message).toContain(`${bookId} and campus ${campus} matching filters`);
         });
 
         test("Failed retrieval with invalid ISBN", async () => {
           const filterQueryList = [];
-          const isbn = "invalid_isbn";
+          const bookId = -1;
           const campus = "Hogwarts";
 
-          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, bookId, campus);
 
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeUndefined();
-          expect(response.message).toContain(
-            `No book found with isbn ${isbn} and campus ${campus} matching filters`
-          );
+          expect(response.message).toContain(`${bookId} and campus ${campus} matching filters`);
         });
 
         test("Failed retrieval with invalid filters", async () => {
           const filterQueryList = [{ key: "genre.primary_genre_name", value: "InvalidGenre" }];
-          const isbn = "9780747532743";
+          const bookId = 1;
           const campus = "Hogwarts";
 
-          const response = await bookDao.getBasicBookByFilter(filterQueryList, isbn, campus);
+          const response = await bookDao.getBasicBookByFilter(filterQueryList, bookId, campus);
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(ServerErrorResponse);
           expect(response.statusCode).toBe(500);
@@ -1594,12 +1590,12 @@ describe("DAO testing suite", () => {
 
         test("Transaction returns a ServerErrorResponse", async () => {
           const filterQueryList = [];
-          const isbn = "9780747532743";
+          const bookId = 1;
           const campus = "Hogwarts";
 
           const response = await bookDao.getBasicBookByFilter(
             filterQueryList,
-            isbn,
+            bookId,
             campus,
             mockTransaction
           );
@@ -1610,19 +1606,18 @@ describe("DAO testing suite", () => {
       describe("Get all ISBNs tests", () => {
         // These tests should be written a little more carefully to check if multiple ISBN lists can be coalesced into the array
         // but for right now I don't want to deal with that
-        test("Successful retrieval of all ISBNs with valid campus", async () => {
+        test("Successful retrieval of all bookData with valid campus", async () => {
           const filterQueryList = [];
           const campus = "Hogwarts";
 
-          const response = await bookDao.getAllISBNs(filterQueryList, campus);
+          const response = await bookDao.getAllBooksMatchingFilter(filterQueryList, campus);
 
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeDefined();
-          parseArrayForEquality(response, [{ isbn_list: dummyBook.isbn_list }]);
           expect(response.message).toContain(
-            `Successfully retrieved all isbns on campus ${campus} matching filters`
+            `Successfully retrieved all books on campus ${campus} matching filters`
           );
         });
 
@@ -1633,15 +1628,15 @@ describe("DAO testing suite", () => {
           ];
           const campus = "Hogwarts";
 
-          const response = await bookDao.getAllISBNs(filterQueryList, campus);
+          const response = await bookDao.getAllBooksMatchingFilter(filterQueryList, campus);
+          // console.log(response);
 
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeDefined();
-          parseArrayForEquality(response, [{ isbn_list: dummyBook.isbn_list }]);
           expect(response.message).toContain(
-            `Successfully retrieved all isbns on campus ${campus} matching filters`
+            `Successfully retrieved all books on campus ${campus} matching filters`
           );
         });
 
@@ -1649,14 +1644,14 @@ describe("DAO testing suite", () => {
           const filterQueryList = [];
           const campus = "InvalidCampus";
 
-          const response = await bookDao.getAllISBNs(filterQueryList, campus);
+          const response = await bookDao.getAllBooksMatchingFilter(filterQueryList, campus);
 
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeUndefined();
           expect(response.message).toContain(
-            `No isbns found on campus ${campus} matching provided filters`
+            `No books found on campus ${campus} matching provided filters`
           );
         });
 
@@ -1667,7 +1662,7 @@ describe("DAO testing suite", () => {
           ];
           const campus = "Hogwarts";
 
-          const response = await bookDao.getAllISBNs(filterQueryList, campus);
+          const response = await bookDao.getAllBooksMatchingFilter(filterQueryList, campus);
 
           expect(response).toBeDefined();
           expect(response).toBeInstanceOf(ServerErrorResponse);
@@ -1680,7 +1675,11 @@ describe("DAO testing suite", () => {
           const filterQueryList = [];
           const campus = "Hogwarts";
 
-          const response = await bookDao.getAllISBNs(filterQueryList, campus, mockTransaction);
+          const response = await bookDao.getAllBooksMatchingFilter(
+            filterQueryList,
+            campus,
+            mockTransaction
+          );
           expectTransactionFailure(response);
         });
       });
@@ -1828,7 +1827,7 @@ describe("DAO testing suite", () => {
           expect(response).toBeInstanceOf(SuccessResponse);
           expect(response.statusCode).toBe(200);
           expect(response.object).toBeUndefined(); // because nothing is returned here there's not a good way to know if the db was actually updated
-          expect(response.message).toContain("Set location for qr successfully");
+          expect(response.message).toContain(`Set location for qr ${qr} successfully`);
         });
 
         test("Update with invalid QR code does not modify database", async () => {

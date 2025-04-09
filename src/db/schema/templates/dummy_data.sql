@@ -140,3 +140,28 @@ VALUES ('2025-04-02 02:25:54', 'ab0001', '1', '1'),
 ('2025-04-02 01:25:56', 'cb0001', '1', '1'),
 ('2025-04-02 01:26:00', 'db0001', '1', '1'),
 ('2025-04-02 01:26:02', 'bb0002', '2', '1');
+
+INSERT INTO audit (campus_id, start_date, completed_date)
+VALUES ('1', '2023-04-02 02:25:56', '2025-04-02 02:25:54');
+
+INSERT INTO audit_entry (qr, audit_id, state)
+VALUES 
+('ab0001', 1, 'FOUND'),
+('bb0001', 1, 'FOUND'),
+('cb0001', 1, 'FOUND'),
+('db0001', 1, 'FOUND'),
+('ab0002', 1, 'FOUND'),
+('bb0002', 1, 'FOUND'),
+('ab0003', 1, 'FOUND'),
+('ab0004', 1, 'FOUND'),
+('ab0005', 1, 'FOUND'),
+('ab0006', 1, 'FOUND'),
+('ab0007', 1, 'FOUND'),
+('ab0008', 1, 'FOUND'),
+('ab0009', 1, 'FOUND'),
+('ab0010', 1, 'MISPLACED'),
+('ab0011', 1, 'MISPLACED'),
+('ab0012', 1, 'MISPLACED'),
+('ab0013', 1, 'MISPLACED'),
+('ab0014', 1, 'MISSING'),
+('ab0015', 1, 'MISSING');

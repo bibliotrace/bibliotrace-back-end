@@ -6,7 +6,7 @@ import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 import Response from "../../response/Response";
 
-class CheckoutDao extends Dao<Checkout, string> {
+class CheckoutDao extends Dao<Checkout, number> {
   constructor(db: Kysely<Database>) {
     super(db);
     this.tableName = "checkout";

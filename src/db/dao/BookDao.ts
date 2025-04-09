@@ -1,12 +1,12 @@
+import { Kysely, Transaction, sql } from "kysely";
+import { FilterListItem } from "../../handler/SearchRouteHandler";
+import RequestErrorResponse from "../../response/RequestErrorResponse";
 import Response from "../../response/Response";
+import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 import { Book } from "../schema/Book";
 import Database from "../schema/Database";
 import Dao from "./Dao";
-import ServerErrorResponse from "../../response/ServerErrorResponse";
-import { Kysely, Transaction } from "kysely";
-import { FilterListItem } from "../../handler/SearchRouteHandler";
-import RequestErrorResponse from "../../response/RequestErrorResponse";
 
 class BookDao extends Dao<Book, number> {
   constructor(db: Kysely<Database>) {
@@ -102,9 +102,11 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
+  // ADD to this function a check for the Checkout table. If the book is checked out, don't return it
+
   public async getBasicBookByFilter(
     filterQueryList: FilterListItem[],
-    isbn: string,
+    bookId: number,
     campus: string,
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
@@ -112,21 +114,65 @@ class BookDao extends Dao<Book, number> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
-        // Run SQL stuff
-        let dbQuery = this.db
-          .selectFrom("books")
-          .innerJoin("inventory", "inventory.book_id", "books.id")
-          .leftJoin("genre", "books.primary_genre_id", "genre.id")
-          .leftJoin("audiences", "audiences.id", "books.audience_id")
-          .leftJoin("series", "series.id", "books.series_id")
-          .leftJoin("campus", "campus.id", "inventory.campus_id")
-          .select(["books.id", "books.book_title", "books.author", "genre.genre_name", "series.series_name"])
-          .where("campus.campus_name", "=", campus)
-          .where("books.isbn_list", "like", `%${isbn}%`);
+        let baseTable;
+
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
-            // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
-            dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
+            if (filter.key === "Special") {
+              if (filter.value === "Popular") {
+                baseTable = this.db
+                  .selectFrom(
+                    this.db
+                      .selectFrom("checkout")
+                      .selectAll()
+                      .where("timestamp", ">", sql`DATE_SUB(NOW(), INTERVAL 30 DAY)` as any)
+                      .as("cte2")
+                  )
+                  .innerJoin("books", "books.id", "cte2.book_id" as any)
+                  .select([sql`books.*`, sql`COUNT(cte2.qr)`.as("checkouts")] as any)
+                  .groupBy("books.id")
+                  .orderBy("checkouts" as any, "desc")
+                  .as("cte1");
+              } else if (filter.value === "Newest") {
+                baseTable = this.db
+                  .selectFrom("books")
+                  .selectAll()
+                  .orderBy("books.id", "desc")
+                  .limit(50)
+                  .as("cte1");
+              }
+            }
+          }
+        }
+
+        if (baseTable == null) {
+          baseTable = this.db.selectFrom("books").selectAll().as("cte1");
+        }
+
+        let dbQuery = this.db
+          .selectFrom(baseTable)
+          .innerJoin("inventory", "inventory.book_id", "cte1.id")
+          .leftJoin("genre", "cte1.primary_genre_id", "genre.id")
+          .leftJoin("audiences", "audiences.id", "cte1.audience_id")
+          .leftJoin("series", "series.id", "cte1.series_id")
+          .leftJoin("campus", "campus.id", "inventory.campus_id")
+          .select([
+            "cte1.id",
+            "cte1.isbn_list",
+            "cte1.book_title",
+            "cte1.author",
+            "genre.genre_name",
+            "series.series_name",
+          ])
+          .where("campus.campus_name", "=", campus)
+          .where("cte1.id", "=", bookId as any);
+
+        if (filterQueryList.length > 0) {
+          for (const filter of filterQueryList) {
+            if (filter.key != "Special") {
+              // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
+              dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
+            }
           }
         }
 
@@ -134,7 +180,9 @@ class BookDao extends Dao<Book, number> {
         if (dbResult) {
           return new SuccessResponse("successfully grabbed book", dbResult);
         } else {
-          return new SuccessResponse(`No book found with isbn ${isbn} and campus ${campus} matching filters`);
+          return new SuccessResponse(
+            `No book found with bookId ${bookId} and campus ${campus} matching filters`
+          );
         }
       } catch (error) {
         return new ServerErrorResponse(
@@ -145,7 +193,9 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
-  public async getAllISBNs(
+  // ADD to this function a check for the Checkout table. If a book is checked out, don't return it
+
+  public async getAllBooksMatchingFilter(
     filterQueryList: FilterListItem[],
     campus: string,
     transaction?: Transaction<Database>
@@ -154,21 +204,62 @@ class BookDao extends Dao<Book, number> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
+        let baseTable;
+
+        if (filterQueryList.length > 0) {
+          for (const filter of filterQueryList) {
+            if (filter.key === "Special") {
+              if (filter.value === "Popular") {
+                baseTable = this.db
+                  .selectFrom(
+                    this.db
+                      .selectFrom("checkout")
+                      .selectAll()
+                      .where("timestamp", ">", sql`DATE_SUB(NOW(), INTERVAL 30 DAY)` as any)
+                      .as("cte2")
+                  )
+                  .innerJoin("books", "books.id", "cte2.book_id" as any)
+                  .select([sql`books.*`, sql`COUNT(cte2.qr)`.as("checkouts")] as any)
+                  .groupBy("books.id")
+                  .orderBy("checkouts" as any, "desc")
+                  .as("cte1");
+              } else if (filter.value === "Newest") {
+                baseTable = this.db
+                  .selectFrom("books")
+                  .selectAll()
+                  .orderBy("books.id", "desc")
+                  .limit(50)
+                  .as("cte1");
+              }
+            }
+          }
+        }
+
+        if (baseTable == null) {
+          baseTable = this.db.selectFrom("books").selectAll().as("cte1");
+        }
+
         let dbQuery = this.db
-          .selectFrom("books")
+          .selectFrom(baseTable)
           .distinct()
-          .select("isbn_list")
-          .innerJoin("inventory", "inventory.book_id", "books.id")
-          .leftJoin("genre", "books.primary_genre_id", "genre.id")
-          .leftJoin("audiences", "audiences.id", "books.audience_id")
+          .innerJoin("inventory", "inventory.book_id", "cte1.id")
+          .leftJoin("genre", "cte1.primary_genre_id", "genre.id")
+          .leftJoin("audiences", "audiences.id", "cte1.audience_id")
           .leftJoin("campus", "campus.id", "inventory.campus_id")
+          .leftJoin("series", "series.id", "cte1.series_id")
+          .select([
+            "cte1.id",
+            "cte1.book_title",
+            "cte1.isbn_list",
+            "cte1.author",
+            "genre.genre_name",
+            "series.series_name",
+          ])
           .where("campus.campus_name", "=", campus);
 
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
-            if (filter.key == "Special") {
-              console.log('doing some different query here... To be built soon')
-            } else {
+            if (filter.key != "Special") {
               // we would use in instead of = if the filter value is an array, but in this circumstance it shouldn't be
               dbQuery = dbQuery.where(filter.key as any, "in", filter.value as any);
             }
@@ -177,17 +268,33 @@ class BookDao extends Dao<Book, number> {
 
         const dbResult = await dbQuery.execute();
         if (!dbResult || dbResult.length === 0) {
-          return new SuccessResponse(`No isbns found on campus ${campus} matching provided filters`);
+          return new SuccessResponse(`No books found on campus ${campus} matching provided filters`);
         }
         return new SuccessResponse(
-          `Successfully retrieved all isbns on campus ${campus} matching filters`,
+          `Successfully retrieved all books on campus ${campus} matching filters`,
           dbResult
         );
       } catch (error) {
+        console.error(error);
         return new ServerErrorResponse(
           `Failed to retrieve all isbns with filter queries: Error ${error.message}`
         );
       }
+    }
+  }
+
+  public async getAllBookTitlesAndAuthors(): Promise<Response<any>> {
+    try {
+      const dbQuery = this.db.selectFrom("books").select(["books.id", "books.book_title", "books.author"]);
+
+      const dbResult = await dbQuery.execute();
+
+      if (!dbResult || dbResult.length === 0) return new SuccessResponse("No Books exist in the table");
+      return new SuccessResponse("Successfully pulled all book titles and authors", dbResult);
+    } catch (error) {
+      return new ServerErrorResponse(
+        `Failed to retrieve all book titles and authors. Error: ${error.message}`
+      );
     }
   }
 

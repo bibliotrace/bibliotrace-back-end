@@ -1,6 +1,6 @@
 import express from "express";
 import { Config } from "../config";
-import { sendResponse } from "../utils/utils";
+import { sendResponse, validateUserType } from "../utils/utils";
 
 export const inventoryRouter = express.Router();
 
@@ -8,12 +8,19 @@ inventoryRouter.post("/checkout", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.checkoutHandler.checkout(req.body, req.auth));
 });
 
+inventoryRouter.post('/checkout/bulk', async (req: any, res) => {
+  sendResponse(res, await Config.dependencies.checkoutHandler.bulkCheckout(req.body, req.auth));
+})
+
 inventoryRouter.post("/checkin", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.checkoutHandler.checkin(req.body, req.auth));
 });
 
 inventoryRouter.post("/add-book", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.checkoutHandler.addBookToInventory(req.body, req.auth));
+  sendResponse(
+    res,
+    await Config.dependencies.checkoutHandler.addBookToInventory(req.body, req.auth)
+  );
 });
 
 inventoryRouter.post("/genre", async (req: any, res) => {
@@ -33,7 +40,10 @@ inventoryRouter.delete("/tag", async (req: any, res) => {
 });
 
 inventoryRouter.post("/setLocation", async (req: any, res) => {
-  sendResponse(res, await Config.dependencies.locationHandler.setBookLocationInInventory(req.body, req.auth));
+  sendResponse(
+    res,
+    await Config.dependencies.locationHandler.setBookLocationInInventory(req.body, req.auth)
+  );
 });
 
 inventoryRouter.post("/auditEntry", async (req: any, res) => {
@@ -56,4 +66,17 @@ inventoryRouter.post("/audit/completeLocation", async (req: any, res) => {
 inventoryRouter.post("/audit/complete", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.auditHandler.completeAudit(req.body, req.auth));
 });
+
+inventoryRouter.delete("/delete/isbn", async (req: any, res) => {
+  if (validateUserType(req, res, "Admin")) {
+    sendResponse(res, await Config.dependencies.inventoryHandler.removeBookByIsbn(req.body));
+  }
+});
+
+inventoryRouter.delete("/delete/qr", async (req: any, res) => {
+  if (validateUserType(req, res, "Admin")) {
+    sendResponse(res, await Config.dependencies.inventoryHandler.removeBookByQr(req.body));
+  }
+});
+
 module.exports = { inventoryRouter };

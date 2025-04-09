@@ -3,13 +3,17 @@ import { Book } from "../db/schema/Book";
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
 import SuccessResponse from "../response/SuccessResponse";
+import SearchDataService from "./SearchDataService";
 import Service from "./Service";
 
 // const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
 
 export default class BookManagementService extends Service {
-  constructor(daoFactory: DaoFactory) {
+  private readonly searchDataService: SearchDataService;
+
+  constructor(daoFactory: DaoFactory, searchDataServiceRef: SearchDataService) {
     super(daoFactory);
+    this.searchDataService = searchDataServiceRef;
   }
 
   public async getByIsbn(isbn: string): Promise<Response<Book>> {
@@ -47,7 +51,10 @@ export default class BookManagementService extends Service {
     return await this.bookDao.getBookTagsByIsbn(isbn);
   }
 
-  public async updateBook(request: any): Promise<Response<any>> {
+  // NOTE: This function will not update Secondary genres and tags for a given book. Those are done via separate calls because of the
+  //       many-to-one relationship of the secondary genre list and the tags list. We can build in the ability to update those lists in
+  //       this function, but I stopped including features with this one function after it got to a hundred lines haha.
+  public async createOrUpdateBookData(request: any): Promise<Response<any>> {
     const title = request.book_title;
     const isbn_list = request.isbn_list;
     const author = request.author;
@@ -71,7 +78,10 @@ export default class BookManagementService extends Service {
     } else {
       primary_genre_id = genreResponse.object.id;
     }
-    const audienceResponse = await this.audienceDao.getByKeyAndValue("audience_name", audience_name);
+    const audienceResponse = await this.audienceDao.getByKeyAndValue(
+      "audience_name",
+      audience_name
+    );
     if (audienceResponse == null || audienceResponse.statusCode != 200) {
       return audienceResponse;
     } else if (audienceResponse.object == null) {
@@ -122,10 +132,12 @@ export default class BookManagementService extends Service {
       if (response.statusCode !== 200) {
         return response;
       } else {
+        // Update the search cache with the new book
+        await this.searchDataService.reSeedSearchIndexes();
         return new SuccessResponse("Completed Book Creation");
       }
     } else {
-      // Do stuff to update the book
+      // Update the book data
       const book = bookResponse.object; // guaranteed to exist here
       const updatedInformation: Book = {
         book_title: title,
@@ -141,7 +153,12 @@ export default class BookManagementService extends Service {
         language,
         img_callback,
       };
-      return await this.bookDao.update(book.id, updatedInformation);
+      const result = await this.bookDao.update(book.id, updatedInformation);
+      if (result.statusCode === 200) {
+        // Update the search cache with new data
+        await this.searchDataService.reSeedSearchIndexes();
+      }
+      return result;
     }
   }
 
@@ -287,6 +304,154 @@ export default class BookManagementService extends Service {
     }
 
     return new SuccessResponse("No Change");
+  }
+
+  // IMPORTANT TODO: This function does not check which campus the book associated with the ISBN is in
+  // this means that if a book is in multiple campuses, it will delete all of them
+  // This will likely need some custom DAO methods to filter responses by campus
+  public async removeBookByIsbn(isbn: string): Promise<Response<any>> {
+    const bookResponse = await this.bookDao.getBookByIsbn(isbn);
+    if (bookResponse && bookResponse.statusCode !== 200) {
+      return bookResponse;
+    } else if (bookResponse && bookResponse.object != null) {
+      const bookId = bookResponse.object.id;
+
+      // delete the tags and genre mappings associated with the book
+      const tagsResponse = await this.bookTagDao.getAllByKeyAndValue("book_id", bookId);
+      if (tagsResponse && tagsResponse.statusCode === 200 && tagsResponse.object != null) {
+        const tags = tagsResponse.object;
+        for (const tag of tags) {
+          const deleteTagResponse = await this.bookTagDao.delete(tag.id);
+          if (deleteTagResponse.statusCode != 200) return deleteTagResponse;
+        }
+      }
+
+      // delete checkout entries associated with the book
+      // note this would remove it from checkout reports, which might not be what is desired
+      // however, deleting a book comes with the consequence that you can't get any data back on it
+      // so I think that it just should be emphasized on the remove page that there won't be any data
+      // after the book has been removed, thus removes should only be executed with extreme caution
+      const checkoutsResponse = await this.checkoutDao.getAllByKeyAndValue("book_id", bookId);
+      if (
+        checkoutsResponse &&
+        checkoutsResponse.statusCode === 200 &&
+        checkoutsResponse.object != null
+      ) {
+        const checkouts = checkoutsResponse.object;
+        for (const checkout of checkouts) {
+          const deleteCheckoutResponse = await this.checkoutDao.delete(checkout.checkout_id);
+          if (deleteCheckoutResponse.statusCode != 200) return deleteCheckoutResponse;
+        }
+      }
+
+      // delete all inventory entries associated with the book
+      const inventoryResponse = await this.inventoryDao.getAllByKeyAndValue("book_id", bookId);
+      if (
+        inventoryResponse &&
+        inventoryResponse.statusCode === 200 &&
+        inventoryResponse.object != null
+      ) {
+        const inventory = inventoryResponse.object;
+        // console.log(inventory);
+        for (const inv of inventory) {
+          // delete all audit entries associated with the current qr
+          // same idea as deleting checkouts, this removes it from reports
+          // but it is a necessary evil to remove the book from the system
+          const auditResponse = await this.auditEntryDao.getAllByKeyAndValue("qr", inv.qr);
+          if (auditResponse && auditResponse.statusCode === 200 && auditResponse.object != null) {
+            const audits = auditResponse.object;
+            // console.log(`Audit entries associated with qr ${inv.qr}`, audits);
+            for (const audit of audits) {
+              const auditEntryDeleteResponse = await this.auditEntryDao.delete(audit.qr);
+              if (auditEntryDeleteResponse.statusCode != 200) return auditEntryDeleteResponse;
+            }
+          }
+
+          const inventoryDeleteResponse = await this.inventoryDao.delete(inv.qr);
+          if (inventoryDeleteResponse.statusCode != 200) return inventoryDeleteResponse;
+        }
+      }
+
+      // delete from shopping list
+      const shoppingListResponse = await this.shoppingListDao.getAllByKeyAndValue(
+        "book_id",
+        bookId
+      );
+      if (
+        shoppingListResponse &&
+        shoppingListResponse.statusCode === 200 &&
+        shoppingListResponse.object != null
+      ) {
+        const shoppingList = shoppingListResponse.object;
+        for (const shoppingListEntry of shoppingList) {
+          const shoppingListDeleteResponse = await this.shoppingListDao.delete(
+            shoppingListEntry.book_id
+          );
+          if (shoppingListDeleteResponse.statusCode != 200) return shoppingListDeleteResponse;
+        }
+      }
+
+      // delete from restock list
+      const restockListResponse = await this.restockListDao.getAllByKeyAndValue("book_id", bookId);
+      if (
+        restockListResponse &&
+        restockListResponse.statusCode === 200 &&
+        restockListResponse.object != null
+      ) {
+        const restockList = restockListResponse.object;
+        for (const restockListEntry of restockList) {
+          const restockListDeleteResponse = await this.restockListDao.delete(
+            restockListEntry.book_id
+          );
+          if (!restockListDeleteResponse.object) return restockListDeleteResponse;
+        }
+      }
+
+      // delete the book itself
+      const result = await this.bookDao.delete(bookId);
+      if (result.statusCode === 200) {
+        // Update the search cache with new data
+        await this.searchDataService.reSeedSearchIndexes();
+      }
+
+      return result;
+    } else {
+      return new RequestErrorResponse(`No book found with isbn ${isbn}`, 404);
+    }
+  }
+
+  // TODO: because there are a couple duplicate QR codes across campuses
+  // this function will need to filter the audit entries by the campus
+  public async removeBookByQr(qr: string): Promise<Response<any>> {
+    // delete audit entries associated with current qr
+    const auditResponse = await this.auditEntryDao.getAllByKeyAndValue("qr", qr);
+    if (auditResponse && auditResponse.statusCode === 200 && auditResponse.object != null) {
+      const audits = auditResponse.object;
+      console.log(`Audit entries associated with qr ${qr}`, audits);
+      for (const audit of audits) {
+        const auditEntryDeleteResponse = await this.auditEntryDao.delete(audit.qr);
+        if (!auditEntryDeleteResponse.object) return auditEntryDeleteResponse;
+      }
+    }
+
+    // delete the inventory entry associated with the qr
+    const response = await this.inventoryDao.delete(qr);
+    // TODO: uncomment this once the checkout refactor is done
+    // the frontend calls checkout to get the book information before deletion
+    // but given that current checkout actually deletes from inventory
+    // this will always return a 404 even though we managed to delete the book
+    // so this is a workaround for now
+    /*if (response.message.includes("No inventory found with qr")) {
+      return new RequestErrorResponse(
+        `No inventory found with qr code ${qr}. Please scan a valid QR code.`,
+        404
+      );
+    }*/
+
+    if (response.statusCode === 200) {
+      await this.searchDataService.reSeedSearchIndexes();
+    }
+    return response;
   }
 }
 

@@ -1,3 +1,4 @@
+import AuditEntryDao from "../../src/db/dao/AuditEntryDao";
 import BookDao from "../../src/db/dao/BookDao";
 import CampusDao from "../../src/db/dao/CampusDao";
 import CheckoutDao from "../../src/db/dao/CheckoutDao";
@@ -32,6 +33,7 @@ describe("Checkout service testing suite", () => {
   let mockedBookDao: BookDao;
   let mockedRestockListDao: RestockListDao;
   let mockedShoppingListDao: ShoppingListDao;
+  let mockedAuditEntryDao: AuditEntryDao;
 
   beforeAll(() => {
     //test data
@@ -67,6 +69,7 @@ describe("Checkout service testing suite", () => {
     mockedBookDao = mock(BookDao);
     mockedRestockListDao = mock(RestockListDao);
     mockedShoppingListDao = mock(ShoppingListDao);
+    mockedAuditEntryDao = mock(AuditEntryDao);
 
     when(mockedDaoFactory.getCampusDao()).thenReturn(instance(mockedCampusDao));
     when(mockedDaoFactory.getInventoryDao()).thenReturn(instance(mockedInventoryDao));
@@ -74,6 +77,7 @@ describe("Checkout service testing suite", () => {
     when(mockedDaoFactory.getBookDao()).thenReturn(instance(mockedBookDao));
     when(mockedDaoFactory.getRestockListDao()).thenReturn(instance(mockedRestockListDao));
     when(mockedDaoFactory.getShoppingListDao()).thenReturn(instance(mockedShoppingListDao));
+    when(mockedDaoFactory.getAuditEntryDao()).thenReturn(instance(mockedAuditEntryDao));
 
     service = new CheckoutService(instance(mockedDaoFactory));
   });

@@ -268,7 +268,7 @@ class InventoryDao extends Dao<Inventory, string> {
           return new SuccessResponse(`No inventory found with qr ${qr} to update`);
         }
 
-        return new SuccessResponse("Set location for qr successfully");
+        return new SuccessResponse(`Set location for qr ${qr} successfully`);
       } catch (error) {
         return new ServerErrorResponse(
           `Error occurred during set location query: ${error.message}`
