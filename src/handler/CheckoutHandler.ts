@@ -25,15 +25,8 @@ export class CheckoutHandler {
     }
 
     const [response, book_obj] = await this.checkoutService.checkout(body.qr_code, campus);
-
-    if (response.statusCode !== 200) {
-      return response;
-    }
-    return new SuccessResponse("Checked out successfully", {
-      title: book_obj.book_title,
-      author: book_obj.author,
-      isbn: book_obj.isbn_list, // TODO: this assumes that the book has only one ISBN
-    });
+    response.object = book_obj;
+    return response;
   }
 
   public async bulkCheckout(body, authData) {
@@ -47,32 +40,35 @@ export class CheckoutHandler {
     }
 
     const qrList = body.qr_list;
-    const errorList = []
+    const errorList = [];
     const successList = [];
     for (const qr of qrList) {
       const qrResponse = parseQr(qr);
       if (qrResponse) {
-        errorList.push(qr)
+        errorList.push(qr);
       } else {
         const [response, book_obj] = await this.checkoutService.checkout(qr, campus);
         if (response.statusCode !== 200) {
           errorList.push(qr);
         } else if (book_obj != null) {
-          successList.push(book_obj)
+          successList.push(book_obj);
         }
-      }      
+      }
     }
 
-    return new SuccessResponse(`Successfully Checked out ${successList.length} of ${qrList.length} Books`, {
-      report: {
-        successes: successList,
-        errors: errorList,
+    return new SuccessResponse(
+      `Successfully Checked out ${successList.length} of ${qrList.length} Books`,
+      {
+        report: {
+          successes: successList,
+          errors: errorList,
+        },
       }
-    });  
+    );
   }
 
   public async checkin(body, authData) {
-    const requiredFields = ["qr_code", "location_id"];
+    const requiredFields = ["qr_code"];
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
     if (requiredFieldsResponse) return requiredFieldsResponse;
 
@@ -84,20 +80,9 @@ export class CheckoutHandler {
       return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
     }
 
-    const [response, book_obj] = await this.checkoutService.checkin(
-      body.qr_code,
-      body.location_id,
-      campus
-    );
-
-    if (response.statusCode !== 200) {
-      return response;
-    }
-    return new SuccessResponse("Checked in successfully", {
-      title: book_obj.book_title,
-      author: book_obj.author,
-      isbn: book_obj.isbn_list,
-    });
+    const [response, book_obj] = await this.checkoutService.checkin(body.qr_code, campus);
+    response.object = book_obj;
+    return response;
   }
 
   public async addBookToInventory(body, authData) {

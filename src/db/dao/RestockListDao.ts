@@ -14,6 +14,38 @@ class RestockListDao extends Dao<RestockList, number> {
     this.entityName = "restock item";
   }
 
+  public async getRestockList(
+    campus_id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .select(["books.id", "books.book_title", "books.author", "restock_list.quantity"])
+          .leftJoin("books", "books.id", "restock_list.book_id")
+          .where("campus_id", "=", campus_id)
+          .execute();
+
+        if (!result) {
+          return new SuccessResponse(`No ${this.entityName} found with campus_id ${campus_id}`);
+        }
+
+        return new SuccessResponse<any>(
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          result as any
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve ${this.entityName} with error ${error}`,
+          500
+        );
+      }
+    }
+  }
+
   public async addRestockListItem(entity: RestockList, transaction?: Transaction<Database>) {
     if (transaction) {
       return new ServerErrorResponse<RestockList>("Transactions are not supported yet");

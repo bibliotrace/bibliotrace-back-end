@@ -3,7 +3,7 @@ interface Inventory {
   book_id: number;
   location_id: number;
   campus_id: number;
-  ttl?: number | null; // TODO: determine if we still need this
+  is_checked_out?: number | null;
 }
 
 export type { Inventory };

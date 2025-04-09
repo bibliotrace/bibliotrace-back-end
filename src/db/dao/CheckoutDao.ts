@@ -16,6 +16,7 @@ class CheckoutDao extends Dao<Checkout, number> {
 
   public async checkin(
     qr_code: string,
+    campus_id: number,
     transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     if (transaction) {
@@ -25,6 +26,7 @@ class CheckoutDao extends Dao<Checkout, number> {
         const result = await this.db
           .deleteFrom(this.tableName as keyof Database)
           .where("qr", "=", qr_code)
+          .where("campus_id", "=", campus_id)
           .execute();
 
         if (result[0].numDeletedRows === 0n) {
