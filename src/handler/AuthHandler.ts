@@ -24,10 +24,12 @@ export class AuthHandler {
     if (requiredFieldsResponse) return requiredFieldsResponse;
 
     // Validate email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (body.email && !emailRegex.test(body.email)) {
-      return new RequestErrorResponse("Email is not valid");
-    }
+    /*const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (body.email && body.email != "" && body.email != null) {
+      if (!emailRegex.test(body.email)) {
+        return new RequestErrorResponse("Email is not valid");
+      }
+    }*/
 
     return this.authService.createUser(body.username, body.password, {
       campus: body.campus,
