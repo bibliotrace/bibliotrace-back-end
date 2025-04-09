@@ -55,6 +55,17 @@ export default class CheckoutService extends Service {
     };
     const inventory_response = await this.inventoryDao.create(inventory);
     if (inventory_response.statusCode !== 200) {
+      if (
+        inventory_response.message != null &&
+        inventory_response.message.includes(`qr ${qr_code} already exists`)
+      ) {
+        return [
+          new RequestErrorResponse(
+            "The book you attempted to check in has already been checked in. Please check out the book first or scan a different book."
+          ),
+          null,
+        ];
+      }
       return [inventory_response, null];
     }
 
