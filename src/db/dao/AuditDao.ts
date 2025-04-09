@@ -44,6 +44,34 @@ class AuditDao extends Dao<Audit, number> {
       }
     }
   }
+
+  public async getAuditListReport(
+    campus_id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<Audit[]>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .where("campus_id", "=", campus_id)
+          .where("completed_date", "is not", null)
+          .execute();
+
+        return new SuccessResponse<Audit[]>(
+          `${this.capitalizeFirstLetter(this.entityName)}s retrieved successfully`,
+          result as Audit[]
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve ${this.entityName}s with error ${error}`,
+          500
+        );
+      }
+    }
+  }
 }
 
 export default AuditDao;

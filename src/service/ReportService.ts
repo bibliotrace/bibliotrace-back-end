@@ -78,10 +78,7 @@ export default class ReportService extends Service {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
 
-    return await this.restockListDao.getAllByKeyAndValue(
-      "campus_id",
-      campus_response.object.id.toString()
-    );
+    return await this.restockListDao.getRestockList(campus_response.object.id);
   }
 
   public async deleteRestockListItem(
@@ -106,7 +103,7 @@ export default class ReportService extends Service {
       return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
     }
 
-    return await this.auditDao.getAllByKeyAndValue("campus_id", campus_response.object.id);
+    return await this.auditDao.getAuditListReport(campus_response.object.id);
   }
 
   public async getAuditReport(audit_id: number): Promise<Response<any>> {
