@@ -13,6 +13,10 @@ export default class BookDataHandler {
     this.isbnService = isbnService;
   }
 
+  public async getBackLogBook() {
+    const localData = await this.bookManagementService.getBacklogBook();
+    return localData;
+  }
   // This function will get all book metadata for a given book
   // Respond with a 404 not found if the book isn't in the system yet
   public async getByIsbn(isbnString: string) {
@@ -58,6 +62,19 @@ export default class BookDataHandler {
 
     return await this.isbnService.retrieveMetadata(isbnString);
   }
+  // This function will take an object for book data and update it in the db
+  // This responds with a 401 if the request isn't made by an admin
+  public async updateBackLogBook(book: any, authRole: string) {
+    if (authRole != "Admin") {
+      return new RequestErrorResponse("Admin user type required", 401);
+    }
+    if (!book.book_title || !book.isbn_list || !book.primary_genre_name) {
+      return new RequestErrorResponse("Missing book title, isbn_list, and/or primary_genre", 400);
+    }
+
+    return await this.bookManagementService.updateBackLogBook(book);
+  }
+
 
   // This function will take an object for book data and update it in the db
   // This responds with a 401 if the request isn't made by an admin
@@ -66,7 +83,6 @@ export default class BookDataHandler {
       return new RequestErrorResponse("Admin user type required", 401);
     }
     if (!book.book_title || !book.isbn_list || !book.primary_genre_name) {
-      console.log(book);
       return new RequestErrorResponse("Missing book title, isbn_list, and/or primary_genre", 400);
     }
 

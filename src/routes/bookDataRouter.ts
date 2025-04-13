@@ -5,6 +5,9 @@ import { sendResponse } from "../utils/utils";
 
 export const bookDataRouter = express.Router();
 
+bookDataRouter.get("/backlog", async (req, res) => {
+  sendResponse(res, await Config.dependencies.bookDataHandler.getBackLogBook());
+});
 // Get all book data from the db if it exists, return 404 otherwise
 /*
 Output: {
@@ -55,7 +58,6 @@ bookDataRouter.get("/qr/:qr", async (req, res) => {
 }
 */
 bookDataRouter.get("/suggest/:isbn", async (req: JWTRequest, res) => {
-  console.log(req.auth);
   sendResponse(
     res,
     await Config.dependencies.bookDataHandler.getIsbnDbSuggestion(
@@ -63,6 +65,17 @@ bookDataRouter.get("/suggest/:isbn", async (req: JWTRequest, res) => {
       req.auth.userRole.roleType
     )
   );
+});
+
+
+
+
+
+bookDataRouter.put("/backlog", async (req: JWTRequest, res) => {
+  sendResponse(
+    res,
+    await Config.dependencies.bookDataHandler.updateBackLogBook(req.body, req.auth.userRole.roleType)
+  ); // await Config.bookDataHandler.something)
 });
 
 // Update a book's metadata, whether or not it exists in the db

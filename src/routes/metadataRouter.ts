@@ -5,6 +5,7 @@ import { sendResponse, validateUserType } from "../utils/utils";
 export const metadataRouter = express.Router();
 
 metadataRouter.get("/genre", async (req, res) => {
+  console.log("Genre end point hit");
   const response = await Config.dependencies.genreTagHandler.getGenres();
 
   sendResponse(res, response);

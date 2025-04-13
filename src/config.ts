@@ -69,6 +69,7 @@ export class Config {
       await dbConnectionManager.resetTables();
       await dbConnectionManager.runCreateSQL();
       await dbConnectionManager.runAddDummyData();
+      await dbConnectionManager.runAddBackLogData();//backlog data
     } else {
       await dbConnectionManager.runCreateSQL();
     }

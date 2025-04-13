@@ -16,14 +16,12 @@ class BookGenreDao extends Dao<BookGenre, number> {
 
   async getGenresByBookId(bookId: number): Promise<Response<string[]>> {
     try {
-      console.log("Fetching Book Genres By book_id", bookId);
       const query = this.db.selectFrom(this.tableName as keyof Database)
       .select(['genre.genre_name'])
       .innerJoin('genre', 'genre.id', 'book_genre.genre_id')
       .where('book_genre.book_id', '=', bookId)
 
       const result = await (await query.execute()).map(result => result.genre_name)
-
       if (!result) {
         return new SuccessResponse(`No book found with bookID ${bookId}`);
       }
