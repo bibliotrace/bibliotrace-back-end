@@ -15,6 +15,21 @@ export default class SearchDataService extends Service {
   constructor(daoFactory: DaoFactory) {
     super(daoFactory);
     this.reSeedSearchIndexes().then(() => {
+      // Type inference on these attributes aren't exported from fast
+      const searchOptions = {
+        tokenize: "forward",
+        encoder: Charset.LatinExtra,
+      };
+
+      // @ts-expect-error Types aren't set up properly for the options I selected
+      this.titleSearchIndex = new Worker(searchOptions);
+      // @ts-expect-error Types aren't set up properly for the options I selected
+      this.authorSearchIndex = new Worker(searchOptions);
+      // @ts-expect-error Types aren't set up properly for the options I selected
+      this.tagSearchIndex = new Worker(searchOptions);
+      // @ts-expect-error Types aren't set up properly for the options I selected
+      this.seriesSearchIndex = new Worker(searchOptions);
+
       // Set an interval so that the reSeed function is run every so often to update the search indexes
       setInterval(this.reSeedSearchIndexes.bind(this), 2 * 60000); // 60000 = ms in a minute
     });
@@ -57,27 +72,18 @@ export default class SearchDataService extends Service {
       if (seriesDaoResponse.statusCode !== 200) {
         console.error(
           `Something happened to the Series Dao when pulling all book data to seed search: ${seriesDaoResponse.message}`
-        )
+        );
         return;
       } else if (seriesDaoResponse.object == null) {
-        console.warn("No Series Data found to add to the search.")
+        console.warn("No Series Data found to add to the search.");
       }
       const seriesData = seriesDaoResponse.object;
 
-      // Type inference on these attributes aren't exported from fast
-      const searchOptions = {
-        tokenize: "forward",
-        encoder: Charset.LatinExtra,
-      };
-
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.titleSearchIndex = new Worker(searchOptions);
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.authorSearchIndex = new Worker(searchOptions);
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.tagSearchIndex = new Worker(searchOptions);
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.seriesSearchIndex = new Worker(searchOptions);
+      // Clear the indexes for rebuilding
+      await this.titleSearchIndex.clear();
+      await this.authorSearchIndex.clear();
+      await this.tagSearchIndex.clear();
+      await this.seriesSearchIndex.clear();
 
       // Add all index addition function calls to a batch list for async processing
       const addCallBatch = [];
@@ -98,8 +104,8 @@ export default class SearchDataService extends Service {
       }
 
       for (const series of seriesData) {
-        if (typeof series == 'object' && series.id && series.seriesName) {
-          addCallBatch.push(this.seriesSearchIndex.add(series.id, series.seriesName))
+        if (typeof series == "object" && series.id && series.seriesName) {
+          addCallBatch.push(this.seriesSearchIndex.add(series.id, series.seriesName));
         }
       }
 
