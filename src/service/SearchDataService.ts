@@ -14,7 +14,7 @@ export default class SearchDataService extends Service {
 
   constructor(daoFactory: DaoFactory) {
     super(daoFactory);
-    // Type inference on these attributes aren't exported from fast
+    // Type inference on these attributes aren't exported from flexsearch
     const searchOptions = {
       tokenize: "forward",
       encoder: Charset.LatinExtra,

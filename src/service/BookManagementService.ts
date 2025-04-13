@@ -462,6 +462,10 @@ export default class BookManagementService extends Service {
     }
     return response;
   }
+
+  public async getQuantities(bookId: number) {
+    return await this.inventoryDao.getBookInventoryAvaliable(bookId);
+  }
 }
 
 export interface BookInsertRequest {

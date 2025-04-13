@@ -79,4 +79,10 @@ inventoryRouter.delete("/delete/qr", async (req: any, res) => {
   }
 });
 
+inventoryRouter.get('/quantities/:bookId', async (req: any, res) => {
+  if (validateUserType(req, res, "Admin")) {
+    sendResponse(res, await Config.dependencies.inventoryHandler.getQuantities(Number(req.params?.bookId)))
+  }
+})
+
 module.exports = { inventoryRouter };
