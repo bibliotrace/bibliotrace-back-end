@@ -1,5 +1,6 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
 import SuccessResponse from "../response/SuccessResponse";
+import { isValidISBN, sanitizeISBN } from "../utils/utils";
 
 export class CoverImageRouteHandler {
   constructor() {}
@@ -9,8 +10,11 @@ export class CoverImageRouteHandler {
     if (!params.isbn) {
       return new SuccessResponse("No ISBN provided to cover image endpoint");
     }
-    const isbn = params.isbn;
+    const isbn = sanitizeISBN(params.isbn);
+    if (!isValidISBN(isbn)) return new RequestErrorResponse("Invalid ISBN provided");
 
+    // Do we ever pass in an ISBN with a .jpg?
+    // ISBN's cover images tend to come back nicer than OpenLibrary so that may be worth looking into
     if (isbn.includes(".jpg")) {
       const result = await this.fetchImage(`https://images.isbndb.com/covers/${isbn}`);
       return result;
