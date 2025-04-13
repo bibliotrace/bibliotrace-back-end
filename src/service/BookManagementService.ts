@@ -263,7 +263,10 @@ export default class BookManagementService extends Service {
       await this.searchDataService.reSeedSearchIndexes();
       const qrArray = book_qrs.split(',');
       for (let i = 0; i < qrArray.length; i++) {
-        const result = await this.inventoryDao.setLocation(qrArray[i].trim(), location);
+        const inv_result = await this.inventoryDao.setLocation(qrArray[i].trim(), location);
+        if (inv_result.statusCode != 200) {
+          console.log("something went wrong with inventory back log update");
+        }
       }
     }
     return result;

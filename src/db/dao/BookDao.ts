@@ -57,7 +57,6 @@ class BookDao extends Dao<Book, number> {
     }
   }
   public async getBacklogBook(
-    transaction?: Transaction<Database>
   ): Promise<Response<any>> {
     try {
       const book = await this.db
