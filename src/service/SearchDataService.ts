@@ -14,22 +14,21 @@ export default class SearchDataService extends Service {
 
   constructor(daoFactory: DaoFactory) {
     super(daoFactory);
+    // Type inference on these attributes aren't exported from fast
+    const searchOptions = {
+      tokenize: "forward",
+      encoder: Charset.LatinExtra,
+    };
+
+    // @ts-expect-error Types aren't set up properly for the options I selected
+    this.titleSearchIndex = new Worker(searchOptions);
+    // @ts-expect-error Types aren't set up properly for the options I selected
+    this.authorSearchIndex = new Worker(searchOptions);
+    // @ts-expect-error Types aren't set up properly for the options I selected
+    this.tagSearchIndex = new Worker(searchOptions);
+    // @ts-expect-error Types aren't set up properly for the options I selected
+    this.seriesSearchIndex = new Worker(searchOptions);
     this.reSeedSearchIndexes().then(() => {
-      // Type inference on these attributes aren't exported from fast
-      const searchOptions = {
-        tokenize: "forward",
-        encoder: Charset.LatinExtra,
-      };
-
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.titleSearchIndex = new Worker(searchOptions);
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.authorSearchIndex = new Worker(searchOptions);
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.tagSearchIndex = new Worker(searchOptions);
-      // @ts-expect-error Types aren't set up properly for the options I selected
-      this.seriesSearchIndex = new Worker(searchOptions);
-
       // Set an interval so that the reSeed function is run every so often to update the search indexes
       setInterval(this.reSeedSearchIndexes.bind(this), 2 * 60000); // 60000 = ms in a minute
     });
