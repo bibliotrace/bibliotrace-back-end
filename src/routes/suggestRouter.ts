@@ -19,7 +19,9 @@ const transporter = nodemailer.createTransport({
   },
 } as SMTPTransport.Options);
 
-cron.schedule("0 8 * * 5", async () => {
+//TODO: Replace this after testing
+cron.schedule("0 * * * *", async () => {
+  // cron.schedule("0 8 * * 5", async () => {
   const response = await Config.dependencies.suggestionHandler.emailSuggestionList(transporter);
   if (response.statusCode !== 200) {
     console.log(response.message);
