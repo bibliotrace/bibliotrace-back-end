@@ -81,4 +81,22 @@ export default class ReportHandler {
 
     return await this.reportService.getAuditReport(params.audit_id);
   }
+
+  public async getPopularReport(params, authData): Promise<Response<any>> {
+    if (!authData.userRole?.campus) {
+      return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
+    }
+    if (!params.start_date) {
+      return new RequestErrorResponse("Missing start_date");
+    }
+    if (!params.end_date) {
+      return new RequestErrorResponse("Missing end_date");
+    }
+
+    return await this.reportService.getPopularReport(
+      authData.userRole?.campus,
+      params.start_date,
+      params.end_date
+    );
+  }
 }

@@ -109,4 +109,19 @@ export default class ReportService extends Service {
   public async getAuditReport(audit_id: number): Promise<Response<any>> {
     return await this.auditEntryDao.getAuditReport(audit_id);
   }
+
+  public async getPopularReport(
+    campus_name: string,
+    start_date: string,
+    end_date: string
+  ): Promise<Response<any>> {
+    const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
+    if (campus_response.statusCode !== 200) {
+      return campus_response;
+    } else if (!campus_response.object?.id) {
+      return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
+    }
+
+    return await this.bookDao.getPopular(campus_response.object.id, start_date, end_date);
+  }
 }

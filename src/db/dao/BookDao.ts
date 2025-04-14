@@ -17,7 +17,10 @@ class BookDao extends Dao<Book, number> {
   }
 
   // TODO: optimize to use index on isbn_list
-  public async getBookByIsbn(isbn: string, transaction?: Transaction<Database>): Promise<Response<Book>> {
+  public async getBookByIsbn(
+    isbn: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<Book>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
@@ -52,12 +55,18 @@ class BookDao extends Dao<Book, number> {
         }
         return new SuccessResponse(`Successfully retrieved book with isbn ${isbn}`, book);
       } catch (error) {
-        return new ServerErrorResponse(`Failed to retrieve book with isbn ${isbn} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to retrieve book with isbn ${isbn} with error ${error}`,
+          500
+        );
       }
     }
   }
 
-  public async getBookTagsByIsbn(isbn: string, transaction?: Transaction<Database>): Promise<Response<any>> {
+  public async getBookTagsByIsbn(
+    isbn: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
@@ -75,13 +84,19 @@ class BookDao extends Dao<Book, number> {
 
         return new SuccessResponse(`Successfully retrieved tags for book with isbn ${isbn}`, book);
       } catch (error) {
-        return new ServerErrorResponse(`Failed to retrieve book with isbn ${isbn} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to retrieve book with isbn ${isbn} with error ${error}`,
+          500
+        );
       }
     }
   }
 
   // TODO: optimize to use index on name
-  public async getBookByName(name: string, transaction?: Transaction<Database>): Promise<Response<Book>> {
+  public async getBookByName(
+    name: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<Book>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
@@ -97,7 +112,10 @@ class BookDao extends Dao<Book, number> {
         }
         return new SuccessResponse(`Successfully retrieved book with name ${name}`, book);
       } catch (error) {
-        return new ServerErrorResponse(`Failed to retrieve book with name ${name} with error ${error}`, 500);
+        return new ServerErrorResponse(
+          `Failed to retrieve book with name ${name} with error ${error}`,
+          500
+        );
       }
     }
   }
@@ -268,7 +286,9 @@ class BookDao extends Dao<Book, number> {
 
         const dbResult = await dbQuery.execute();
         if (!dbResult || dbResult.length === 0) {
-          return new SuccessResponse(`No books found on campus ${campus} matching provided filters`);
+          return new SuccessResponse(
+            `No books found on campus ${campus} matching provided filters`
+          );
         }
         return new SuccessResponse(
           `Successfully retrieved all books on campus ${campus} matching filters`,
@@ -285,11 +305,14 @@ class BookDao extends Dao<Book, number> {
 
   public async getAllBookTitlesAndAuthors(): Promise<Response<any>> {
     try {
-      const dbQuery = this.db.selectFrom("books").select(["books.id", "books.book_title", "books.author"]);
+      const dbQuery = this.db
+        .selectFrom("books")
+        .select(["books.id", "books.book_title", "books.author"]);
 
       const dbResult = await dbQuery.execute();
 
-      if (!dbResult || dbResult.length === 0) return new SuccessResponse("No Books exist in the table");
+      if (!dbResult || dbResult.length === 0)
+        return new SuccessResponse("No Books exist in the table");
       return new SuccessResponse("Successfully pulled all book titles and authors", dbResult);
     } catch (error) {
       return new ServerErrorResponse(
@@ -352,6 +375,44 @@ class BookDao extends Dao<Book, number> {
       return new SuccessResponse("Successfully Created a Book", result);
     } catch (e) {
       return new ServerErrorResponse(e.message, 500);
+    }
+  }
+
+  public async getPopular(
+    campus_id: number,
+    start_date: string,
+    end_date: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .select([
+            "books.id",
+            "books.book_title",
+            "books.author",
+            sql`count(checkout.qr)`.as("num_checkouts"),
+          ])
+          .leftJoin("checkout", "checkout.book_id", "books.id")
+          .where("checkout.campus_id", "=", campus_id)
+          .where(sql<any>`timestamp between ${start_date} and ${end_date}`)
+          .groupBy("books.id")
+          .orderBy(sql`count(checkout.qr)`, "desc")
+          .execute();
+
+        return new SuccessResponse<any>(
+          `${this.capitalizeFirstLetter(this.entityName)} retrieved successfully`,
+          result as any
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve ${this.entityName} with error ${error}`,
+          500
+        );
+      }
     }
   }
 
