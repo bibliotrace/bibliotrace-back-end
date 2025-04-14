@@ -1,4 +1,6 @@
 import RequestErrorResponse from "../response/RequestErrorResponse";
+import Response from "../response/Response";
+
 import BookManagementService from "../service/BookManagementService";
 import { isValidISBN, sanitizeISBN, parseQr } from "../utils/utils";
 
@@ -40,5 +42,13 @@ export class InventoryHandler {
     }
 
     return this.bookManagementService.removeBookByQr(params.qr);
+  }
+
+  public async getQuantities(bookId: number): Promise<Response<any>> {
+    if (bookId != null) {
+      return this.bookManagementService.getQuantities(bookId);
+    } else {
+      return new RequestErrorResponse("Missing Book Id");
+    }
   }
 }

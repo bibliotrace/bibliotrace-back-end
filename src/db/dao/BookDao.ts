@@ -165,7 +165,8 @@ class BookDao extends Dao<Book, number> {
             "series.series_name",
           ])
           .where("campus.campus_name", "=", campus)
-          .where("cte1.id", "=", bookId as any);
+          .where("cte1.id", "=", bookId as any)
+          .where("inventory.is_checked_out", "=", 0);
 
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
@@ -255,7 +256,8 @@ class BookDao extends Dao<Book, number> {
             "genre.genre_name",
             "series.series_name",
           ])
-          .where("campus.campus_name", "=", campus);
+          .where("campus.campus_name", "=", campus)
+          .where("inventory.is_checked_out", "=", 0);
 
         if (filterQueryList.length > 0) {
           for (const filter of filterQueryList) {
