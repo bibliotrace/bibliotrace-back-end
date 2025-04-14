@@ -143,6 +143,7 @@ export default class DBConnectionManager {
     await this.runSQLFile("./src/db/schema/templates/dummy_data.sql");
   }
   async runAddBackLogData() {
+    await this.runSQLFile("./src/backlog/setup_data.sql")
     await this.runSQLFile("./src/backlog/Lehi_insert_books.sql");
     await this.runSQLFile("./src/backlog/Lehi_insert_inventory.sql");
   }
