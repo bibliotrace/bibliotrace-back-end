@@ -78,10 +78,7 @@ export default class BookManagementService extends Service {
     } else {
       primary_genre_id = genreResponse.object.id;
     }
-    const audienceResponse = await this.audienceDao.getByKeyAndValue(
-      "audience_name",
-      audience_name
-    );
+    const audienceResponse = await this.audienceDao.getByKeyAndValue("audience_name", audience_name);
     if (audienceResponse == null || audienceResponse.statusCode != 200) {
       return audienceResponse;
     } else if (audienceResponse.object == null) {
@@ -332,11 +329,7 @@ export default class BookManagementService extends Service {
       // so I think that it just should be emphasized on the remove page that there won't be any data
       // after the book has been removed, thus removes should only be executed with extreme caution
       const checkoutsResponse = await this.checkoutDao.getAllByKeyAndValue("book_id", bookId);
-      if (
-        checkoutsResponse &&
-        checkoutsResponse.statusCode === 200 &&
-        checkoutsResponse.object != null
-      ) {
+      if (checkoutsResponse && checkoutsResponse.statusCode === 200 && checkoutsResponse.object != null) {
         const checkouts = checkoutsResponse.object;
         for (const checkout of checkouts) {
           const deleteCheckoutResponse = await this.checkoutDao.delete(checkout.checkout_id);
@@ -346,11 +339,7 @@ export default class BookManagementService extends Service {
 
       // delete all inventory entries associated with the book
       const inventoryResponse = await this.inventoryDao.getAllByKeyAndValue("book_id", bookId);
-      if (
-        inventoryResponse &&
-        inventoryResponse.statusCode === 200 &&
-        inventoryResponse.object != null
-      ) {
+      if (inventoryResponse && inventoryResponse.statusCode === 200 && inventoryResponse.object != null) {
         const inventory = inventoryResponse.object;
         // console.log(inventory);
         for (const inv of inventory) {
@@ -373,10 +362,7 @@ export default class BookManagementService extends Service {
       }
 
       // delete from shopping list
-      const shoppingListResponse = await this.shoppingListDao.getAllByKeyAndValue(
-        "book_id",
-        bookId
-      );
+      const shoppingListResponse = await this.shoppingListDao.getAllByKeyAndValue("book_id", bookId);
       if (
         shoppingListResponse &&
         shoppingListResponse.statusCode === 200 &&
@@ -384,9 +370,7 @@ export default class BookManagementService extends Service {
       ) {
         const shoppingList = shoppingListResponse.object;
         for (const shoppingListEntry of shoppingList) {
-          const shoppingListDeleteResponse = await this.shoppingListDao.delete(
-            shoppingListEntry.book_id
-          );
+          const shoppingListDeleteResponse = await this.shoppingListDao.delete(shoppingListEntry.book_id);
           if (shoppingListDeleteResponse.statusCode != 200) return shoppingListDeleteResponse;
         }
       }
@@ -400,9 +384,7 @@ export default class BookManagementService extends Service {
       ) {
         const restockList = restockListResponse.object;
         for (const restockListEntry of restockList) {
-          const restockListDeleteResponse = await this.restockListDao.delete(
-            restockListEntry.book_id
-          );
+          const restockListDeleteResponse = await this.restockListDao.delete(restockListEntry.book_id);
           if (!restockListDeleteResponse.object) return restockListDeleteResponse;
         }
       }
@@ -436,11 +418,7 @@ export default class BookManagementService extends Service {
 
     // delete checkout entries associated with current qr
     const checkoutsResponse = await this.checkoutDao.getAllByKeyAndValue("qr", qr);
-    if (
-      checkoutsResponse &&
-      checkoutsResponse.statusCode === 200 &&
-      checkoutsResponse.object != null
-    ) {
+    if (checkoutsResponse && checkoutsResponse.statusCode === 200 && checkoutsResponse.object != null) {
       const checkouts = checkoutsResponse.object;
       for (const checkout of checkouts) {
         const deleteCheckoutResponse = await this.checkoutDao.delete(checkout.checkout_id);
@@ -464,7 +442,7 @@ export default class BookManagementService extends Service {
   }
 
   public async getQuantities(bookId: number) {
-    return await this.inventoryDao.getBookInventoryAvaliable(bookId);
+    return await this.inventoryDao.getBookInventoryAvailable(bookId);
   }
 }
 

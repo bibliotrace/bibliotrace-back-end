@@ -1,12 +1,12 @@
 import { Kysely, Transaction, sql } from "kysely";
-import Database from "../schema/Database";
-import { Inventory } from "../schema/Inventory";
-import Dao from "./Dao";
+import RequestErrorResponse from "../../response/RequestErrorResponse";
 import Response from "../../response/Response";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 import { Book } from "../schema/Book";
-import RequestErrorResponse from "../../response/RequestErrorResponse";
+import Database from "../schema/Database";
+import { Inventory } from "../schema/Inventory";
+import Dao from "./Dao";
 
 class InventoryDao extends Dao<Inventory, string> {
   constructor(db: Kysely<Database>) {
@@ -267,7 +267,7 @@ class InventoryDao extends Dao<Inventory, string> {
     }
   }
 
-  public async getBookInventoryAvaliable(bookId: number) {
+  public async getBookInventoryAvailable(bookId: number) {
     try {
       const cte1 = this.db
         .selectFrom(this.tableName as keyof Database)
@@ -280,13 +280,13 @@ class InventoryDao extends Dao<Inventory, string> {
 
       const mainQuery = this.db
         .selectFrom(cte1)
-        .select([sql`COUNT(*)`.as('count') as any, "campus", "location"] as any)
+        .select([sql`COUNT(*)`.as("count") as any, "campus", "location"] as any)
         .groupBy(["campus", "location"]);
 
       const result = await mainQuery.execute();
       console.log(result);
 
-      return new SuccessResponse('Successful pull on book inventory', result)
+      return new SuccessResponse("Successful pull on book inventory", result);
     } catch (error) {
       console.error(error);
       return new ServerErrorResponse(`Error occurred during inventory check: ${error.message}`);
