@@ -97,6 +97,7 @@ INSERT INTO location (campus_id, location_name) VALUES
 INSERT INTO inventory (qr, book_id, location_id, campus_id)
 VALUES
 ('ab0001', 1, 1, 1),
+('ah0001', 1, 1, 1),
 ('bb0001', 1, 1, 1),
 ('cb0001', 1, 1, 1),
 ('db0001', 1, 1, 1),
