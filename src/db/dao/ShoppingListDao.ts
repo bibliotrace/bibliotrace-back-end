@@ -27,6 +27,7 @@ class ShoppingListDao extends Dao<ShoppingList, number> {
           .select(["books.id", "books.book_title", "books.author"])
           .leftJoin("books", "books.id", "shopping_list.book_id")
           .where("campus_id", "=", campus_id)
+          .orderBy("books.book_title")
           .execute();
 
         if (!result) {

@@ -1,12 +1,12 @@
 import { Kysely, Transaction, sql } from "kysely";
+import Database from "../schema/Database";
+import { Inventory } from "../schema/Inventory";
+import Dao from "./Dao";
 import RequestErrorResponse from "../../response/RequestErrorResponse";
 import Response from "../../response/Response";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 import { Book } from "../schema/Book";
-import Database from "../schema/Database";
-import { Inventory } from "../schema/Inventory";
-import Dao from "./Dao";
 
 class InventoryDao extends Dao<Inventory, string> {
   constructor(db: Kysely<Database>) {
@@ -266,8 +266,43 @@ class InventoryDao extends Dao<Inventory, string> {
       }
     }
   }
+  
+  public async getStock(
+    campus_id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .select([
+            "books.id",
+            "books.book_title",
+            "books.author",
+            sql`count(inventory.qr)`.as("quantity"),
+          ])
+          .leftJoin("books", "books.id", "inventory.book_id")
+          .where("campus_id", "=", campus_id)
+          .where("is_checked_out", "=", 0)
+          .groupBy("books.id")
+          .execute();
 
-  public async getBookInventoryAvailable(bookId: number) {
+        return new SuccessResponse(
+          `Inventory with campus_id: ${campus_id} found successfully`,
+          result
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to find inventory with campus_id: ${campus_id} with error ${error.message}`,
+          500
+        );
+      }
+    }
+  }
+
+   public async getBookInventoryAvailable(bookId: number) {
     try {
       const cte1 = this.db
         .selectFrom(this.tableName as keyof Database)
