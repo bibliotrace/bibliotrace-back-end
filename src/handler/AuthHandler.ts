@@ -1,4 +1,5 @@
 // import RequestErrorResponse from "../response/RequestErrorResponse";
+import RequestErrorResponse from "../response/RequestErrorResponse";
 import Response from "../response/Response";
 import { AuthService } from "../service/AuthService";
 import { parseRequiredFields } from "../utils/utils";
@@ -24,12 +25,12 @@ export class AuthHandler {
     if (requiredFieldsResponse) return requiredFieldsResponse;
 
     // Validate email
-    /*const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (body.email && body.email != "" && body.email != null) {
       if (!emailRegex.test(body.email)) {
         return new RequestErrorResponse("Email is not valid");
       }
-    }*/
+    }
 
     return this.authService.createUser(body.username, body.password, {
       campus: body.campus,
