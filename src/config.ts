@@ -68,8 +68,8 @@ export class Config {
     if (process.env.NODE_ENV !== "production") {
       await dbConnectionManager.resetTables();
       await dbConnectionManager.runCreateSQL();
-      // await dbConnectionManager.runAddDummyData();
-      await dbConnectionManager.runAddBackLogData();//backlog data
+      await dbConnectionManager.runAddDummyData();
+      // await dbConnectionManager.runAddBackLogData();
     } else {
       await dbConnectionManager.runCreateSQL();
     }

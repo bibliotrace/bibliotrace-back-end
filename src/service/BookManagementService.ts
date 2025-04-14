@@ -6,8 +6,6 @@ import SuccessResponse from "../response/SuccessResponse";
 import SearchDataService from "./SearchDataService";
 import Service from "./Service";
 
-// const MAX_TTL = 60 * 24 * 7; // 1 week in minutes
-
 export default class BookManagementService extends Service {
   private readonly searchDataService: SearchDataService;
 
@@ -268,8 +266,6 @@ export default class BookManagementService extends Service {
     }
     return result;
   } 
-
-
 
   public async addGenreToBook(genreString: string, isbn: string): Promise<Response<any>> {
     let genreId, bookId;
