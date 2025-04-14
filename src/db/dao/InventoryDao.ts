@@ -1,4 +1,4 @@
-import { Kysely, Transaction } from "kysely";
+import { Kysely, Transaction, sql } from "kysely";
 import Database from "../schema/Database";
 import { Inventory } from "../schema/Inventory";
 import Dao from "./Dao";
@@ -272,6 +272,41 @@ class InventoryDao extends Dao<Inventory, string> {
       } catch (error) {
         return new ServerErrorResponse(
           `Error occurred during set location query: ${error.message}`
+        );
+      }
+    }
+  }
+
+  public async getStock(
+    campus_id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const result = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .select([
+            "books.id",
+            "books.book_title",
+            "books.author",
+            sql`count(inventory.qr)`.as("quantity"),
+          ])
+          .leftJoin("books", "books.id", "inventory.book_id")
+          .where("campus_id", "=", campus_id)
+          .where("is_checked_out", "=", 0)
+          .groupBy("books.id")
+          .execute();
+
+        return new SuccessResponse(
+          `Inventory with campus_id: ${campus_id} found successfully`,
+          result
+        );
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to find inventory with campus_id: ${campus_id} with error ${error.message}`,
+          500
         );
       }
     }

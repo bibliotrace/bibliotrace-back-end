@@ -124,4 +124,15 @@ export default class ReportService extends Service {
 
     return await this.bookDao.getPopular(campus_response.object.id, start_date, end_date);
   }
+
+  public async getStockReport(campus_name: string): Promise<Response<any>> {
+    const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
+    if (campus_response.statusCode !== 200) {
+      return campus_response;
+    } else if (!campus_response.object?.id) {
+      return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
+    }
+
+    return await this.inventoryDao.getStock(campus_response.object.id);
+  }
 }

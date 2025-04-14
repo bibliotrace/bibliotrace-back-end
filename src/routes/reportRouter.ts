@@ -53,4 +53,9 @@ reportRouter.get("/popular/:start_date/:end_date", async (req: any, res) => {
   sendResponse(res, response);
 });
 
+reportRouter.get("/stock", async (req: any, res) => {
+  const response = await Config.dependencies.reportHandler.getStockReport(req.auth);
+  sendResponse(res, response);
+});
+
 module.exports = { reportRouter };

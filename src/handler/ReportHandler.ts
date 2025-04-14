@@ -99,4 +99,12 @@ export default class ReportHandler {
       params.end_date
     );
   }
+
+  public async getStockReport(authData): Promise<Response<any>> {
+    if (!authData.userRole?.campus) {
+      return new RequestErrorResponse("Missing Campus Data in Authentication", 400);
+    }
+
+    return await this.reportService.getStockReport(authData.userRole?.campus);
+  }
 }
