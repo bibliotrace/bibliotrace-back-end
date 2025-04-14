@@ -27,6 +27,7 @@ class RestockListDao extends Dao<RestockList, number> {
           .select(["books.id", "books.book_title", "books.author", "restock_list.quantity"])
           .leftJoin("books", "books.id", "restock_list.book_id")
           .where("campus_id", "=", campus_id)
+          .orderBy("books.book_title")
           .execute();
 
         if (!result) {
