@@ -7,9 +7,6 @@ import Response from "../../response/Response";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 import { Book } from "../schema/Book";
-import Database from "../schema/Database";
-import { Inventory } from "../schema/Inventory";
-import Dao from "./Dao";
 
 class InventoryDao extends Dao<Inventory, string> {
   constructor(db: Kysely<Database>) {
@@ -302,6 +299,8 @@ class InventoryDao extends Dao<Inventory, string> {
           500
         );
       }
+    }
+  }
 
    public async getBookInventoryAvailable(bookId: number) {
     try {
