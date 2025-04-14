@@ -396,9 +396,11 @@ class BookDao extends Dao<Book, number> {
             "books.id",
             "books.book_title",
             "books.author",
+            "genre.genre_name",
             sql`count(checkout.qr)`.as("num_checkouts"),
           ])
           .leftJoin("checkout", "checkout.book_id", "books.id")
+          .leftJoin("genre", "books.primary_genre_id", "genre.id")
           .where("checkout.campus_id", "=", campus_id)
           .where(sql<any>`timestamp between ${start_date} and ${end_date}`)
           .groupBy("books.id")
