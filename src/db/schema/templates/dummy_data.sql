@@ -15,12 +15,12 @@ VALUES ('test', '$argon2id$v=19$m=65536,t=3,p=2$zNxBnZCVc7lpGE3LJTAOGA$0TS+loWwH
 -- Username and password are the same thing for the users in this insert statement
 
 INSERT INTO audiences (audience_name) 
-VALUES ('Board Books (0-2 Years)'), ('Picture Books (2-8 Years)'), ('Early Chapter Books (6-9 Years)'), ('Middle Grade (8-12 Years)'), ('Young Adult (12-18 Years)'), ('Advanced (16+ Years)');
+VALUES ('Board Books (0-2 Years)'), ('Picture Books (2-8 Years)'), ('Early Chapter Books (6-9 Years)'), ('Middle Grade (8-12 Years)'), ('Young Adult (12-18 Years)'), ('Advanced (16+ Years)'), ('Unknown');
 
 INSERT INTO genre (genre_name) VALUES
 ('Action-Adventure/Suspense'), ('Activity Book'), ('Board Book'), ('Dystopian'), ('Fantasy'), ('Fiction'), ('Graphic Novel'), 
 ('Historical Fiction'), ('Leveled Reader'), ('Non-Fiction'), ('Paranormal'), ('Picture Book'), ('Romance'), ('Science Fiction'), 
-('Spanish'), ('Young Chapter Book');
+('Spanish'), ('Young Chapter Book'), ('Unknown');
 
 -- Insert data into the 'tag' table
 INSERT INTO tag (tag_name) VALUES

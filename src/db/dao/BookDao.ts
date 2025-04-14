@@ -62,6 +62,57 @@ class BookDao extends Dao<Book, number> {
       }
     }
   }
+  public async getBacklogBook(
+  ): Promise<Response<any>> {
+    try {
+      const book = await this.db
+      // .selectFrom('books as b')
+      .selectFrom(this.tableName as keyof Database)
+      .select([
+        "books.id as id",
+        "books.book_title as book_title",
+        "books.isbn_list as isbn_list",
+        "books.author as author",
+        "books.primary_genre_id as primary_genre_id",
+        "books.audience_id as audience_id",
+        "books.pages as pages",
+        "books.series_id as series_id",
+        "books.series_number as series_number",
+        "books.publish_date as publish_date",
+        "books.short_description as short_description",
+        "books.language as language",
+        "books.img_callback as img_callback",
+        "audiences.audience_name as audience_name",
+        "genre.genre_name as primary_genre_name",
+        sql<string>`GROUP_CONCAT(i.qr)`.as('all_qrs'),
+        sql<string>`GROUP_CONCAT(i.location_id)`.as('all_location_ids'),
+        sql<string>`GROUP_CONCAT(l.location_name)`.as('all_location_names'),
+      ])
+      .leftJoin('inventory as i', 'books.id', 'i.book_id')
+      .leftJoin('location as l', 'l.id', 'i.location_id')
+      .leftJoin("audiences", "audiences.id", "books.audience_id")
+      .leftJoin("genre", "genre.id", "books.primary_genre_id")
+      .where((eb) =>
+        eb.or([
+          eb('audiences.audience_name', '=', 'Unknown'),
+          eb('l.location_name', '=', 'Unknown'),
+          eb('genre.genre_name', '=', 'Unknown'),
+        ])
+      )
+      .groupBy('books.id')
+      .limit(1)
+      .executeTakeFirst();
+      if (!book) {
+        return new RequestErrorResponse(`No book found from backlog`, 404);
+      }
+      return new SuccessResponse("got backlog books successfully", book);
+    } catch (error) {
+      return new ServerErrorResponse(
+        `Error occurred during set location query: ${error.message}`
+      );
+    }
+    return new SuccessResponse(`Backlog Book data successfully retrieved for QR code`, 200);
+  }
 
   public async getBookTagsByIsbn(
     isbn: string,
@@ -373,7 +424,6 @@ class BookDao extends Dao<Book, number> {
         });
 
       const result = await insertQuery.execute();
-      console.log(result, "We Did It!!!");
       return new SuccessResponse("Successfully Created a Book", result);
     } catch (e) {
       return new ServerErrorResponse(e.message, 500);

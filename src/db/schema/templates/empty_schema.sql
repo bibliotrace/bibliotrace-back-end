@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS books (
   id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
   book_title VARCHAR(255) NOT NULL,
   isbn_list VARCHAR(255), -- this unfortunately needs to be nullable because some books come in without an isbn
-  author VARCHAR(255) NOT NULL,
+  author VARCHAR(255),
   primary_genre_id INT UNSIGNED NOT NULL,
   audience_id TINYINT UNSIGNED NOT NULL,
   pages SMALLINT,

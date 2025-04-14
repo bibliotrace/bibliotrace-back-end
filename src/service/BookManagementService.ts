@@ -25,6 +25,28 @@ export default class BookManagementService extends Service {
       if (genresResponse.statusCode === 200 && genresResponse.object != null) {
         bookDataResponse._object.genre_list = genresResponse.object;
       }
+      // console.log("genres: ", bookDataResponse._object.genre_list);
+
+      const tagsResponse = await this.bookTagDao.getTagsByBookId(bookDataResponse.object.id);
+      if (tagsResponse.statusCode === 200 && tagsResponse.object != null) {
+        bookDataResponse._object.tag_list = tagsResponse.object;
+      }
+      // console.log("tags: ", bookDataResponse._object.tag_list);
+    }
+
+    return bookDataResponse;
+  }
+
+  public async getBacklogBook(): Promise<Response<any>> {
+    const bookDataResponse = (await this.bookDao.getBacklogBook()) as Response<any>;
+    // console.log('book data response: ' , bookDataResponse);
+    // console.log('book id: ', bookDataResponse.object.id);
+    if (bookDataResponse.statusCode === 200 && bookDataResponse.object != null) {
+      // Pull external genres and tags to add to the book
+      const genresResponse = await this.bookGenreDao.getGenresByBookId(bookDataResponse.object.id);
+      if (genresResponse.statusCode === 200 && genresResponse.object != null) {
+        bookDataResponse._object.genre_list = genresResponse.object;
+      }
 
       const tagsResponse = await this.bookTagDao.getTagsByBookId(bookDataResponse.object.id);
       if (tagsResponse.statusCode === 200 && tagsResponse.object != null) {
@@ -55,6 +77,7 @@ export default class BookManagementService extends Service {
   //       many-to-one relationship of the secondary genre list and the tags list. We can build in the ability to update those lists in
   //       this function, but I stopped including features with this one function after it got to a hundred lines haha.
   public async createOrUpdateBookData(request: any): Promise<Response<any>> {
+    // console.log("IN book management service function createOrUpdateBookData");
     const title = request.book_title;
     const isbn_list = request.isbn_list;
     const author = request.author;
@@ -158,6 +181,95 @@ export default class BookManagementService extends Service {
       return result;
     }
   }
+
+  public async updateBackLogBook(request: any): Promise<Response<any>> {
+    const book_id = request.book_id;
+    const title = request.book_title;
+    const isbn_list = request.isbn_list;
+    const author = request.author;
+    const primary_genre_name = request.primary_genre_name;
+    const audience_name = request.audience_name;
+    const pages = request.pages;
+    const series_name = request.series_name;
+    const series_number = request.series_number;
+    const publish_date = request.publish_date;
+    const short_description = request.short_description;
+    const language = request.language;
+    const img_callback = request.img_callback;
+
+    const book_qrs = request.book_qrs;
+    const location = request.location;
+
+    // Get ids for reference names
+    let primary_genre_id, audience_id, series_id;
+    const genreResponse = await this.genreDao.getByKeyAndValue("genre_name", primary_genre_name);
+    if (genreResponse == null || genreResponse.statusCode != 200) {
+      return genreResponse;
+    } else if (genreResponse.object == null) {
+      return new RequestErrorResponse("Primary Genre ID Not Found", 404);
+    } else {
+      primary_genre_id = genreResponse.object.id;
+    }
+    const audienceResponse = await this.audienceDao.getByKeyAndValue(
+      "audience_name",
+      audience_name
+    );
+    if (audienceResponse == null || audienceResponse.statusCode != 200) {
+      return audienceResponse;
+    } else if (audienceResponse.object == null) {
+      return new RequestErrorResponse("Audience ID Not Found", 404);
+    } else {
+      audience_id = audienceResponse.object.id;
+    }
+    if (series_name && series_name != "") {
+      let seriesResponse = await this.seriesDao.getByKeyAndValue("series_name", series_name);
+      if (seriesResponse != null && seriesResponse.statusCode != 200) {
+        return seriesResponse;
+      } else if (seriesResponse.object != null) {
+        series_id = seriesResponse.object.id;
+      } else {
+        seriesResponse = await this.seriesDao.create({ series_name });
+        if (seriesResponse.statusCode != 200) {
+          return seriesResponse;
+        } else {
+          series_id = seriesResponse.object.id;
+        }
+      }
+    }
+    if (primary_genre_id == null || audience_id == null) {
+      return new RequestErrorResponse("Primary Genre and Audience Required, but Not Found", 400);
+    }
+    // Update the book data
+    const updatedInformation: Book = {
+      book_title: title,
+      author,
+      isbn_list,
+      primary_genre_id,
+      audience_id,
+      pages,
+      series_id,
+      series_number,
+      publish_date,
+      short_description,
+      language,
+      img_callback,
+    };
+    const result = await this.bookDao.update(book_id, updatedInformation);
+    if (result.statusCode === 200) {
+      // Update the search cache with new data
+      await this.searchDataService.reSeedSearchIndexes();
+      const qrArray = book_qrs.split(',');
+      for (let i = 0; i < qrArray.length; i++) {
+        const inv_result = await this.inventoryDao.setLocation(qrArray[i].trim(), location);
+        if (inv_result.statusCode != 200) {
+          console.log("something went wrong with inventory back log update");
+        }
+      }
+    }
+    return result;
+  } 
+
+
 
   public async addGenreToBook(genreString: string, isbn: string): Promise<Response<any>> {
     let genreId, bookId;
