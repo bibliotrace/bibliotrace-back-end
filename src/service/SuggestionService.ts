@@ -61,12 +61,13 @@ class SuggestionService extends Service {
       }
 
       for (const user of userResponse.object) {
-        if (user.email) {
+        if (suggestions.length && user.email) {
           const mailOptions = {
             from: "bibliotrace@gmail.com",
-            to: user.email,
+            // to: user.email,
+            to: "kellyko2003@gmail.com",
             subject: "Bibliotrace Suggestions",
-            html: `<p>Suggestions: </p><ul>${suggestions_list}</ul>`,
+            html: `<p>Suggestions for ${user.email}: </p><ul>${suggestions_list}</ul>`,
           };
 
           transporter.sendMail(mailOptions, function (error) {
