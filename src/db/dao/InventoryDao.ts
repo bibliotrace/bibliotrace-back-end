@@ -2,11 +2,14 @@ import { Kysely, Transaction, sql } from "kysely";
 import Database from "../schema/Database";
 import { Inventory } from "../schema/Inventory";
 import Dao from "./Dao";
+import RequestErrorResponse from "../../response/RequestErrorResponse";
 import Response from "../../response/Response";
 import ServerErrorResponse from "../../response/ServerErrorResponse";
 import SuccessResponse from "../../response/SuccessResponse";
 import { Book } from "../schema/Book";
-import RequestErrorResponse from "../../response/RequestErrorResponse";
+import Database from "../schema/Database";
+import { Inventory } from "../schema/Inventory";
+import Dao from "./Dao";
 
 class InventoryDao extends Dao<Inventory, string> {
   constructor(db: Kysely<Database>) {
@@ -44,9 +47,7 @@ class InventoryDao extends Dao<Inventory, string> {
             );
           }
         } else {
-          return new RequestErrorResponse(
-            `No inventory with qr ${qr} and campus ${campus_id} found`
-          );
+          return new RequestErrorResponse(`No inventory with qr ${qr} and campus ${campus_id} found`);
         }
       } catch (error) {
         if (error.message.includes("Unknown column") && error.message.includes("in 'field list'")) {
@@ -196,18 +197,12 @@ class InventoryDao extends Dao<Inventory, string> {
           result as Inventory[]
         );
       } catch (error) {
-        return new ServerErrorResponse(
-          `Failed to find missing inventory with error ${error.message}`,
-          500
-        );
+        return new ServerErrorResponse(`Failed to find missing inventory with error ${error.message}`, 500);
       }
     }
   }
 
-  public async getBookDataFromQr(
-    qr: string,
-    transaction?: Transaction<Database>
-  ): Promise<Response<any>> {
+  public async getBookDataFromQr(qr: string, transaction?: Transaction<Database>): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet");
     } else {
@@ -270,13 +265,11 @@ class InventoryDao extends Dao<Inventory, string> {
 
         return new SuccessResponse(`Set location for qr ${qr} successfully`);
       } catch (error) {
-        return new ServerErrorResponse(
-          `Error occurred during set location query: ${error.message}`
-        );
+        return new ServerErrorResponse(`Error occurred during set location query: ${error.message}`);
       }
     }
   }
-
+  
   public async getStock(
     campus_id: number,
     transaction?: Transaction<Database>
@@ -309,6 +302,30 @@ class InventoryDao extends Dao<Inventory, string> {
           500
         );
       }
+
+   public async getBookInventoryAvailable(bookId: number) {
+    try {
+      const cte1 = this.db
+        .selectFrom(this.tableName as keyof Database)
+        .select(["campus.campus_name as campus", "location.location_name as location"])
+        .innerJoin("campus", "campus.id", "inventory.campus_id")
+        .innerJoin("location", "location.id", "inventory.location_id")
+        .where("inventory.book_id", "=", bookId)
+        .where("inventory.is_checked_out", "=", 0)
+        .as("cte1");
+
+      const mainQuery = this.db
+        .selectFrom(cte1)
+        .select([sql`COUNT(*)`.as("count") as any, "campus", "location"] as any)
+        .groupBy(["campus", "location"]);
+
+      const result = await mainQuery.execute();
+      console.log(result);
+
+      return new SuccessResponse("Successful pull on book inventory", result);
+    } catch (error) {
+      console.error(error);
+      return new ServerErrorResponse(`Error occurred during inventory check: ${error.message}`);
     }
   }
 }
