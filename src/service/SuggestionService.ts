@@ -77,6 +77,8 @@ class SuggestionService extends Service {
           });
         }
       }
+
+      await this.suggestionDao.deleteOnIndexByValue("campus_id", campus.id);
     }
 
     return new SuccessResponse("Emailed suggestions list successfully");
