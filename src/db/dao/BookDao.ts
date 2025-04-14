@@ -79,11 +79,20 @@ class BookDao extends Dao<Book, number> {
         "audiences.audience_name as audience_name",
         "genre.genre_name as primary_genre_name",
         sql<string>`GROUP_CONCAT(i.qr)`.as('all_qrs'),
+        sql<string>`GROUP_CONCAT(i.location_id)`.as('all_location_ids'),
+        sql<string>`GROUP_CONCAT(l.location_name)`.as('all_location_names'),
       ])
       .leftJoin('inventory as i', 'books.id', 'i.book_id')
+      .leftJoin('location as l', 'l.id', 'i.location_id')
       .leftJoin("audiences", "audiences.id", "books.audience_id")
       .leftJoin("genre", "genre.id", "books.primary_genre_id")
-      .where('books.audience_id', '=', 7)
+      .where((eb) =>
+        eb.or([
+          eb('audiences.audience_name', '=', 'Unknown'),
+          eb('l.location_name', '=', 'Unknown'),
+          eb('genre.genre_name', '=', 'Unknown'),
+        ])
+      )
       .groupBy('books.id')
       .limit(1)
       .executeTakeFirst();

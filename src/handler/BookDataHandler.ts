@@ -68,10 +68,13 @@ export default class BookDataHandler {
     if (authRole != "Admin") {
       return new RequestErrorResponse("Admin user type required", 401);
     }
-    if (!book.book_title || !book.isbn_list || !book.primary_genre_name) {
-      return new RequestErrorResponse("Missing book title, isbn_list, and/or primary_genre", 400);
+    if (!book.book_title || !book.isbn_list || !book.primary_genre_name || !book.location || !book.audience_name) {
+      return new RequestErrorResponse("Missing book title, isbn_list, location, audience name and/or primary_genre", 400);
     }
 
+    if(book.primary_genre_name == 'Unknown' || book.audience_name == 'Unknown' || book.location == 'Unknown'){
+      return new RequestErrorResponse("primary genre, audience name, and/or location cant be unknown", 400);  
+    }
     return await this.bookManagementService.updateBackLogBook(book);
   }
 
