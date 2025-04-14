@@ -44,7 +44,9 @@ class InventoryDao extends Dao<Inventory, string> {
             );
           }
         } else {
-          return new RequestErrorResponse(`No inventory with qr ${qr} and campus ${campus_id} found`);
+          return new RequestErrorResponse(
+            `No inventory with qr ${qr} and campus ${campus_id} found`
+          );
         }
       } catch (error) {
         if (error.message.includes("Unknown column") && error.message.includes("in 'field list'")) {
@@ -194,12 +196,18 @@ class InventoryDao extends Dao<Inventory, string> {
           result as Inventory[]
         );
       } catch (error) {
-        return new ServerErrorResponse(`Failed to find missing inventory with error ${error.message}`, 500);
+        return new ServerErrorResponse(
+          `Failed to find missing inventory with error ${error.message}`,
+          500
+        );
       }
     }
   }
 
-  public async getBookDataFromQr(qr: string, transaction?: Transaction<Database>): Promise<Response<any>> {
+  public async getBookDataFromQr(
+    qr: string,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
     if (transaction) {
       return new ServerErrorResponse("Transactions are not supported yet");
     } else {
@@ -262,11 +270,13 @@ class InventoryDao extends Dao<Inventory, string> {
 
         return new SuccessResponse(`Set location for qr ${qr} successfully`);
       } catch (error) {
-        return new ServerErrorResponse(`Error occurred during set location query: ${error.message}`);
+        return new ServerErrorResponse(
+          `Error occurred during set location query: ${error.message}`
+        );
       }
     }
   }
-  
+
   public async getStock(
     campus_id: number,
     transaction?: Transaction<Database>
@@ -281,9 +291,11 @@ class InventoryDao extends Dao<Inventory, string> {
             "books.id",
             "books.book_title",
             "books.author",
+            "genre.genre_name",
             sql`count(inventory.qr)`.as("quantity"),
           ])
           .leftJoin("books", "books.id", "inventory.book_id")
+          .leftJoin("genre", "books.primary_genre_id", "genre.id")
           .where("campus_id", "=", campus_id)
           .where("is_checked_out", "=", 0)
           .groupBy("books.id")
@@ -302,7 +314,7 @@ class InventoryDao extends Dao<Inventory, string> {
     }
   }
 
-   public async getBookInventoryAvailable(bookId: number) {
+  public async getBookInventoryAvailable(bookId: number) {
     try {
       const cte1 = this.db
         .selectFrom(this.tableName as keyof Database)
