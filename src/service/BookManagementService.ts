@@ -81,10 +81,10 @@ export default class BookManagementService extends Service {
     const author = request.author;
     const primary_genre_name = request.primary_genre_name;
     const audience_name = request.audience_name;
-    const pages = request.pages;
-    const series_name = request.series_name;
-    const series_number = request.series_number;
-    const publish_date = request.publish_date;
+    const pages = request.pages === "" ? null : Number(request.pages);
+    const series_name = request.series_name === "" ? null : request.series_name;
+    const series_number = request.series_number === "" ? null : Number(request.series_number);
+    const publish_date = request.publish_date === "" ? null : Number(request.publish_date);
     const short_description = request.short_description;
     const language = request.language;
     const img_callback = request.img_callback;
@@ -208,10 +208,7 @@ export default class BookManagementService extends Service {
     } else {
       primary_genre_id = genreResponse.object.id;
     }
-    const audienceResponse = await this.audienceDao.getByKeyAndValue(
-      "audience_name",
-      audience_name
-    );
+    const audienceResponse = await this.audienceDao.getByKeyAndValue("audience_name", audience_name);
     if (audienceResponse == null || audienceResponse.statusCode != 200) {
       return audienceResponse;
     } else if (audienceResponse.object == null) {
@@ -256,7 +253,7 @@ export default class BookManagementService extends Service {
     if (result.statusCode === 200) {
       // Update the search cache with new data
       await this.searchDataService.reSeedSearchIndexes();
-      const qrArray = book_qrs.split(',');
+      const qrArray = book_qrs.split(",");
       for (let i = 0; i < qrArray.length; i++) {
         const inv_result = await this.inventoryDao.setLocation(qrArray[i].trim(), location);
         if (inv_result.statusCode != 200) {
@@ -265,7 +262,7 @@ export default class BookManagementService extends Service {
       }
     }
     return result;
-  } 
+  }
 
   public async addGenreToBook(genreString: string, isbn: string): Promise<Response<any>> {
     let genreId, bookId;
