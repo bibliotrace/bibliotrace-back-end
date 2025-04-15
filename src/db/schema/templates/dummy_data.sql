@@ -8,6 +8,11 @@ VALUES ('Lehi'), ('Salt Lake City');
 INSERT INTO user_roles (role_name)
 VALUES ('Admin'), ('User');
 
+INSERT INTO location (campus_id, location_name) VALUES 
+(1, 'storage'),
+(1, 'shelf'),
+(1, 'downstairs');
+
 INSERT INTO users (username, password_hash, role_id, email, campus_id)
 VALUES ('test', '$argon2id$v=19$m=65536,t=3,p=2$zNxBnZCVc7lpGE3LJTAOGA$0TS+loWwHEtQDkJA4M3q7DXoFUWnKCZQNAWZ8CF2SSE', 1, 'testing@byu.edu', 1),
 ('user', '$argon2id$v=19$m=65536,t=3,p=2$dyl9H5msFDyFLs8kUbzbQw$a55al+wfe6Da1BSN6KwwhCKy578DufkWNKGG5gAhQ2Q', 2, 'testingUser@byu.edu', 2),
@@ -49,6 +54,18 @@ VALUES
 ('Mockingjay', '9780439023511|9780439023528', 'Suzanne Collins', 4, 5, 390, 2010, 'Katniss becomes the symbol of the rebellion against the Capitol.', 'English', NULL);
 
 
+INSERT INTO books VALUES (166,'The Captive Kingdom',NULL,'Jennifer A. Nielsen',17,7,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO books VALUES (167,'The Shattered Castle',NULL,'Jennifer A. Nielsen',17,7,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO books VALUES (168,'A Night Divided',NULL,'Jennifer A. Nielsen',17,7,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO books VALUES (171,'Words on Fire',NULL,'Jennifer A. Nielsen',17,7,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO books VALUES (172,'Resistance',NULL,'Jennifer A. Nielsen',17,7,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+
+INSERT INTO inventory VALUES ('ad0853',166,1,1,0);
+INSERT INTO inventory VALUES ('ad0854',167,1,1,0);
+INSERT INTO inventory VALUES ('ad0855',168,1,1,0);
+INSERT INTO inventory VALUES ('ad0856',171,1,1,0);
+INSERT INTO inventory VALUES ('ad0857',172,1,1,0);
+
 INSERT INTO book_genre (book_id, genre_id) VALUES
 (1, 5),
 (1, 3),
@@ -88,11 +105,6 @@ INSERT INTO book_tag (book_id, tag_id) VALUES
 (13, 3),
 (14, 3),
 (15, 3);
-
-INSERT INTO location (campus_id, location_name) VALUES 
-(1, 'storage'),
-(1, 'shelf'),
-(1, 'downstairs');
 
 INSERT INTO inventory (qr, book_id, location_id, campus_id)
 VALUES

@@ -17,15 +17,8 @@ metadataRouter.get("/tag", async (req: any, res) => {
 });
 
 metadataRouter.get("/audiences", async (req, res) => {
-  try {
-    const audiences = await Config.dependencies.filterTypeRoutesHandler.getAudiences();
-
-    if (audiences != null && audiences.length > 0) {
-      res.send({ results: audiences });
-    }
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
+  const audiencesResponse = await Config.dependencies.filterTypeRoutesHandler.getAudiences();
+  sendResponse(res, audiencesResponse);
 });
 
 metadataRouter.get("/campuses", async (req: any, res) => {
