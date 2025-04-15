@@ -81,10 +81,10 @@ export default class BookManagementService extends Service {
     const author = request.author;
     const primary_genre_name = request.primary_genre_name;
     const audience_name = request.audience_name;
-    const pages = request.pages === "" ? null : Number(request.pages);
+    const pages = request.pages === "" ? null : request.pages;
     const series_name = request.series_name === "" ? null : request.series_name;
-    const series_number = request.series_number === "" ? null : Number(request.series_number);
-    const publish_date = request.publish_date === "" ? null : Number(request.publish_date);
+    const series_number = request.series_number === "" ? null : request.series_number;
+    const publish_date = request.publish_date === "" ? null : request.publish_date;
     const short_description = request.short_description;
     const language = request.language;
     const img_callback = request.img_callback;
