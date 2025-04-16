@@ -60,6 +60,8 @@ export default class CheckoutService extends Service {
     );
     if (inventory_response.statusCode !== 200) {
       return [inventory_response, null];
+    } else if (inventory_response.message.includes("No inventory items were updated")) {
+      return [inventory_response, book_response.object];
     }
 
     //remove book if in shopping_list because quantity is now > 0
@@ -127,7 +129,7 @@ export default class CheckoutService extends Service {
       inventory_response.statusCode !== 200 ||
       inventory_response.message.includes("No inventory items were updated")
     ) {
-      return [inventory_response, null];
+      return [inventory_response, book_response.object];
     }
 
     //get book quantity from inventory
