@@ -182,6 +182,14 @@ export default class CheckoutService extends Service {
     campus_name: string,
     isbn: string
   ): Promise<Response<any>> {
+    //check qr for duplication
+    const qr_response = await this.inventoryDao.getByKeyAndValue('qr', qr_code);
+    if (qr_response.statusCode !== 200) {
+      return qr_response;
+    } else if (qr_response.object) {
+      return new RequestErrorResponse(`An Inventory item with the qr ${qr_code} already exists. Please use another QR.`)
+    }
+
     //get campus
     const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
     if (campus_response.statusCode !== 200) {

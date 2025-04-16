@@ -67,10 +67,6 @@ bookDataRouter.get("/suggest/:isbn", async (req: JWTRequest, res) => {
   );
 });
 
-
-
-
-
 bookDataRouter.put("/backlog", async (req: JWTRequest, res) => {
   sendResponse(
     res,
