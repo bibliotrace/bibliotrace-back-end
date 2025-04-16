@@ -414,7 +414,7 @@ class BookDao extends Dao<Book, number> {
           author,
           primary_genre_id,
           audience_id,
-          pages,
+          pages: pages ?? null,
           series_id,
           series_number,
           publish_date,

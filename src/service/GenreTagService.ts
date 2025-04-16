@@ -12,7 +12,13 @@ export default class GenreTagService extends Service {
   }
 
   public async getGenres(): Promise<Response<Genre[]>> {
-    return await this.genreDao.getAll();
+    const genreResponse = await this.genreDao.getAll();
+    if (genreResponse.statusCode === 200 && genreResponse.object) {
+      const resultObject = genreResponse.object.filter(val => val.genre_name !== 'Unknown')
+      return new SuccessResponse(genreResponse.message, resultObject);
+    } else {
+      return genreResponse;
+    }
   }
 
   public async addGenre(genre_name: string): Promise<Response<Genre>> {
@@ -52,20 +58,14 @@ export default class GenreTagService extends Service {
     return response;
   }
 
-  public async getTags(campus_name: string): Promise<Response<any>> {
-    const campusResponse = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
-    if (campusResponse.statusCode !== 200) {
-      return campusResponse;
-    } else if (!campusResponse.object?.id) {
-      return new ServerErrorResponse(`Could not find campus with name: ${campus_name}`, 500);
-    }
-    const campusId = campusResponse.object.id;
-    console.log(campusId);
-    // TODO: Use this to keep tags by the campus?
-
+  public async getTags(): Promise<Response<any>> {
     const daoResult = await this.tagDao.getAll();
-    console.log(daoResult);
-    return daoResult;
+    if (daoResult.statusCode === 200 && daoResult.object) {
+      const resultObject = daoResult.object.filter(val => val.tag_name !== 'Unknown')
+      return new SuccessResponse(daoResult.message, resultObject);
+    } else {
+      return daoResult;
+    }
   }
 
   public async addTag(tag_name: string): Promise<Response<Tag>> {
