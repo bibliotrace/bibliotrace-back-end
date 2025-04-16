@@ -35,7 +35,7 @@ export default class GenreTagHandler {
     if (!authData.userRole?.campus) {
       return new RequestErrorResponse("Missing Campus Data in Authentication");
     }
-    return await this.genreTagService.getTags(authData.userRole?.campus)
+    return await this.genreTagService.getTags()
   }
 
   public async addTag(body, authData): Promise<Response<Tag>> {

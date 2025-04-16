@@ -1,6 +1,9 @@
 import AudienceDao from "../db/dao/AudienceDao";
-import DaoFactory from "../db/dao/DaoFactory";
 import CampusDao from "../db/dao/CampusDao";
+import DaoFactory from "../db/dao/DaoFactory";
+import Response from "../response/Response";
+import ServerErrorResponse from "../response/ServerErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
 
 export default class FilterTypeRoutesHandler {
   private readonly audienceDao: AudienceDao;
@@ -11,20 +14,18 @@ export default class FilterTypeRoutesHandler {
     this.campusDao = daoFactory.getCampusDao();
   }
 
-  async getAudiences(): Promise<string[]> {
+  async getAudiences(): Promise<Response<string[]>> {
     const result = await this.audienceDao.getAll();
 
     if (result.statusCode != 200 || result.object == null) {
-      throw new Error(
+      return new ServerErrorResponse(
         `Error retrieving data from the Audience table: ${result.statusCode}: ${result.message}`
       );
     }
 
-    console.log(result.object);
+    const resultObject = result.object.map(item => item.audience_name).filter(val => val !== 'Unknown')
 
-    return result.object.map((item) => {
-      return item.audience_name;
-    });
+    return new SuccessResponse(result.message, resultObject);
   }
 
   async getCampuses(): Promise<string[]> {

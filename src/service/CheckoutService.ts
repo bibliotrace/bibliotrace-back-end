@@ -60,6 +60,8 @@ export default class CheckoutService extends Service {
     );
     if (inventory_response.statusCode !== 200) {
       return [inventory_response, null];
+    } else if (inventory_response.message.includes("No inventory items were updated")) {
+      return [inventory_response, book_response.object];
     }
 
     //remove book if in shopping_list because quantity is now > 0
@@ -127,7 +129,7 @@ export default class CheckoutService extends Service {
       inventory_response.statusCode !== 200 ||
       inventory_response.message.includes("No inventory items were updated")
     ) {
-      return [inventory_response, null];
+      return [inventory_response, book_response.object];
     }
 
     //get book quantity from inventory
@@ -180,6 +182,14 @@ export default class CheckoutService extends Service {
     campus_name: string,
     isbn: string
   ): Promise<Response<any>> {
+    //check qr for duplication
+    const qr_response = await this.inventoryDao.getByKeyAndValue('qr', qr_code);
+    if (qr_response.statusCode !== 200) {
+      return qr_response;
+    } else if (qr_response.object) {
+      return new RequestErrorResponse(`An Inventory item with the qr ${qr_code} already exists. Please use another QR.`)
+    }
+
     //get campus
     const campus_response = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
     if (campus_response.statusCode !== 200) {
