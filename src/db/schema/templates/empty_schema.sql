@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS inventory (
   book_id INT UNSIGNED NOT NULL,
   location_id INT UNSIGNED NOT NULL,
   campus_id TINYINT UNSIGNED NOT NULL,
-  is_checked_out BOOLEAN NOT  NULL DEFAULT 0,
+  is_checked_out BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (book_id) REFERENCES books(id),
   FOREIGN KEY (campus_id) REFERENCES campus(id),
   FOREIGN KEY (location_id) REFERENCES location(id)
