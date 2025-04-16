@@ -111,6 +111,8 @@ Running npm run dev within the frontend repository on your machine will compile 
 
 Vite is responsive enough that if you have a frontend instance running locally and a change is made to the frontend application code that the change will be displayed dynamically in the browser. 
 
-## Github environment secrets 
+## Environment secrets 
 
 Both the frontend and backend deployment scripts rely on a number of environment secrets that are stored within GitHub to avoid accidentally exposing API keys, etc. without needing a .env file stored somewhere in the cloud. These secrets can be accessed and modified by selecting the Settings tab in the GitHub navigation bar for the site repository, then opening the Secrets and Variables menu in the left sidebar and selecting the Actions option. These secrets are primarily related to the resource URLs for the services stored in AWS. 
+
+There are also environment secrets stored in the container task definition of AWS. Note that any changes to these secrets will necessitate redeploying the container in ECS and making sure that the service is associated with the most recent task definition.
