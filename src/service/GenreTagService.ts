@@ -51,6 +51,10 @@ export default class GenreTagService extends Service {
       );
     }
 
+    if (response.statusCode === 200 && response.message.includes("deleted successfully")) {
+      return new SuccessResponse(`Genre ${genre_name} deleted successfully`);
+    }
+
     return response;
   }
 
@@ -89,6 +93,10 @@ export default class GenreTagService extends Service {
       return new ServerErrorResponse(
         `Tag ${tag_name} is still in use by at least one book. You must remove it from all books before deleting it.`
       );
+    }
+
+    if (response.statusCode === 200 && response.message.includes("deleted successfully")) {
+      return new SuccessResponse(`Tag ${tag_name} deleted successfully`);
     }
 
     return response;

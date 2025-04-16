@@ -64,8 +64,7 @@ class SuggestionService extends Service {
         if (suggestions.length && user.email) {
           const mailOptions = {
             from: "bibliotrace@gmail.com",
-            // to: user.email,
-            to: "kellyko2003@gmail.com",
+            to: user.email,
             subject: "Bibliotrace Suggestions",
             html: `<p>Suggestions for ${user.email}: </p><ul>${suggestions_list}</ul>`,
           };
