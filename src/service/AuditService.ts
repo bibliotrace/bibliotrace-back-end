@@ -36,17 +36,8 @@ export default class AuditService extends Service {
     );
     if (inventoryResponse.statusCode !== 200) {
       return [inventoryResponse, null];
-    }
-
-    //create audit entry if extra qr. Need to ask if this should be included in report
-    if (!inventoryResponse.object) {
+    } else if (!inventoryResponse.object) {
       return [new ServerErrorResponse("Book does not exist in inventory"), null];
-      // const auditEntryObj: AuditEntry = {
-      //   audit_id: audit_id,
-      //   qr: qr_code,
-      //   state: State.Extra,
-      // };
-      // return await this.auditEntryDao.create(auditEntryObj);
     }
 
     //get book details
@@ -72,6 +63,10 @@ export default class AuditService extends Service {
       if (inventoryUpdateResponse.statusCode !== 200) {
         return [inventoryUpdateResponse, null];
       }
+    }
+
+    if (inventoryResponse.object.is_checked_out == 1) {
+      await this.inventoryDao.updateCheckoutState(qr_code, campusResponse.object.id, false);
     }
 
     //create audit entry for found/misplaced
