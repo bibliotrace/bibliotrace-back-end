@@ -157,9 +157,11 @@ export default class AuditService extends Service {
         return auditEntryResponse;
       }
 
-      const inventoryUpdateResponse = await this.inventoryDao.setIsCheckedOut(inventory.qr, 1);
-      if (inventoryUpdateResponse.statusCode !== 200) {
-        return inventoryUpdateResponse;
+      if (sync_inventory) {
+        const inventoryUpdateResponse = await this.inventoryDao.setIsCheckedOut(inventory.qr, 1);
+        if (inventoryUpdateResponse.statusCode !== 200) {
+          return inventoryUpdateResponse;
+        }
       }
     }
 
