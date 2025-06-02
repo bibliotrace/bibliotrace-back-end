@@ -277,6 +277,36 @@ class InventoryDao extends Dao<Inventory, string> {
     }
   }
 
+  public async setIsCheckedOut(
+    qr: string,
+    isCheckedOut: 0 | 1,
+    transaction?: Transaction<Database>
+  ): Promise<Response<any>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet");
+    } else {
+      try {
+        const result = await this.db
+          .updateTable(this.tableName as keyof Database)
+          .where("qr", "=", qr as any)
+          .set({
+            is_checked_out: isCheckedOut,
+          })
+          .execute();
+
+        if (result[0].numUpdatedRows === 0n) {
+          return new SuccessResponse(`No inventory found with qr ${qr} to update`);
+        }
+
+        return new SuccessResponse(`Set is_checked_out for qr ${qr} successfully`);
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Error occurred during set is_checked_out query: ${error.message}`
+        );
+      }
+    }
+  }
+
   public async getStock(
     campus_id: number,
     transaction?: Transaction<Database>

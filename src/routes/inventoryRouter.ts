@@ -67,6 +67,12 @@ inventoryRouter.post("/audit/complete", async (req: any, res) => {
   sendResponse(res, await Config.dependencies.auditHandler.completeAudit(req.body, req.auth));
 });
 
+inventoryRouter.delete("/audit", async (req: any, res) => {
+  if (validateUserType(req, res, "Admin")) {
+    sendResponse(res, await Config.dependencies.auditHandler.deleteAudit(req.body, req.auth));
+  }
+});
+
 inventoryRouter.delete("/delete/isbn", async (req: any, res) => {
   if (validateUserType(req, res, "Admin")) {
     sendResponse(res, await Config.dependencies.inventoryHandler.removeBookByIsbn(req.body));
