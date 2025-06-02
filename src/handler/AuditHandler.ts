@@ -76,8 +76,21 @@ export default class AuditHandler {
       return new RequestErrorResponse("Missing audit_id");
     } else if (!auth?.userRole?.campus) {
       return new RequestErrorResponse("Missing campus");
+    } else if (reqBody.sync_inventory === undefined) {
+      return new RequestErrorResponse("Missing sync_inventory flag");
+    } 
+
+    return await this.auditService.completeAudit(reqBody.audit_id, auth.userRole.campus, reqBody.sync_inventory);
+  }
+  
+  public async deleteAudit(
+    reqBody,
+  ): Promise<Response<any>> {
+    if (!reqBody.audit_id) {
+      return new RequestErrorResponse("Missing audit_id");
     }
 
-    return await this.auditService.completeAudit(reqBody.audit_id, auth.userRole.campus);
+    return await this.auditService.deleteAudit(reqBody.audit_id);
   }
+
 }

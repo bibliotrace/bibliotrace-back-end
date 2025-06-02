@@ -6,6 +6,7 @@ import { Campus } from "../db/schema/Campus";
 import { Inventory } from "../db/schema/Inventory";
 import { Location } from "../db/schema/Location";
 import RequestErrorResponse from "../response/RequestErrorResponse";
+import SuccessResponse from "../response/SuccessResponse";
 import Response from "../response/Response";
 import ServerErrorResponse from "../response/ServerErrorResponse";
 import Service from "./Service";
@@ -53,7 +54,6 @@ export default class AuditService extends Service {
       state = State.FOUND;
     } else {
       state = State.MISPLACED;
-
       //update inventory location if misplaced
       inventoryResponse.object.location_id = location_id;
       const inventoryUpdateResponse = await this.inventoryDao.update(
@@ -127,7 +127,8 @@ export default class AuditService extends Service {
 
   public async completeAudit(
     audit_id: number,
-    campus_name: string
+    campus_name: string,
+    sync_inventory: boolean,
   ): Promise<Response<Audit | AuditEntry | Campus | Inventory[]>> {
     const campusResponse = await this.campusDao.getByKeyAndValue("campus_name", campus_name);
     if (campusResponse.statusCode !== 200) {
@@ -136,15 +137,15 @@ export default class AuditService extends Service {
       return new RequestErrorResponse(`Could not find campus with name: ${campus_name}`);
     }
 
-    const inventoryResponse = await this.inventoryDao.getMissingInventoryForAudit(
+    const inventoryGetResponse = await this.inventoryDao.getMissingInventoryForAudit(
       audit_id,
       campusResponse.object.id
     );
-    if (inventoryResponse.statusCode !== 200) {
-      return inventoryResponse;
+    if (inventoryGetResponse.statusCode !== 200) {
+      return inventoryGetResponse;
     }
 
-    for (const inventory of inventoryResponse.object) {
+    for (const inventory of inventoryGetResponse.object) {
       const auditEntryObj: AuditEntry = {
         audit_id: audit_id,
         qr: inventory.qr,
@@ -155,8 +156,40 @@ export default class AuditService extends Service {
       if (auditEntryResponse.statusCode !== 200) {
         return auditEntryResponse;
       }
+
+      if (sync_inventory) {
+        const inventoryUpdateResponse = await this.inventoryDao.setIsCheckedOut(inventory.qr, 1);
+        if (inventoryUpdateResponse.statusCode !== 200) {
+          return inventoryUpdateResponse;
+        }
+      }
     }
 
     return this.auditDao.update(audit_id, { completed_date: new Date() });
   }
+
+  public async deleteAudit(
+    audit_id: number,
+  ): Promise<Response<any>> {
+
+    const auditGetResponse = await this.auditDao.getByKeyAndValue("id", audit_id.toString());
+    if (auditGetResponse.statusCode !== 200) {
+      return auditGetResponse;
+    } else if (!auditGetResponse.object) {
+      return new RequestErrorResponse(`Audit with id: ${audit_id} not found`);
+    }
+
+    const auditEntryDeleteResponse = await this.auditEntryDao.deleteOnIndexByValue("audit_id", audit_id.toString());
+    if (auditEntryDeleteResponse.statusCode !== 200) {
+      return auditGetResponse;
+    }
+
+    const auditDeleteResponse = await this.auditDao.delete(audit_id);
+    if (auditDeleteResponse.statusCode !== 200) {
+      return auditDeleteResponse;
+    }
+
+    return new SuccessResponse(`Audit with id: ${audit_id} deleted successfully`);
+  }
+
 }

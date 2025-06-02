@@ -21,7 +21,7 @@ As a placeholder for AWS RDS, we will be running an instance of MySQL locally. M
 $ mysql -u root -p
 Password:
 mysql> CREATE DATABASE IF NOT EXISTS bibliotrace_v3;
-mysql> CREATE USER 'admin'@'localhost' INDENTIFIED BY 'password';
+mysql> CREATE USER 'admin'@'localhost' IDENTIFIED BY 'password';
 mysql> GRANT ALL PRIVILEGES ON bibliotrace_v3.* TO 'admin'@'localhost';
 ```
 Now that the database exists with administrative credentials, we can import the .sql file as follows (after logging out of the mysql session with the `quit` command): 
