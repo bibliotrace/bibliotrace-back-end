@@ -85,7 +85,6 @@ export default class AuditHandler {
   
   public async deleteAudit(
     reqBody,
-    auth
   ): Promise<Response<any>> {
     if (!reqBody.audit_id) {
       return new RequestErrorResponse("Missing audit_id");

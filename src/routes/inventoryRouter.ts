@@ -69,7 +69,7 @@ inventoryRouter.post("/audit/complete", async (req: any, res) => {
 
 inventoryRouter.delete("/audit", async (req: any, res) => {
   if (validateUserType(req, res, "Admin")) {
-    sendResponse(res, await Config.dependencies.auditHandler.deleteAudit(req.body, req.auth));
+    sendResponse(res, await Config.dependencies.auditHandler.deleteAudit(req.body));
   }
 });
 
