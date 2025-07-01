@@ -24,8 +24,9 @@ class RestockListDao extends Dao<RestockList, number> {
       try {
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
-          .select(["books.id", "books.book_title", "books.author", "restock_list.quantity"])
+          .select(["books.id", "books.book_title", "books.author", "genre.genre_name", "restock_list.quantity"])
           .leftJoin("books", "books.id", "restock_list.book_id")
+          .leftJoin("genre", "genre.id", "books.primary_genre_id")
           .where("campus_id", "=", campus_id)
           .orderBy("books.book_title")
           .execute();

@@ -42,6 +42,12 @@ bookDataRouter.get("/qr/:qr", async (req, res) => {
   sendResponse(res, await Config.dependencies.bookDataHandler.getByQr(req.params.qr));
 });
 
+// Can't have two mappings for a :params string, hence this workaround
+bookDataRouter.get("/id/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  sendResponse(res, await Config.dependencies.bookDataHandler.getById(id));
+});
+
 // Ask the ISBNdb for data associated with an isbn number
 /* Output: {
   "message": "success or otherwise", 
