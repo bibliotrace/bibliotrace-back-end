@@ -44,7 +44,7 @@ bookDataRouter.get("/qr/:qr", async (req, res) => {
 
 // Can't have two mappings for a :params string, hence this workaround
 bookDataRouter.get("/id/:id", async (req, res) => {
-  let id = parseInt(req.params.id);
+  const id = parseInt(req.params.id);
   sendResponse(res, await Config.dependencies.bookDataHandler.getById(id));
 });
 
