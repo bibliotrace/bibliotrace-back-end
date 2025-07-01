@@ -24,8 +24,9 @@ class ShoppingListDao extends Dao<ShoppingList, number> {
       try {
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
-          .select(["books.id", "books.book_title", "books.author"])
+          .select(["books.id", "books.book_title", "books.author", "genre.genre_name"])
           .leftJoin("books", "books.id", "shopping_list.book_id")
+          .leftJoin("genre", "genre.id", "books.primary_genre_id")
           .where("campus_id", "=", campus_id)
           .orderBy("books.book_title")
           .execute();

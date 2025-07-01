@@ -67,6 +67,10 @@ export default class BookManagementService extends Service {
     return await this.bookDao.getBookByName(title);
   }
 
+  public async getById(id: number): Promise<Response<Book>> {
+    return await this.bookDao.getBookById(id);
+  }
+
   public async getTagsByIsbn(isbn: string): Promise<Response<any>> {
     return await this.bookDao.getBookTagsByIsbn(isbn);
   }

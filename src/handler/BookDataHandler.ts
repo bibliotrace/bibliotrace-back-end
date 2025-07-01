@@ -46,6 +46,17 @@ export default class BookDataHandler {
     return localData;
   }
 
+  public async getById(id: number) {
+    if (typeof id !== "number" || Number.isNaN(id) || id <= 0) {
+      return new RequestErrorResponse("Valid ID is required to search for book information", 400);
+    }
+
+    const localData = await this.bookManagementService.getById(id);
+
+    return localData;
+  }
+
+
   // This function will get a suggestion for book data from the ISBNdb API.
   // This responds with a 404 if the book isn't found
   public async getIsbnDbSuggestion(isbnString: string, authRole: string) {
@@ -72,8 +83,8 @@ export default class BookDataHandler {
       return new RequestErrorResponse("Missing book title, isbn_list, location, audience name and/or primary_genre", 400);
     }
 
-    if(book.primary_genre_name == 'Unknown' || book.audience_name == 'Unknown' || book.location == 'Unknown'){
-      return new RequestErrorResponse("primary genre, audience name, and/or location cant be unknown", 400);  
+    if (book.primary_genre_name == 'Unknown' || book.audience_name == 'Unknown' || book.location == 'Unknown') {
+      return new RequestErrorResponse("primary genre, audience name, and/or location cant be unknown", 400);
     }
     return await this.bookManagementService.updateBackLogBook(book);
   }

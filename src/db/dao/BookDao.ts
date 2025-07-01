@@ -66,42 +66,42 @@ class BookDao extends Dao<Book, number> {
   ): Promise<Response<any>> {
     try {
       const book = await this.db
-      // .selectFrom('books as b')
-      .selectFrom(this.tableName as keyof Database)
-      .select([
-        "books.id as id",
-        "books.book_title as book_title",
-        "books.isbn_list as isbn_list",
-        "books.author as author",
-        "books.primary_genre_id as primary_genre_id",
-        "books.audience_id as audience_id",
-        "books.pages as pages",
-        "books.series_id as series_id",
-        "books.series_number as series_number",
-        "books.publish_date as publish_date",
-        "books.short_description as short_description",
-        "books.language as language",
-        "books.img_callback as img_callback",
-        "audiences.audience_name as audience_name",
-        "genre.genre_name as primary_genre_name",
-        sql<string>`GROUP_CONCAT(i.qr)`.as('all_qrs'),
-        sql<string>`GROUP_CONCAT(i.location_id)`.as('all_location_ids'),
-        sql<string>`GROUP_CONCAT(l.location_name)`.as('all_location_names'),
-      ])
-      .leftJoin('inventory as i', 'books.id', 'i.book_id')
-      .leftJoin('location as l', 'l.id', 'i.location_id')
-      .leftJoin("audiences", "audiences.id", "books.audience_id")
-      .leftJoin("genre", "genre.id", "books.primary_genre_id")
-      .where((eb) =>
-        eb.or([
-          eb('audiences.audience_name', '=', 'Unknown'),
-          eb('l.location_name', '=', 'Unknown'),
-          eb('genre.genre_name', '=', 'Unknown'),
+        // .selectFrom('books as b')
+        .selectFrom(this.tableName as keyof Database)
+        .select([
+          "books.id as id",
+          "books.book_title as book_title",
+          "books.isbn_list as isbn_list",
+          "books.author as author",
+          "books.primary_genre_id as primary_genre_id",
+          "books.audience_id as audience_id",
+          "books.pages as pages",
+          "books.series_id as series_id",
+          "books.series_number as series_number",
+          "books.publish_date as publish_date",
+          "books.short_description as short_description",
+          "books.language as language",
+          "books.img_callback as img_callback",
+          "audiences.audience_name as audience_name",
+          "genre.genre_name as primary_genre_name",
+          sql<string>`GROUP_CONCAT(i.qr)`.as('all_qrs'),
+          sql<string>`GROUP_CONCAT(i.location_id)`.as('all_location_ids'),
+          sql<string>`GROUP_CONCAT(l.location_name)`.as('all_location_names'),
         ])
-      )
-      .groupBy('books.id')
-      .limit(1)
-      .executeTakeFirst();
+        .leftJoin('inventory as i', 'books.id', 'i.book_id')
+        .leftJoin('location as l', 'l.id', 'i.location_id')
+        .leftJoin("audiences", "audiences.id", "books.audience_id")
+        .leftJoin("genre", "genre.id", "books.primary_genre_id")
+        .where((eb) =>
+          eb.or([
+            eb('audiences.audience_name', '=', 'Unknown'),
+            eb('l.location_name', '=', 'Unknown'),
+            eb('genre.genre_name', '=', 'Unknown'),
+          ])
+        )
+        .groupBy('books.id')
+        .limit(1)
+        .executeTakeFirst();
       if (!book) {
         return new RequestErrorResponse(`No book found from backlog`, 404);
       }
@@ -165,6 +165,32 @@ class BookDao extends Dao<Book, number> {
       } catch (error) {
         return new ServerErrorResponse(
           `Failed to retrieve book with name ${name} with error ${error}`,
+          500
+        );
+      }
+    }
+  }
+
+  public async getBookById(
+    id: number,
+    transaction?: Transaction<Database>
+  ): Promise<Response<Book>> {
+    if (transaction) {
+      return new ServerErrorResponse("Transactions are not supported yet", 500);
+    } else {
+      try {
+        const book = await this.db
+          .selectFrom(this.tableName as keyof Database)
+          .selectAll()
+          .where("id", "=", `${id}` as any)
+          .executeTakeFirst();
+        if (!book) {
+          return new SuccessResponse(`No book found with id ${id}`);
+        }
+        return new SuccessResponse(`Successfully retrieved book with id ${id}`, book);
+      } catch (error) {
+        return new ServerErrorResponse(
+          `Failed to retrieve book with id ${id} with error ${error}`,
           500
         );
       }
@@ -430,6 +456,12 @@ class BookDao extends Dao<Book, number> {
     }
   }
 
+  private addDayToDateString(dateStr: string, days: number): string {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split("T")[0];
+  }
+
   public async getPopular(
     campus_id: number,
     start_date: string,
@@ -440,6 +472,7 @@ class BookDao extends Dao<Book, number> {
       return new ServerErrorResponse("Transactions are not supported yet", 500);
     } else {
       try {
+        end_date = this.addDayToDateString(end_date, 1); // add one day to end date to include the entire day
         const result = await this.db
           .selectFrom(this.tableName as keyof Database)
           .select([
