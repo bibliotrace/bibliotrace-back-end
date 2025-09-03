@@ -19,6 +19,14 @@ export class AuthHandler {
     return this.authService.login(body.username, body.password);
   }
 
+  public async campusLogin(body): Promise<Response<string>> {
+    const requiredFields = ["campus"];
+    const requiredFieldsResponse = parseRequiredFields(body, requiredFields);
+    if (requiredFieldsResponse) return requiredFieldsResponse;
+
+    return this.authService.campusLogin(body.campus);
+  }
+
   public async createUser(body) {
     const requiredFields = ["username", "password", "email", "roleType", "campus"];
     const requiredFieldsResponse = parseRequiredFields(body, requiredFields);

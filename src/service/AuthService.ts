@@ -42,6 +42,30 @@ export class AuthService extends Service {
     }
   }
 
+  async campusLogin(campusName: string): Promise<Response<string>> {
+    const campusResponse: Response<Campus[]> = await this.campusDao.getAll();
+
+    if (!campusResponse || campusResponse.statusCode !== 200 || !campusResponse.object) {
+      console.log("Could not retrieve campuses");
+      return new RequestErrorResponse("Could not retrieve campuses", 500);
+    }
+
+    const campuses: Campus[] = campusResponse.object;
+    const index = campuses.findIndex((campus) => campus.campus_name === campusName);
+    if (index === -1) {
+      console.log("Campus does not exist");
+      return new RequestErrorResponse("Campus does not exist", 401);
+    }
+
+    const campusUser: UserJWTData = {
+      campus: campusName,
+      roleType: "User",
+      email: "",
+    };
+
+    return new SuccessResponse("Token generated successfully", await this.buildJWT(campusUser));
+  }
+
   async createUser(username: string, password: string, role: UserJWTData) {
     // First grab id's
     const ids = await this.getCampusAndRoleIds(role);
