@@ -33,11 +33,12 @@ server.use(
   expressjwt({
     secret: process.env.AUTH_KEY ?? "hello world!",
     algorithms: ["HS256"],
+    credentialsRequired: false, // Allow access to unauthenticated routes without a token.
     onExpired: async (req, err) => {
       console.log("EXPIREDDDD");
       throw err;
     },
-  }).unless({ path: ["/api/auth/login", "/health"] })
+  }).unless({ path: ["/api/auth/login", "/api/auth/campuslogin", "/health", "/api/metadata/campuses"] })
 );
 
 const apiRouter = express.Router();

@@ -8,6 +8,10 @@ authRouter.post("/login", async (req, res) => {
   sendResponse(res, await Config.dependencies.authHandler.login(req.body));
 });
 
+authRouter.post("/campuslogin", async (req, res) => {
+  sendResponse(res, await Config.dependencies.authHandler.campusLogin(req.body));
+});
+
 authRouter.post("/user", async (req, res) => {
   if (validateUserType(req, res, "Admin")) {
     sendResponse(res, await Config.dependencies.authHandler.createUser(req.body));
