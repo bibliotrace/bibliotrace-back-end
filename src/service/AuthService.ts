@@ -50,14 +50,14 @@ export class AuthService extends Service {
       return new RequestErrorResponse("Could not retrieve campuses", 500);
     }
 
-    let campuses: Campus[] = campusResponse.object;
-    let index = campuses.findIndex((campus) => campus.campus_name === campusName);
+    const campuses: Campus[] = campusResponse.object;
+    const index = campuses.findIndex((campus) => campus.campus_name === campusName);
     if (index === -1) {
       console.log("Campus does not exist");
       return new RequestErrorResponse("Campus does not exist", 401);
     }
 
-    let campusUser: UserJWTData = {
+    const campusUser: UserJWTData = {
       campus: campusName,
       roleType: "User",
       email: "",
