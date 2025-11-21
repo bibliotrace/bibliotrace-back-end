@@ -96,3 +96,5 @@ There are also environment secrets stored in the container task definition of AW
 ## Etc..
 
 For more details about how this application works, you can refer to the bibliotrace-front-end repo in the bibliotrace github org. 
+
+Version 100
