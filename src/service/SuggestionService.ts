@@ -6,7 +6,7 @@ import { Suggestion } from "../db/schema/Suggestion";
 import { User } from "../db/schema/User";
 import Service from "./Service";
 import Response from "../response/Response";
-
+/* Artifical code change */
 class SuggestionService extends Service {
   constructor(daoFactory: DaoFactory) {
     super(daoFactory);
